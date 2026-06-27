@@ -32,11 +32,14 @@ COPY --from=build --chown=app:app /app/scripts ./scripts
 COPY --from=build --chown=app:app /app/package.json ./package.json
 
 USER app
+# Informational; the app actually listens on $PORT (Railway injects it; falls
+# back to 3000 for local/compose).
 EXPOSE 3000
 
-# Health check hits the app's /api/health endpoint
+# Health check hits the app's /api/health endpoint on the runtime port.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD wget -qO- http://localhost:3000/api/health || exit 1
+  CMD wget -qO- "http://localhost:${PORT:-3000}/api/health" || exit 1
 
-# Default = web. docker-compose overrides command for the worker service.
-CMD ["npm", "run", "start"]
+# Default = web on $PORT (Railway) / 3000 (local), bound to :: for IPv6 reach.
+# docker-compose / railway.json override this command per service.
+CMD ["sh", "-c", "npx next start -H :: -p ${PORT:-3000}"]
