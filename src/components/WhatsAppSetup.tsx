@@ -87,7 +87,7 @@ export default function WhatsAppSetup() {
   }
 
   return (
-    <form onSubmit={onSave} className="card" style={{ maxWidth: 680 }}>
+    <form onSubmit={onSave} className="card" style={{ maxWidth: 680 }} autoComplete="off">
       <h3>Connect WhatsApp</h3>
       <p className="note" style={{ margin: "0 0 16px" }}>
         Enter the values from your Meta app (WhatsApp → API setup). Saved settings override the server&rsquo;s
@@ -97,26 +97,26 @@ export default function WhatsAppSetup() {
       <div className="row" style={{ gap: 12 }}>
         <div className="field" style={{ flex: 1 }}>
           <label className="label" htmlFor="pn">Phone number ID</label>
-          <input id="pn" data-test-id="wa-phone-id" className="input" value={phoneNumberId}
+          <input id="pn" data-test-id="wa-phone-id" className="input" value={phoneNumberId} autoComplete="off"
             onChange={(e) => setPhoneNumberId(e.target.value)} placeholder="123456789012345" />
         </div>
         <div className="field" style={{ flex: 1 }}>
           <label className="label" htmlFor="waba">Business account ID</label>
-          <input id="waba" className="input" value={businessAccountId}
+          <input id="waba" className="input" value={businessAccountId} autoComplete="off"
             onChange={(e) => setBusinessAccountId(e.target.value)} placeholder="123456789012345" />
         </div>
       </div>
 
       <div className="field">
         <label className="label" htmlFor="tok">Access token {hasAccessToken && <span className="muted">· saved</span>}</label>
-        <input id="tok" data-test-id="wa-token" className="input" type="password" value={accessToken}
+        <input id="tok" data-test-id="wa-token" className="input" type="password" value={accessToken} autoComplete="new-password"
           onChange={(e) => setAccessToken(e.target.value)}
           placeholder={hasAccessToken ? "•••••••• saved — leave blank to keep" : "EAAG… permanent system-user token"} />
       </div>
 
       <div className="field">
         <label className="label" htmlFor="sec">App secret {hasAppSecret && <span className="muted">· saved</span>}</label>
-        <input id="sec" className="input" type="password" value={appSecret}
+        <input id="sec" className="input" type="password" value={appSecret} autoComplete="new-password"
           onChange={(e) => setAppSecret(e.target.value)}
           placeholder={hasAppSecret ? "•••••••• saved — leave blank to keep" : "used to verify webhook signatures"} />
       </div>
