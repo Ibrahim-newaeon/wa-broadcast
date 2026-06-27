@@ -24,8 +24,13 @@ const EnvSchema = z.object({
   LOGIN_RATE_WINDOW: z.coerce.number().int().positive().default(300), // seconds
 });
 
-export const env = EnvSchema.parse(process.env);
+// Strict at boot, but skippable at build time (e.g. `next build` in a Docker
+// image / Railway, before runtime secrets exist). Set SKIP_ENV_VALIDATION=1.
+export const env = process.env.SKIP_ENV_VALIDATION
+  ? (process.env as unknown as z.infer<typeof EnvSchema>)
+  : EnvSchema.parse(process.env);
 
-export const optOutKeywords = env.OPT_OUT_KEYWORDS.split(",")
+export const optOutKeywords = (env.OPT_OUT_KEYWORDS || "STOP,UNSUBSCRIBE")
+  .split(",")
   .map((k) => k.trim().toUpperCase())
   .filter(Boolean);

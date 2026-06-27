@@ -10,6 +10,9 @@ FROM node:22-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Skip env validation at build time — real secrets are injected at runtime
+# (compose env_file / Railway service variables).
+ENV SKIP_ENV_VALIDATION=1
 RUN npx prisma generate && npm run build
 
 # ── Stage 3: runtime ─────────────────────────────────────────────────

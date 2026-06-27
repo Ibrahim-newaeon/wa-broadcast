@@ -4,10 +4,12 @@ node_modules
 .next
 dist
 
-# NOTE: .env is intentionally NOT ignored — the build stage's `next build` needs
-# it because env.ts validates process.env at import. The runtime stage copies only
-# select dirs (never .env), so it stays out of the final image; compose injects
-# runtime env via env_file.
+# Secrets — never copy into the image. The build skips env validation
+# (SKIP_ENV_VALIDATION in the Dockerfile); runtime env comes from compose
+# env_file / Railway service variables.
+.env
+.env.local
+.env.*.local
 
 # VCS and tooling
 .git
