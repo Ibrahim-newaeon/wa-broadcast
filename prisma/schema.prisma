@@ -171,6 +171,19 @@ model User {
   createdAt    DateTime @default(now())
 }
 
+// No-code WhatsApp Cloud API connection settings (single row, id="default").
+// Values here override the env defaults at runtime — see lib/waConfig.ts.
+model WhatsAppConfig {
+  id                 String   @id @default("default")
+  phoneNumberId      String?
+  businessAccountId  String?
+  accessToken        String?
+  appSecret          String?
+  webhookVerifyToken String?
+  graphApiVersion    String?
+  updatedAt          DateTime @updatedAt
+}
+
 model OptOut {
   id        String   @id @default(cuid())
   phone     String   @unique

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { env } from "@/lib/env";
 import { prisma } from "@/lib/db";
 import { CreateTemplateSchema } from "@/lib/validation";
 import { createTemplate, countTemplateVars, WhatsAppError } from "@/lib/whatsapp";
+import { getWaConfig } from "@/lib/waConfig";
 
 export const runtime = "nodejs";
 
@@ -61,8 +61,9 @@ const MetaTemplateSchema = z.object({
 });
 
 async function syncFromMeta() {
-  const url = `https://graph.facebook.com/${env.GRAPH_API_VERSION}/${env.WA_BUSINESS_ACCOUNT_ID}/message_templates?limit=200`;
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${env.WA_ACCESS_TOKEN}` } });
+  const cfg = await getWaConfig();
+  const url = `https://graph.facebook.com/${cfg.graphApiVersion}/${cfg.businessAccountId}/message_templates?limit=200`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${cfg.accessToken}` } });
   if (!res.ok) throw new Error(`template sync failed (${res.status})`);
 
   const parsed = MetaTemplateSchema.parse(await res.json());

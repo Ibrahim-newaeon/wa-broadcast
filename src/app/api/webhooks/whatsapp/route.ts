@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "node:crypto";
-import { env, optOutKeywords } from "@/lib/env";
+import { optOutKeywords } from "@/lib/env";
+import { getWaConfig } from "@/lib/waConfig";
 import { WebhookSchema } from "@/lib/validation";
 import { prisma } from "@/lib/db";
 
@@ -14,12 +15,10 @@ const STATUS_MAP = {
 } as const;
 
 /** GET — Meta webhook verification handshake. */
-export function GET(req: NextRequest) {
+export async function GET(req: NextRequest) {
   const p = req.nextUrl.searchParams;
-  if (
-    p.get("hub.mode") === "subscribe" &&
-    p.get("hub.verify_token") === env.WA_WEBHOOK_VERIFY_TOKEN
-  ) {
+  const { webhookVerifyToken } = await getWaConfig();
+  if (p.get("hub.mode") === "subscribe" && p.get("hub.verify_token") === webhookVerifyToken) {
     return new NextResponse(p.get("hub.challenge") ?? "", { status: 200 });
   }
   return new NextResponse("forbidden", { status: 403 });
@@ -30,10 +29,11 @@ export async function POST(req: NextRequest) {
   const raw = await req.text();
 
   // Verify X-Hub-Signature-256 = HMAC-SHA256(appSecret, rawBody)
+  const { appSecret } = await getWaConfig();
   const sig = req.headers.get("x-hub-signature-256") ?? "";
   const expected =
     "sha256=" +
-    crypto.createHmac("sha256", env.META_APP_SECRET).update(raw).digest("hex");
+    crypto.createHmac("sha256", appSecret).update(raw).digest("hex");
   if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
     return new NextResponse("invalid signature", { status: 401 });
   }

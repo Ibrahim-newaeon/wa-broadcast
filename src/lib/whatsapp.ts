@@ -1,6 +1,4 @@
-import { env } from "./env";
-
-const BASE = `https://graph.facebook.com/${env.GRAPH_API_VERSION}`;
+import { getWaConfig } from "./waConfig";
 
 export interface TemplateComponent {
   type: "body";
@@ -57,10 +55,11 @@ export async function sendTemplate(args: {
   language: string;
   bodyParams: string[];
 }): Promise<string> {
-  const res = await fetch(`${BASE}/${env.WA_PHONE_NUMBER_ID}/messages`, {
+  const cfg = await getWaConfig();
+  const res = await fetch(`https://graph.facebook.com/${cfg.graphApiVersion}/${cfg.phoneNumberId}/messages`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${env.WA_ACCESS_TOKEN}`,
+      Authorization: `Bearer ${cfg.accessToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(buildTemplatePayload(args)),
@@ -135,10 +134,11 @@ export function buildTemplateComponents(input: CreateTemplateInput): Record<stri
 
 /** Submit a template to Meta for approval. Returns the new template id + status. */
 export async function createTemplate(input: CreateTemplateInput): Promise<{ id?: string; status?: string }> {
-  const res = await fetch(`${BASE}/${env.WA_BUSINESS_ACCOUNT_ID}/message_templates`, {
+  const cfg = await getWaConfig();
+  const res = await fetch(`https://graph.facebook.com/${cfg.graphApiVersion}/${cfg.businessAccountId}/message_templates`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${env.WA_ACCESS_TOKEN}`,
+      Authorization: `Bearer ${cfg.accessToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
