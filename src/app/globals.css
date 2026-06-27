@@ -192,6 +192,9 @@ html[lang="ar"] .lp-kicker, html[lang="ar"] .auth__pitch { letter-spacing:normal
 }
 .dk-wrap { max-width:1120px; margin:0 auto; padding:0 clamp(20px,5vw,32px); }
 .dk .theme-toggle { background:var(--dk-panel); border-color:var(--dk-line); color:var(--dk-ink); }
+/* Landing wordmark: "whatsapp" green, "hub" white/ink. */
+.dk .brand .b1 { color:var(--dk-green); }
+.dk .brand .b2 { color:var(--dk-ink); }
 
 /* nav */
 .dk-nav { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; min-height:74px; }

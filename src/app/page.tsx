@@ -49,8 +49,8 @@ export default function Landing() {
             <span><span className="b1">whatsapp</span><span className="b2">hub</span></span>
           </div>
           <nav className="dk-nav__links">
-            <a href="#features"><T en="Features" ar="المزايا" /></a>
             <a href="/tutorial.html"><T en="How it works" ar="كيف تعمل" /></a>
+            <Link href="/dashboard"><T en="Dashboard" ar="لوحة التحكم" /></Link>
           </nav>
           <div className="dk-nav__right">
             <LangToggle />
