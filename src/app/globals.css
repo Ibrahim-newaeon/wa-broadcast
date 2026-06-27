@@ -78,6 +78,8 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
   border:1px solid var(--line2); background:var(--bg2); color:var(--ink); font-family:var(--font);
 }
 .input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 4px rgba(45,212,196,.14); }
+.input--sm { min-height:36px; padding:6px 10px; font-size:14px; }
+.table tr.is-selected td { background:var(--teal-soft); }
 
 /* buttons */
 .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px;
