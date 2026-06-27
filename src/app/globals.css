@@ -223,7 +223,7 @@ html[lang="ar"] .lp-kicker, html[lang="ar"] .auth__pitch { letter-spacing:normal
 .lp-caps__list { display:grid; gap:2px; }
 .lp-cap { display:grid; grid-template-columns:auto 1fr; gap:18px; padding:20px 4px; border-top:1px solid var(--line); }
 .lp-cap:last-child { border-bottom:1px solid var(--line); }
-.lp-cap__no { font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--teal); padding-top:2px; font-variant-numeric:tabular-nums; }
+.lp-cap__no { font-size:22px; line-height:1.1; color:var(--teal); padding-top:2px; }
 .lp-cap h3 { margin:0 0 5px; font-size:17px; }
 .lp-cap p { margin:0; color:var(--muted); line-height:1.55; font-size:14.5px; }
 
