@@ -58,6 +58,18 @@ h3{font-size:16px;margin:18px 0 8px}
 ul{padding-left:18px} li{margin:4px 0}
 
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:14px 0}
+
+/* Theme follow (set pre-paint from localStorage 'bc-theme') + nav toggle */
+.nav-links{align-items:center}
+.tbtn{width:34px;height:34px;border-radius:999px;border:1px solid var(--line2);background:var(--card);color:var(--ink);cursor:pointer;font-size:14px;line-height:1}
+.tbtn:hover{border-color:var(--teal)}
+:root[data-theme="light"]{
+  --bg:#eef4f3;--bg2:#e4edec;--card:#ffffff;--card2:#f2f8f7;--line:#d6e2e0;--line2:#c1d2cf;
+  --ink:#0b1f25;--muted:#506972;--teal:#0d9488;--teal-soft:rgba(13,148,136,.10);--accent-hover:#0b7c72;
+  --green:#15a05a;--orange:#d9620a;--danger:#dc4a4c;--btn-text:#04231d;
+  --grad:linear-gradient(135deg,#0d9488,#15a05a);
+}
+:root[data-theme="light"] .nav{background:rgba(255,255,255,.82)}
 .pillrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .pill{background:var(--teal-soft);color:var(--teal);border-radius:var(--r-pill);padding:6px 12px;font-size:12.5px;font-weight:700}
 
@@ -98,11 +110,17 @@ th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line)} th{color:
 .footer{max-width:var(--max);margin:0 auto;padding:24px 18px 60px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
 .reset{background:none;border:1px solid var(--line2);color:var(--muted);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px}
 </style>
+<script>
+// Follow the theme chosen elsewhere (dark default), and allow toggling here too.
+try{if(localStorage.getItem('bc-theme')==='light')document.documentElement.dataset.theme='light';}catch(e){}
+function toggleTheme(){var d=document.documentElement,on=d.dataset.theme==='light';if(on){delete d.dataset.theme;}else{d.dataset.theme='light';}try{localStorage.setItem('bc-theme',on?'dark':'light');}catch(e){}var b=document.getElementById('themeBtn');if(b)b.textContent=on?'☀':'☾';}
+document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('themeBtn');if(b)b.textContent=document.documentElement.dataset.theme==='light'?'☾':'☀';});
+</script>
 </head>
 <body>
 <nav class="nav">
   <span class="brand"><span class="mark"></span><span><span class="b1">broadcast</span><span class="b2">console</span></span></span>
-  <span class="nav-links"><a href="#overview">Overview</a><a href="#send">Send</a><a href="#monitor">Monitor</a></span>
+  <span class="nav-links"><a href="/">← Home</a><a href="#overview">Overview</a><a href="#send">Send</a><a href="#monitor">Monitor</a><button id="themeBtn" class="tbtn" type="button" aria-label="Toggle theme" onclick="toggleTheme()">☀</button></span>
 </nav>
 <div class="topbar"><div id="topbar"></div></div>
 

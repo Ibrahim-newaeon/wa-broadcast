@@ -142,6 +142,16 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
    ============================================================ */
 :root { --font-display:"Schibsted Grotesk", var(--font-en); }
 
+/* Bilingual: render both languages, show the one matching <html lang>.
+   (Set pre-paint by the layout script + the LangToggle — no flash.) */
+html:not([lang="ar"]) [data-lang="ar"] { display:none; }
+html[lang="ar"] [data-lang="en"] { display:none; }
+/* Arabic: Schibsted Grotesk has no Arabic glyphs — fall the display face back to
+   Cairo, and drop the Latin negative tracking. */
+html[lang="ar"] { --font-display: var(--font-ar); }
+html[lang="ar"] .lp-h1, html[lang="ar"] h1, html[lang="ar"] h2,
+html[lang="ar"] .lp-kicker, html[lang="ar"] .auth__pitch { letter-spacing:normal; }
+
 /* Light palette — neutrals tinted toward the teal brand hue, deeper accents
    for contrast on light surfaces. */
 :root[data-theme="light"] {

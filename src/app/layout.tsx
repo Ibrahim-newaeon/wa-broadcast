@@ -17,11 +17,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Schibsted+Grotesk:wght@500;600;700;800;900&family=Cairo:wght@400;600;700;800&display=swap"
           rel="stylesheet"
         />
-        {/* Apply saved theme before paint to avoid a flash (dark is default). */}
+        {/* Apply saved theme (global) + saved language (landing only) before
+            paint to avoid a flash. Dark + English are the defaults. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{if(localStorage.getItem('bc-theme')==='light')document.documentElement.dataset.theme='light'}catch(e){}",
+              "try{var d=document.documentElement;" +
+              "if(localStorage.getItem('bc-theme')==='light')d.dataset.theme='light';" +
+              "if(location.pathname==='/'&&localStorage.getItem('bc-lang')==='ar'){d.lang='ar';d.dir='rtl';}" +
+              "}catch(e){}",
           }}
         />
       </head>
