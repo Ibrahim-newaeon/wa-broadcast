@@ -85,3 +85,77 @@ export async function sendTemplate(args: {
   if (!wamid) throw new WhatsAppError("No wamid in response", 500, true);
   return wamid;
 }
+
+// ── Template creation (submit for Meta approval) ─────────────────────
+export interface TemplateButtonInput { type: "QUICK_REPLY" | "URL"; text: string; url?: string }
+export interface CreateTemplateInput {
+  name: string;
+  language: string;
+  category: string;
+  body: string;
+  bodyExamples: string[];
+  footer?: string;
+  buttons: TemplateButtonInput[];
+}
+
+/** Count {{n}} placeholders in a template body. */
+export function countTemplateVars(body: string): number {
+  return (body.match(/\{\{\d+\}\}/g) ?? []).length;
+}
+
+/**
+ * Build the `components` array for the Cloud API message_templates payload.
+ * Pure function — unit-tested without network access.
+ */
+export function buildTemplateComponents(input: CreateTemplateInput): Record<string, unknown>[] {
+  const components: Record<string, unknown>[] = [];
+
+  const body: Record<string, unknown> = { type: "BODY", text: input.body };
+  const varCount = countTemplateVars(input.body);
+  if (varCount > 0) {
+    // Meta wants one example row covering every {{n}}.
+    body.example = { body_text: [input.bodyExamples.slice(0, varCount)] };
+  }
+  components.push(body);
+
+  if (input.footer) components.push({ type: "FOOTER", text: input.footer });
+
+  if (input.buttons.length > 0) {
+    components.push({
+      type: "BUTTONS",
+      buttons: input.buttons.map((b) =>
+        b.type === "URL"
+          ? { type: "URL", text: b.text, url: b.url }
+          : { type: "QUICK_REPLY", text: b.text },
+      ),
+    });
+  }
+  return components;
+}
+
+/** Submit a template to Meta for approval. Returns the new template id + status. */
+export async function createTemplate(input: CreateTemplateInput): Promise<{ id?: string; status?: string }> {
+  const res = await fetch(`${BASE}/${env.WA_BUSINESS_ACCOUNT_ID}/message_templates`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.WA_ACCESS_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: input.name,
+      language: input.language,
+      category: input.category,
+      components: buildTemplateComponents(input),
+    }),
+  });
+
+  const json = (await res.json().catch(() => ({}))) as {
+    id?: string;
+    status?: string;
+    error?: { message?: string };
+  };
+  if (!res.ok) {
+    throw new WhatsAppError(json.error?.message ?? `template create failed (${res.status})`, res.status, false);
+  }
+  return { id: json.id, status: json.status };
+}

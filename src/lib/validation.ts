@@ -63,6 +63,38 @@ export const CreateListSchema = z.object({
   name: z.string().trim().min(1).max(120),
 });
 
+// Create a WhatsApp template and submit it to Meta for approval.
+export const CreateTemplateSchema = z
+  .object({
+    name: z.string().trim().regex(/^[a-z0-9_]{1,512}$/, "Use lowercase letters, numbers, and underscores only"),
+    language: z.string().trim().min(2).max(12),
+    category: z.enum(["MARKETING", "UTILITY", "AUTHENTICATION"]),
+    body: z.string().trim().min(1).max(1024),
+    bodyExamples: z.array(z.string()).default([]),
+    footer: z.string().trim().max(60).optional(),
+    buttons: z
+      .array(
+        z.object({
+          type: z.enum(["QUICK_REPLY", "URL"]),
+          text: z.string().trim().min(1).max(25),
+          url: z.string().url().optional(),
+        }),
+      )
+      .max(3)
+      .default([]),
+  })
+  .refine((t) => t.buttons.every((b) => b.type !== "URL" || !!b.url), {
+    message: "URL buttons need a URL",
+    path: ["buttons"],
+  })
+  .refine(
+    (t) => {
+      const vars = (t.body.match(/\{\{\d+\}\}/g) ?? []).length;
+      return t.bodyExamples.filter((e) => e.trim()).length >= vars;
+    },
+    { message: "Provide an example value for each {{variable}}", path: ["bodyExamples"] },
+  );
+
 // 5-field cron (min hour dom month dow). Loose validation — BullMQ parses fully.
 const CRON_RE = /^(\S+\s+){4}\S+$/;
 export const CreateRecurringSchema = z.object({

@@ -70,7 +70,7 @@ export default function Landing() {
       <section className="lp-hero">
         <div>
           <p className="lp-kicker reveal">
-            <T en="For restaurants · WhatsApp Cloud API" ar="للمطاعم · واجهة واتساب السحابية" />
+            <T en="WhatsApp Cloud API" ar="واجهة واتساب السحابية" />
           </p>
           <h1 className="lp-h1 reveal d1">
             <span data-lang="en"><em>WhatsApp</em> Hub</span>
@@ -122,7 +122,7 @@ export default function Landing() {
 
       <section className="lp-section lp-caps">
         <div className="lp-caps__lede">
-          <h2><T en="Everything your restaurant needs on WhatsApp" ar="كل ما يحتاجه مطعمك على واتساب" /></h2>
+          <h2><T en="Everything you need on WhatsApp" ar="كل ما تحتاجه على واتساب" /></h2>
           <p><T en="From sending the menu to delivery receipts — managed from one place."
             ar="من إرسال القائمة حتى إيصالات التسليم — من مكان واحد." /></p>
         </div>

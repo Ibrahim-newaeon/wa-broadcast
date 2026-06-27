@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/db";
+import { CreateTemplateSchema } from "@/lib/validation";
+import { createTemplate, countTemplateVars, WhatsAppError } from "@/lib/whatsapp";
 
 export const runtime = "nodejs";
 
@@ -15,6 +17,35 @@ export async function GET(req: NextRequest) {
   }
   const templates = await prisma.template.findMany({ orderBy: { name: "asc" } });
   return NextResponse.json({ templates });
+}
+
+/**
+ * POST /api/templates — create a template and submit it to Meta for approval.
+ * The local copy is cached with Meta's returned status (usually PENDING).
+ */
+export async function POST(req: NextRequest) {
+  const parsed = CreateTemplateSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid template" }, { status: 400 });
+  }
+  const input = parsed.data;
+
+  try {
+    const result = await createTemplate(input);
+    const template = await prisma.template.upsert({
+      where: { name_language: { name: input.name, language: input.language } },
+      create: {
+        name: input.name, language: input.language, category: input.category,
+        status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body),
+      },
+      update: { category: input.category, status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body) },
+    });
+    return NextResponse.json({ ok: true, template, metaId: result.id ?? null }, { status: 201 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Template submission failed";
+    const code = err instanceof WhatsAppError ? err.status : 502;
+    return NextResponse.json({ error: message }, { status: code });
+  }
 }
 
 const MetaTemplateSchema = z.object({

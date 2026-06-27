@@ -1,0 +1,184 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/lib/apiFetch";
+
+interface Template { id: string; name: string; language: string; category: string; status: string; variableCount: number }
+interface Btn { type: "QUICK_REPLY" | "URL"; text: string; url: string }
+
+const LANGUAGES = [
+  { code: "ar", label: "Arabic (ar)" },
+  { code: "en", label: "English (en)" },
+  { code: "en_US", label: "English US (en_US)" },
+  { code: "en_GB", label: "English UK (en_GB)" },
+];
+const CATEGORIES = ["MARKETING", "UTILITY", "AUTHENTICATION"] as const;
+
+function statusBadge(s: string) {
+  const map: Record<string, string> = { APPROVED: "COMPLETED", PENDING: "SCHEDULED", REJECTED: "FAILED" };
+  return `badge badge--${map[s] ?? "PENDING"}`;
+}
+
+export default function TemplatesManager() {
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [name, setName] = useState("");
+  const [language, setLanguage] = useState("ar");
+  const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("MARKETING");
+  const [body, setBody] = useState("");
+  const [examples, setExamples] = useState<string[]>([]);
+  const [footer, setFooter] = useState("");
+  const [buttons, setButtons] = useState<Btn[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+
+  const varCount = useMemo(() => (body.match(/\{\{\d+\}\}/g) ?? []).length, [body]);
+
+  async function loadTemplates(sync = false) {
+    if (sync) setSyncing(true);
+    const res = await apiFetch(`/api/templates${sync ? "?sync=1" : ""}`);
+    if (sync) setSyncing(false);
+    if (res.ok) setTemplates((await res.json()).templates ?? []);
+    else if (sync) setMsg({ kind: "err", text: "Sync failed — check your Meta credentials." });
+  }
+  useEffect(() => { void loadTemplates(); }, []);
+
+  function setExample(i: number, v: string) {
+    setExamples((prev) => { const next = [...prev]; next[i] = v; return next; });
+  }
+  function addButton() {
+    if (buttons.length >= 3) return;
+    setButtons((prev) => [...prev, { type: "QUICK_REPLY", text: "", url: "" }]);
+  }
+  function updateButton(i: number, patch: Partial<Btn>) {
+    setButtons((prev) => prev.map((b, idx) => (idx === i ? { ...b, ...patch } : b)));
+  }
+  function removeButton(i: number) {
+    setButtons((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setMsg(null);
+    const res = await apiFetch("/api/templates", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name, language, category, body,
+        bodyExamples: examples.slice(0, varCount),
+        footer: footer.trim() || undefined,
+        buttons: buttons.map((b) => ({ type: b.type, text: b.text, url: b.type === "URL" ? b.url : undefined })),
+      }),
+    });
+    const j = await res.json().catch(() => ({}));
+    setBusy(false);
+    if (res.ok) {
+      setMsg({ kind: "ok", text: `Submitted “${j.template.name}” to Meta — status: ${j.template.status}.` });
+      setName(""); setBody(""); setExamples([]); setFooter(""); setButtons([]);
+      void loadTemplates();
+    } else {
+      setMsg({ kind: "err", text: j.error ?? `Error ${res.status}` });
+    }
+  }
+
+  return (
+    <div className="grid-forms" style={{ gridTemplateColumns: "minmax(320px,1.1fr) 1fr", alignItems: "start" }}>
+      <form onSubmit={onSubmit} className="card">
+        <h3>Create a template</h3>
+        <div className="field">
+          <label className="label" htmlFor="t-name">Name <span className="muted">(lowercase, underscores)</span></label>
+          <input id="t-name" data-test-id="tmpl-name" className="input" value={name}
+            onChange={(e) => setName(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "_"))}
+            placeholder="today_menu" required />
+        </div>
+        <div className="row" style={{ gap: 12 }}>
+          <div className="field" style={{ flex: 1 }}>
+            <label className="label" htmlFor="t-lang">Language</label>
+            <select id="t-lang" className="input" value={language} onChange={(e) => setLanguage(e.target.value)}>
+              {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
+            </select>
+          </div>
+          <div className="field" style={{ flex: 1 }}>
+            <label className="label" htmlFor="t-cat">Category</label>
+            <select id="t-cat" className="input" value={category} onChange={(e) => setCategory(e.target.value as typeof category)}>
+              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="field">
+          <label className="label" htmlFor="t-body">Body <span className="muted">— use {"{{1}}"}, {"{{2}}"} for variables</span></label>
+          <textarea id="t-body" data-test-id="tmpl-body" className="input" style={{ minHeight: 96, resize: "vertical" }}
+            value={body} onChange={(e) => setBody(e.target.value)} placeholder="Hello {{1}}, today's menu is ready!" required />
+        </div>
+        {varCount > 0 && (
+          <div className="field">
+            <label className="label">Example values <span className="muted">(Meta requires one per variable)</span></label>
+            {Array.from({ length: varCount }, (_, i) => (
+              <input key={i} className="input input--sm" style={{ marginBottom: 6 }} value={examples[i] ?? ""}
+                onChange={(e) => setExample(i, e.target.value)} placeholder={`Example for {{${i + 1}}}`} />
+            ))}
+          </div>
+        )}
+        <div className="field">
+          <label className="label" htmlFor="t-footer">Footer <span className="muted">(optional)</span></label>
+          <input id="t-footer" className="input" value={footer} maxLength={60}
+            onChange={(e) => setFooter(e.target.value)} placeholder="Reply STOP to opt out" />
+        </div>
+        <div className="field">
+          <label className="label">Buttons <span className="muted">(optional, up to 3)</span></label>
+          {buttons.map((b, i) => (
+            <div key={i} className="row" style={{ gap: 8, marginBottom: 8 }}>
+              <select className="input input--sm" style={{ flex: "0 0 auto", width: "auto" }} value={b.type}
+                onChange={(e) => updateButton(i, { type: e.target.value as Btn["type"] })}>
+                <option value="QUICK_REPLY">Quick reply</option>
+                <option value="URL">URL</option>
+              </select>
+              <input className="input input--sm" style={{ flex: 1 }} value={b.text} placeholder="Button text"
+                maxLength={25} onChange={(e) => updateButton(i, { text: e.target.value })} />
+              {b.type === "URL" && (
+                <input className="input input--sm" style={{ flex: 1 }} value={b.url} placeholder="https://…"
+                  onChange={(e) => updateButton(i, { url: e.target.value })} />
+              )}
+              <button type="button" className="btn btn--ghost btn--sm" onClick={() => removeButton(i)} aria-label="Remove">✕</button>
+            </div>
+          ))}
+          {buttons.length < 3 && (
+            <button type="button" className="btn btn--ghost btn--sm" onClick={addButton}>+ Add button</button>
+          )}
+        </div>
+        <button data-test-id="tmpl-submit" className="btn" type="submit" disabled={busy || !name || !body} aria-busy={busy}>
+          {busy ? "Submitting to Meta…" : "Submit to Meta"}
+        </button>
+        {msg && (
+          <p data-test-id="tmpl-result" className="note" style={{ marginTop: 10, color: msg.kind === "ok" ? "var(--green)" : "var(--danger)" }}>
+            {msg.text}
+          </p>
+        )}
+      </form>
+
+      <div className="card">
+        <div className="row" style={{ justifyContent: "space-between", marginBottom: 10 }}>
+          <h3 style={{ margin: 0 }}>Your templates</h3>
+          <button className="btn btn--ghost btn--sm" onClick={() => loadTemplates(true)} disabled={syncing} aria-busy={syncing}>
+            {syncing ? "Syncing…" : "Sync from Meta"}
+          </button>
+        </div>
+        <table className="table" data-test-id="templates-table">
+          <thead><tr><th>Name</th><th>Lang</th><th>Category</th><th>Status</th></tr></thead>
+          <tbody>
+            {templates.map((t) => (
+              <tr key={t.id}>
+                <td>{t.name}{t.variableCount > 0 ? <span className="muted"> · {t.variableCount} var</span> : null}</td>
+                <td>{t.language}</td>
+                <td className="muted">{t.category}</td>
+                <td><span className={statusBadge(t.status)}>{t.status}</span></td>
+              </tr>
+            ))}
+            {templates.length === 0 && <tr><td colSpan={4} className="muted" style={{ padding: 16 }}>No templates yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
