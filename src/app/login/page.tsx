@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 function nextUrl() {
-  return new URLSearchParams(window.location.search).get("next") ?? "/";
+  return new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
 }
 
 export default function LoginPage() {
@@ -53,34 +54,52 @@ export default function LoginPage() {
 
   if (checking) {
     return (
-      <main style={{ display: "grid", placeItems: "center", minHeight: "100vh" }}>
+      <main style={{ display: "grid", placeItems: "center", minHeight: "100dvh" }}>
         <p className="muted" data-test-id="login-checking">Checking session…</p>
       </main>
     );
   }
 
   return (
-    <main style={{ display: "grid", placeItems: "center", minHeight: "100vh", padding: 20 }}>
-      <form onSubmit={onSubmit} className="card" style={{ width: 340 }}>
-        <div className="brand" style={{ marginBottom: 18 }}>
+    <main className="auth">
+      <aside className="auth__aside">
+        <div className="brand">
           <span className="mark" aria-hidden />
           <span><span className="b1">broadcast</span><span className="b2">console</span></span>
         </div>
-        <div className="field">
-          <label className="label">Email</label>
-          <input data-test-id="login-email" className="input" type="email" value={email}
-            onChange={(e) => setEmail(e.target.value)} required autoComplete="username" />
+        <div>
+          <p className="auth__pitch">Your audience, on <em>WhatsApp</em>, at scale.</p>
+          <div className="auth__points">
+            <span>Send Meta-approved templates to contact lists</span>
+            <span>Track sent · delivered · read · failed, live</span>
+            <span>Opt-outs honored automatically</span>
+          </div>
         </div>
-        <div className="field">
-          <label className="label">Password</label>
-          <input data-test-id="login-password" className="input" type="password" value={password}
-            onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
-        </div>
-        {error && <p data-test-id="login-error" className="error-text">{error}</p>}
-        <button data-test-id="login-submit" className="btn" type="submit" disabled={loading} aria-busy={loading} style={{ width: "100%" }}>
-          {loading ? "Signing in…" : "Sign in"}
-        </button>
-      </form>
+        <p className="muted" style={{ fontSize: 13 }}>NazzilVideo · WhatsApp Cloud API</p>
+      </aside>
+
+      <section className="auth__panel">
+        <div className="auth__top"><ThemeToggle /></div>
+        <form onSubmit={onSubmit} className="auth__form reveal">
+          <h1>Welcome back</h1>
+          <p className="sub">Sign in to your broadcast console.</p>
+          <div className="field">
+            <label className="label" htmlFor="email">Email</label>
+            <input id="email" data-test-id="login-email" className="input" type="email" value={email}
+              onChange={(e) => setEmail(e.target.value)} required autoComplete="username" />
+          </div>
+          <div className="field">
+            <label className="label" htmlFor="password">Password</label>
+            <input id="password" data-test-id="login-password" className="input" type="password" value={password}
+              onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+          </div>
+          {error && <p data-test-id="login-error" className="error-text">{error}</p>}
+          <button data-test-id="login-submit" className="btn" type="submit" disabled={loading}
+            aria-busy={loading} style={{ width: "100%", marginTop: 6 }}>
+            {loading ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
+      </section>
     </main>
   );
 }

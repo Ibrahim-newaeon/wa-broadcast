@@ -19,7 +19,7 @@ export default async function BroadcastDetail({ params }: { params: Promise<{ id
     <>
       <Nav />
       <main className="app">
-        <Link href="/" className="muted" style={{ fontSize: 13 }}>← Back to dashboard</Link>
+        <Link href="/dashboard" className="muted" style={{ fontSize: 13 }}>← Back to dashboard</Link>
         <h1>
           {b.template.name} <span className="muted" style={{ fontSize: 16, fontWeight: 400 }}>→ {b.list.name}</span>
         </h1>
