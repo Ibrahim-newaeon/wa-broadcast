@@ -34,6 +34,21 @@ model ContactList {
 
   memberships ContactListMembership[]
   broadcasts  Broadcast[]
+  snapshots   ContactListSnapshot[]
+}
+
+// Point-in-time backup of a list's membership, so a change can be restored.
+model ContactListSnapshot {
+  id          String      @id @default(cuid())
+  list        ContactList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  listId      String
+  listName    String      // list name when the snapshot was taken
+  memberIds   Json        // array of contactIds in the list at snapshot time
+  memberCount Int
+  reason      String      @default("manual") // manual | pre-import
+  createdAt   DateTime    @default(now())
+
+  @@index([listId])
 }
 
 model ContactListMembership {

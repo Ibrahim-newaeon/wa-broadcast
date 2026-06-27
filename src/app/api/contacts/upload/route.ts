@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ContactRowSchema, composeName } from "@/lib/validation";
 import { prisma } from "@/lib/db";
+import { snapshotList } from "@/lib/snapshots";
 
 export const runtime = "nodejs";
 
@@ -69,6 +70,11 @@ export async function POST(req: NextRequest) {
       continue;
     }
     accepted.push(parsed.data);
+  }
+
+  // Back up the list's current membership before this import changes it.
+  if (typeof listId === "string" && listId) {
+    await snapshotList(listId, "pre-import").catch(() => null);
   }
 
   // Upsert contacts (dedupe by phone), optionally attach to list.
