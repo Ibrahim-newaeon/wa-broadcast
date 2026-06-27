@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Broadcast Console — Interactive Tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e1a24;--bg2:#0a131b;--card:#14222e;--card2:#172a38;--line:#22323f;--line2:#2c4150;
+  --ink:#eaf3f5;--muted:#90a6b4;--teal:#2dd4c4;--teal-soft:rgba(45,212,196,.12);--accent-hover:#3ee3d3;
+  --green:#46e08a;--orange:#fb7a1e;--danger:#ff6b6b;--btn-text:#06231f;
+  --r:14px;--r-sm:10px;--r-pill:999px;--max:1040px;
+  --grad:linear-gradient(135deg,var(--teal),var(--green));
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.6}
+a{color:var(--teal);text-decoration:none}
+code{background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:.92em}
+
+/* top bar */
+.nav{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:16px;justify-content:space-between;
+  padding:0 18px;min-height:60px;background:rgba(14,26,36,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:18px}
+.mark{width:24px;height:24px;border-radius:7px;border:2.5px solid var(--teal);display:grid;place-items:center}
+.mark::after{content:"";width:0;height:0;margin-left:2px;border-left:8px solid var(--green);border-top:5px solid transparent;border-bottom:5px solid transparent}
+.b1{color:var(--orange)} .b2{color:var(--green)}
+.nav-links{display:flex;gap:14px;font-size:13px}
+.nav-links a{color:var(--muted)} .nav-links a:hover{color:var(--ink)}
+
+/* progress bar under nav */
+.topbar{position:sticky;top:60px;z-index:25;height:4px;background:var(--bg2)}
+.topbar > div{height:100%;width:0;background:var(--grad);transition:width .3s}
+
+.wrap{max-width:var(--max);margin:0 auto;padding:28px 18px 80px;display:grid;grid-template-columns:200px 1fr;gap:28px}
+@media(max-width:780px){.wrap{grid-template-columns:1fr} .side{position:static!important;order:-1}}
+
+/* side stepper */
+.side{position:sticky;top:84px;align-self:start}
+.side ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.side a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-sm);color:var(--muted);font-size:13.5px}
+.side a:hover{background:var(--card)}
+.side a.active{background:var(--teal-soft);color:var(--ink)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--line2);flex:none}
+.side a.active .dot,.side a.done .dot{background:var(--teal)}
+
+h1{font-size:clamp(26px,5vw,38px);font-weight:800;margin:.1em 0 .3em}
+.lede{color:var(--muted);font-size:17px;margin-bottom:8px}
+section{scroll-margin-top:96px;padding:18px 0;border-top:1px solid var(--line)}
+section:first-of-type{border-top:0}
+h2{font-size:22px;font-weight:800;margin:.2em 0 .5em;display:flex;align-items:center;gap:10px}
+.step-num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--teal-soft);color:var(--teal);font-size:14px;font-weight:800;flex:none}
+h3{font-size:16px;margin:18px 0 8px}
+ul{padding-left:18px} li{margin:4px 0}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:14px 0}
+.pillrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.pill{background:var(--teal-soft);color:var(--teal);border-radius:var(--r-pill);padding:6px 12px;font-size:12.5px;font-weight:700}
+
+/* code blocks */
+.code{position:relative;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);margin:10px 0}
+.code pre{margin:0;padding:14px 14px;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#cfe9e6}
+.code .kw{color:var(--teal)} .code .cm{color:var(--muted)} .code .st{color:var(--green)}
+.copy{position:absolute;top:8px;right:8px;background:var(--card2);color:var(--muted);border:1px solid var(--line2);
+  border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;min-height:32px}
+.copy:hover{color:var(--ink)} .copy.ok{color:var(--green);border-color:var(--green)}
+
+/* tabs */
+.tabs{display:flex;gap:6px;margin:8px 0}
+.tab{background:none;border:1px solid var(--line2);color:var(--muted);border-radius:var(--r-pill);
+  padding:8px 16px;cursor:pointer;font-weight:600;font-size:13px;min-height:38px}
+.tab.active{background:var(--teal);color:var(--btn-text);border-color:var(--teal)}
+.tabpane{display:none} .tabpane.active{display:block}
+
+/* accordion */
+details{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);margin:8px 0;padding:0 14px}
+summary{cursor:pointer;padding:14px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--teal);font-size:20px}
+details[open] summary::after{content:"–"}
+details .body{padding-bottom:14px;color:var(--muted)}
+
+/* checklist */
+.check{display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border:1px solid var(--line);border-radius:var(--r-sm);margin:8px 0;background:var(--card)}
+.check input{width:22px;height:22px;accent-color:var(--teal);margin-top:1px;flex:none}
+.check label{cursor:pointer}
+.check.done label{color:var(--muted);text-decoration:line-through}
+.callout{border-left:3px solid var(--teal);background:var(--teal-soft);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 14px;margin:12px 0}
+.callout.warn{border-color:var(--orange);background:rgba(251,122,30,.1)}
+.callout.danger{border-color:var(--danger);background:rgba(255,107,107,.1)}
+.kbd{font-size:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line)} th{color:var(--muted);font-size:12px}
+.footer{max-width:var(--max);margin:0 auto;padding:24px 18px 60px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+.reset{background:none;border:1px solid var(--line2);color:var(--muted);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <span class="brand"><span class="mark"></span><span><span class="b1">broadcast</span><span class="b2">console</span></span></span>
+  <span class="nav-links"><a href="#overview">Overview</a><a href="#send">Send</a><a href="#monitor">Monitor</a></span>
+</nav>
+<div class="topbar"><div id="topbar"></div></div>
+
+<div class="wrap">
+  <aside class="side">
+    <ol id="stepnav"></ol>
+    <button class="reset" onclick="resetProgress()" style="margin-top:12px">Reset progress</button>
+  </aside>
+
+  <main>
+    <h1>Get your broadcasts live</h1>
+    <p class="lede">A hands-on walkthrough of the WhatsApp Broadcast Console — from first boot to recurring campaigns. Tick items off as you go; your progress is saved in this browser.</p>
+
+    <!-- 1 -->
+    <section id="overview">
+      <h2><span class="step-num">1</span> What you're building</h2>
+      <p>A self-hosted console that sends approved WhatsApp template messages to lists of contacts over Meta's <b>Cloud API</b>, tracks delivery in real time, and honors opt-outs automatically.</p>
+      <div class="pillrow">
+        <span class="pill">Cloud API</span><span class="pill">Template broadcasts</span><span class="pill">Live delivery tracking</span>
+        <span class="pill">Scheduling + drip</span><span class="pill">Opt-out compliance</span><span class="pill">Team accounts</span>
+      </div>
+      <div class="callout">Three processes run together: the <b>web</b> app, a <b>worker</b> (sends + recurring scheduler), and <b>Postgres + Redis</b>. Docker Compose wires them up.</div>
+    </section>
+
+    <!-- 2 -->
+    <section id="setup">
+      <h2><span class="step-num">2</span> First boot</h2>
+      <p>Pick how you want to run it.</p>
+      <div class="tabs">
+        <button class="tab active" data-tab="docker">Docker (recommended)</button>
+        <button class="tab" data-tab="local">Local dev</button>
+      </div>
+      <div class="tabpane active" data-pane="docker">
+        <div class="code"><button class="copy">Copy</button><pre><span class="cm"># 1. configure</span>
+cp .env.example .env
+<span class="cm"># 2. hash your admin password → paste into ADMIN_PASSWORD_HASH</span>
+node scripts/hash-password.mjs <span class="st">'YourStrongPassword'</span>
+<span class="cm"># 3. boot everything (runs migrations automatically)</span>
+docker compose up --build</pre></div>
+        <p class="kbd">App → http://localhost:3000 · Health → /api/health</p>
+      </div>
+      <div class="tabpane" data-pane="local">
+        <div class="code"><button class="copy">Copy</button><pre>npm install
+npm run prisma:migrate -- --name init   <span class="cm"># applies migrations</span>
+node scripts/seed-admin.mjs              <span class="cm"># creates the first ADMIN</span>
+npm run dev        <span class="cm"># web :3000</span>
+npm run worker:dev <span class="cm"># worker (second terminal)</span></pre></div>
+      </div>
+      <div class="check"><input type="checkbox" id="c-boot"><label for="c-boot">App boots and <code>/api/health</code> returns <code>ok</code></label></div>
+    </section>
+
+    <!-- 3 -->
+    <section id="whatsapp">
+      <h2><span class="step-num">3</span> Connect WhatsApp</h2>
+      <p>From the Meta App dashboard you need four values in your <code>.env</code>:</p>
+      <table>
+        <tr><th>Variable</th><th>Where</th></tr>
+        <tr><td><code>WA_PHONE_NUMBER_ID</code></td><td>WhatsApp → API setup</td></tr>
+        <tr><td><code>WA_BUSINESS_ACCOUNT_ID</code></td><td>WhatsApp → API setup</td></tr>
+        <tr><td><code>WA_ACCESS_TOKEN</code></td><td>System-user permanent token</td></tr>
+        <tr><td><code>META_APP_SECRET</code></td><td>App → Settings → Basic</td></tr>
+      </table>
+      <h3>Webhook</h3>
+      <p>In <b>WhatsApp → Configuration</b>, set the callback URL and verify token, then subscribe to <code>messages</code>:</p>
+      <div class="code"><button class="copy">Copy</button><pre>Callback URL:  https://YOUR_DOMAIN/api/webhooks/whatsapp
+Verify token:  <span class="cm">(value of WA_WEBHOOK_VERIFY_TOKEN)</span></pre></div>
+      <div class="callout warn">Testing locally? Tunnel with <code>ngrok http 3000</code> and use the HTTPS URL. Every webhook is HMAC-verified against <code>META_APP_SECRET</code>.</div>
+      <div class="check"><input type="checkbox" id="c-wa"><label for="c-wa">Webhook verified (green check in Meta) and subscribed to <code>messages</code></label></div>
+    </section>
+
+    <!-- 4 -->
+    <section id="templates">
+      <h2><span class="step-num">4</span> Sync templates</h2>
+      <p>You can only broadcast templates Meta has <b>approved</b>. Pull them into the console:</p>
+      <div class="code"><button class="copy">Copy</button><pre>GET /api/templates?sync=1</pre></div>
+      <p>Approved templates then appear in the broadcast and campaign pickers. Each <code>{{1}}</code>, <code>{{2}}</code> placeholder becomes a variable you map per-contact.</p>
+      <div class="check"><input type="checkbox" id="c-tpl"><label for="c-tpl">At least one approved template is visible in the picker</label></div>
+    </section>
+
+    <!-- 5 -->
+    <section id="contacts">
+      <h2><span class="step-num">5</span> Upload contacts</h2>
+      <p>On <b>Contacts</b> (or the dashboard upload card), import a CSV. A <code>phone</code> column is required; <code>name</code> is reserved; any other column becomes a template variable.</p>
+      <div class="code"><button class="copy">Copy</button><pre><span class="kw">phone</span>,<span class="kw">name</span>,<span class="kw">city</span>
++966 50 000 0001,Ahmed,Riyadh
+965 5000 0003,Fahad,Kuwait City</pre></div>
+      <ul>
+        <li>Phones are normalized to E.164 digits; bad rows are rejected and counted.</li>
+        <li>Optionally attach the upload to a <b>list</b> — broadcasts target lists.</li>
+        <li>Manage everyone on the Contacts page: search, opt out / re-subscribe, delete.</li>
+      </ul>
+      <div class="check"><input type="checkbox" id="c-csv"><label for="c-csv">Contacts imported and added to a list</label></div>
+    </section>
+
+    <!-- 6 -->
+    <section id="send">
+      <h2><span class="step-num">6</span> Send a broadcast</h2>
+      <p>Dashboard → <b>New broadcast</b>: pick a template + list, fill the variables, send now or schedule.</p>
+      <details><summary>How variable mapping works</summary>
+        <div class="body">Each variable input is either <b>literal text</b> (used for everyone) or <code>field:name</code> / <code>field:city</code> to pull each contact's value. Order matches <code>{{1}}, {{2}}, …</code>.</div></details>
+      <details><summary>Scheduling</summary>
+        <div class="body">Set a future date/time to schedule — the broadcast shows <span class="pill">SCHEDULED</span> until it fires, then flips to SENDING. Leave it blank to send immediately.</div></details>
+      <div class="callout">Opt-outs are filtered <b>before</b> anything is queued, and the worker throttles to <code>WA_MPS</code> (default 80/s) so you never exceed Meta's tier.</div>
+      <div class="check"><input type="checkbox" id="c-send"><label for="c-send">First broadcast queued</label></div>
+    </section>
+
+    <!-- 7 -->
+    <section id="monitor">
+      <h2><span class="step-num">7</span> Monitor &amp; retry</h2>
+      <p>Click a broadcast to open its detail page. While it's in flight you'll see a <span class="pill">● live</span> progress bar that polls every few seconds.</p>
+      <ul>
+        <li>Filter recipients by status (PENDING / SENT / DELIVERED / READ / FAILED) and load more.</li>
+        <li>If any failed, hit <b>Retry N failed</b> — it re-queues just those with the saved variables.</li>
+        <li>Inbound <code>STOP</code> auto-opts-out a contact from all future sends.</li>
+      </ul>
+      <div class="check"><input type="checkbox" id="c-mon"><label for="c-mon">Watched a broadcast reach DELIVERED/READ</label></div>
+    </section>
+
+    <!-- 8 -->
+    <section id="recurring">
+      <h2><span class="step-num">8</span> Recurring / drip campaigns</h2>
+      <p>On <b>Campaigns</b>, create a schedule that fires a fresh broadcast on a cron (UTC). Pick a preset or write your own.</p>
+      <table>
+        <tr><th>Cron</th><th>Meaning</th></tr>
+        <tr><td><code>0 9 * * *</code></td><td>Every day 09:00 UTC</td></tr>
+        <tr><td><code>0 9 * * 1-5</code></td><td>Weekdays 09:00 UTC</td></tr>
+        <tr><td><code>0 9 1 * *</code></td><td>1st of each month 09:00 UTC</td></tr>
+      </table>
+      <p>Pause/resume or delete any campaign at any time. Each run honors opt-outs and the rate limit just like a manual send.</p>
+      <div class="check"><input type="checkbox" id="c-rec"><label for="c-rec">A recurring campaign is active</label></div>
+    </section>
+
+    <!-- 9 -->
+    <section id="team">
+      <h2><span class="step-num">9</span> Team &amp; security</h2>
+      <ul>
+        <li><b>Settings</b> → invite teammates (ADMIN or MEMBER). Only ADMINs can manage users.</li>
+        <li>Sessions use short access tokens + rotating refresh tokens — <b>Sign out everywhere</b> kills every session.</li>
+        <li>Login is rate-limited; all data and APIs sit behind auth except the webhook and health check.</li>
+      </ul>
+      <div class="callout danger">Never expose the console publicly without HTTPS. Contact phone numbers are PII — keep your database volume encrypted at rest.</div>
+      <div class="check"><input type="checkbox" id="c-team"><label for="c-team">Reviewed team roles &amp; sign-out-everywhere</label></div>
+    </section>
+
+    <div class="card" id="done-card">
+      <h2 style="margin-top:0">🎉 You're set</h2>
+      <p id="done-msg" class="lede">Complete the steps above and this turns green.</p>
+    </div>
+  </main>
+</div>
+
+<div class="footer">Broadcast Console · brand: NazzilVideo · This tutorial saves progress locally in your browser.</div>
+
+<script>
+const STEPS = [
+  ["overview","Overview"],["setup","First boot"],["whatsapp","Connect WhatsApp"],
+  ["templates","Templates"],["contacts","Contacts"],["send","Send"],
+  ["monitor","Monitor"],["recurring","Recurring"],["team","Team"]
+];
+const CHECKS = ["c-boot","c-wa","c-tpl","c-csv","c-send","c-mon","c-rec","c-team"];
+const KEY = "wa-tutorial-progress-v1";
+
+// build side stepper
+const nav = document.getElementById("stepnav");
+STEPS.forEach(([id,label],i)=>{
+  const li=document.createElement("li");
+  li.innerHTML=`<a href="#${id}" data-id="${id}"><span class="dot"></span>${i+1}. ${label}</a>`;
+  nav.appendChild(li);
+});
+
+// persistent checklist
+function load(){ try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}} }
+function save(s){ localStorage.setItem(KEY,JSON.stringify(s)); }
+let state = load();
+CHECKS.forEach(id=>{
+  const el=document.getElementById(id); if(!el)return;
+  el.checked=!!state[id];
+  el.closest(".check").classList.toggle("done",el.checked);
+  el.addEventListener("change",()=>{
+    state[id]=el.checked; save(state);
+    el.closest(".check").classList.toggle("done",el.checked);
+    updateDone();
+  });
+});
+function updateDone(){
+  const total=CHECKS.length, done=CHECKS.filter(id=>state[id]).length;
+  const msg=document.getElementById("done-msg"), card=document.getElementById("done-card");
+  if(done===total){ msg.textContent="All steps complete — your console is fully configured. Send with confidence."; card.style.borderColor="var(--green)"; }
+  else { msg.textContent = done+" of "+total+" steps done. Keep going!"; card.style.borderColor="var(--line)"; }
+}
+updateDone();
+function resetProgress(){ state={}; save(state); CHECKS.forEach(id=>{const el=document.getElementById(id);if(el){el.checked=false;el.closest(".check").classList.remove("done");}}); updateDone(); }
+
+// copy buttons
+document.querySelectorAll(".copy").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const pre=btn.parentElement.querySelector("pre");
+    navigator.clipboard.writeText(pre.innerText).then(()=>{
+      btn.textContent="Copied"; btn.classList.add("ok");
+      setTimeout(()=>{btn.textContent="Copy";btn.classList.remove("ok")},1400);
+    });
+  });
+});
+
+// tabs
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    const wrap=tab.closest("section");
+    wrap.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    wrap.querySelectorAll(".tabpane").forEach(p=>p.classList.remove("active"));
+    tab.classList.add("active");
+    wrap.querySelector(`.tabpane[data-pane="${tab.dataset.tab}"]`).classList.add("active");
+  });
+});
+
+// scroll spy + top progress bar
+const sections=STEPS.map(([id])=>document.getElementById(id));
+const links=[...document.querySelectorAll('.side a')];
+const bar=document.getElementById("topbar");
+function onScroll(){
+  const y=window.scrollY+120;
+  let active=sections[0].id;
+  sections.forEach(s=>{ if(s.offsetTop<=y) active=s.id; });
+  links.forEach(a=>a.classList.toggle("active",a.dataset.id===active));
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  bar.style.width=(h>0?(window.scrollY/h*100):0)+"%";
+}
+document.addEventListener("scroll",onScroll,{passive:true}); onScroll();
+</script>
+</body>
+</html>

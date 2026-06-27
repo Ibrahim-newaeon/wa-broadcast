@@ -1,0 +1,22 @@
+# Build artifacts and host-platform deps must not leak into the Linux image.
+# node_modules (Windows-built, incl. wrong Prisma engine) is rebuilt via npm ci.
+node_modules
+.next
+dist
+
+# NOTE: .env is intentionally NOT ignored — the build stage's `next build` needs
+# it because env.ts validates process.env at import. The runtime stage copies only
+# select dirs (never .env), so it stays out of the final image; compose injects
+# runtime env via env_file.
+
+# VCS and tooling
+.git
+.gitignore
+*.log
+npm-debug.log*
+
+# Tests / reports not needed at build time
+playwright-report
+test-results
+e2e
+load

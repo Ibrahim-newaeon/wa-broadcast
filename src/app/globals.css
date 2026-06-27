@@ -1,0 +1,130 @@
+/* ============================================================
+   Broadcast Console — design system (NazzilVideo brand lineage)
+   Dark · teal→green · bilingual EN/AR. Single source of truth.
+   ============================================================ */
+:root {
+  /* surfaces */
+  --bg:#0e1a24; --bg2:#0a131b; --card:#14222e; --card2:#172a38;
+  --line:#22323f; --line2:#2c4150;
+  /* text */
+  --ink:#eaf3f5; --muted:#90a6b4;
+  /* brand accents */
+  --teal:#2dd4c4; --teal-soft:rgba(45,212,196,.12); --accent-hover:#3ee3d3;
+  --green:#46e08a; --orange:#fb7a1e; --accent:var(--teal);
+  --danger:#ff6b6b; --btn-text:#06231f;
+  /* delivery status colors */
+  --st-pending:#90a6b4; --st-sent:#5ac8ff; --st-delivered:#2dd4c4;
+  --st-read:#46e08a; --st-failed:#ff6b6b;
+  --st-scheduled:#c9a227; --st-sending:#2dd4c4; --st-completed:#46e08a;
+  /* shape & layout */
+  --r:14px; --r-sm:10px; --r-pill:999px; --max:1180px; --nav-h:62px;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  /* type */
+  --font-en:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-ar:"Cairo","Segoe UI Arabic","Tahoma",sans-serif;
+  --font:var(--font-en);
+  --grad-brand:linear-gradient(135deg,var(--teal),var(--green));
+}
+html[lang="ar"], [dir="rtl"] { --font:var(--font-ar); }
+
+* { box-sizing:border-box; }
+html, body { margin:0; padding:0; }
+body {
+  font-family:var(--font); background:var(--bg); color:var(--ink);
+  -webkit-font-smoothing:antialiased; line-height:1.55;
+}
+a { color:var(--teal); text-decoration:none; }
+a:hover { color:var(--accent-hover); }
+h1 { font-size:clamp(26px,4vw,40px); font-weight:800; margin:.2em 0 .4em; }
+h2 { font-size:clamp(20px,3vw,28px); font-weight:800; margin:1.2em 0 .5em; }
+h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
+
+/* layout */
+.app { max-width:var(--max); margin:0 auto; padding:24px 20px 64px; }
+.nav {
+  position:sticky; top:0; z-index:20; display:flex; align-items:center;
+  justify-content:space-between; gap:16px; min-height:var(--nav-h);
+  padding:0 20px; background:rgba(14,26,36,.82); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav__links { display:flex; gap:18px; align-items:center; }
+.nav__links a { color:var(--muted); font-weight:600; font-size:14px; }
+.nav__links a.is-active, .nav__links a:hover { color:var(--ink); }
+
+/* brand wordmark */
+.brand { display:inline-flex; align-items:center; gap:10px; font-weight:800; font-size:20px; }
+.brand .mark { width:26px; height:26px; border-radius:7px; border:2.5px solid var(--teal);
+  display:grid; place-items:center; }
+.brand .mark::after { content:""; width:0; height:0; margin-inline-start:2px;
+  border-left:9px solid var(--green); border-top:6px solid transparent; border-bottom:6px solid transparent; }
+.brand .b1 { color:var(--orange); } .brand .b2 { color:var(--green); }
+
+/* stat cards */
+.stats { display:flex; gap:14px; flex-wrap:wrap; margin:18px 0; }
+.stat { background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:16px 18px; min-width:120px; }
+.stat__num { font-size:28px; font-weight:800; }
+.stat__label { color:var(--muted); font-size:12px; margin-top:2px; }
+
+/* cards / panels */
+.card { background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+  padding:22px; box-shadow:var(--shadow); }
+.grid-forms { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:16px; }
+
+/* forms */
+.field { margin-bottom:14px; }
+.label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+.input, select.input, input.input {
+  width:100%; min-height:44px; padding:10px 12px; border-radius:var(--r-sm);
+  border:1px solid var(--line2); background:var(--bg2); color:var(--ink); font-family:var(--font);
+}
+.input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 4px rgba(45,212,196,.14); }
+
+/* buttons */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  font-family:var(--font); font-weight:700; font-size:15px; cursor:pointer; border:0;
+  border-radius:var(--r-pill); padding:12px 24px; min-height:48px;
+  background:var(--grad-brand); color:var(--btn-text); transition:filter .15s, transform .15s; }
+.btn:hover { filter:brightness(1.08); } .btn:active { transform:translateY(1px); }
+.btn:disabled { opacity:.55; cursor:not-allowed; filter:none; }
+.btn--danger { background:none; color:var(--danger); border:1px solid var(--danger); }
+.btn--danger:hover { filter:none; background:rgba(255,107,107,.1); }
+.btn--ghost { background:none; color:var(--muted); border:1px solid var(--line2); min-height:40px; padding:8px 14px; font-size:14px; }
+.btn--ghost:hover { color:var(--ink); filter:none; }
+.btn--sm { min-height:38px; padding:8px 14px; font-size:14px; }
+
+/* pills / chips */
+.pill { display:inline-flex; align-items:center; gap:6px; background:var(--teal-soft);
+  color:var(--teal); border-radius:var(--r-pill); padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid transparent; }
+.pill.is-active { background:var(--teal); color:var(--btn-text); }
+.eyebrow { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+
+/* tables */
+.table { width:100%; border-collapse:collapse; font-size:14px; }
+.table th { text-align:start; color:var(--muted); font-weight:600; font-size:12px;
+  padding:10px 8px; border-bottom:1px solid var(--line2); }
+.table td { padding:10px 8px; border-bottom:1px solid var(--line); }
+.table tr:hover td { background:rgba(255,255,255,.02); }
+.muted { color:var(--muted); }
+
+/* status badges */
+.badge { display:inline-block; padding:3px 10px; border-radius:var(--r-pill);
+  font-size:12px; font-weight:700; border:1px solid currentColor; }
+.badge--PENDING,.badge--DRAFT { color:var(--st-pending); }
+.badge--SENT { color:var(--st-sent); }
+.badge--DELIVERED { color:var(--st-delivered); }
+.badge--READ,.badge--COMPLETED { color:var(--st-read); }
+.badge--FAILED { color:var(--st-failed); }
+.badge--SCHEDULED { color:var(--st-scheduled); }
+.badge--SENDING,.badge--QUEUED { color:var(--st-sending); }
+
+/* progress bar */
+.progress { background:var(--bg2); border:1px solid var(--line2); border-radius:var(--r-pill);
+  height:12px; overflow:hidden; }
+.progress__bar { height:100%; background:var(--grad-brand); transition:width .4s; }
+
+/* misc */
+.row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.spacer { flex:1; }
+.live-dot { color:var(--green); font-size:12px; }
+.note { font-size:12px; color:var(--muted); }
+.error-text { color:var(--danger); font-size:13px; }

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 760" font-family="Inter, system-ui, sans-serif">
+  <rect width="920" height="760" fill="#0e1a24"/>
+
+  <!-- header / wordmark -->
+  <g transform="translate(40,46)">
+    <rect x="0" y="-22" width="34" height="34" rx="9" fill="none" stroke="#2dd4c4" stroke-width="3"/>
+    <path d="M11 -13 L26 -5 L11 3 Z" fill="#46e08a"/>
+    <text x="48" y="4" font-size="28" font-weight="800"><tspan fill="#fb7a1e">broadcast</tspan><tspan fill="#46e08a">console</tspan></text>
+  </g>
+  <text x="40" y="92" font-size="14" fill="#90a6b4">Design system — dark, teal/green, bilingual EN/AR (brand: NazzilVideo)</text>
+
+  <g font-size="13">
+    <!-- surfaces row -->
+    <g transform="translate(40,120)"><rect width="180" height="62" rx="12" fill="#0e1a24" stroke="#2c4150"/><text x="0" y="84" font-weight="700" fill="#eaf3f5">bg</text><text x="0" y="102" fill="#90a6b4">#0e1a24</text></g>
+    <g transform="translate(250,120)"><rect width="180" height="62" rx="12" fill="#14222e" stroke="#2c4150"/><text x="0" y="84" font-weight="700" fill="#eaf3f5">card</text><text x="0" y="102" fill="#90a6b4">#14222e</text></g>
+    <g transform="translate(460,120)"><rect width="180" height="62" rx="12" fill="#2dd4c4"/><text x="0" y="84" font-weight="700" fill="#eaf3f5">teal · accent</text><text x="0" y="102" fill="#90a6b4">#2dd4c4</text></g>
+    <g transform="translate(670,120)"><rect width="180" height="62" rx="12" fill="#46e08a"/><text x="0" y="84" font-weight="700" fill="#eaf3f5">green</text><text x="0" y="102" fill="#90a6b4">#46e08a</text></g>
+    <!-- accents row -->
+    <g transform="translate(40,240)"><rect width="180" height="62" rx="12" fill="#0a131b" stroke="#2c4150"/><text x="0" y="84" font-weight="700" fill="#eaf3f5">bg2</text><text x="0" y="102" fill="#90a6b4">#0a131b</text></g>
+    <g transform="translate(250,240)"><rect width="180" height="62" rx="12" fill="#172a38" stroke="#2c4150"/><text x="0" y="84" font-weight="700" fill="#eaf3f5">card2</text><text x="0" y="102" fill="#90a6b4">#172a38</text></g>
+    <g transform="translate(460,240)"><rect width="180" height="62" rx="12" fill="#fb7a1e"/><text x="0" y="84" font-weight="700" fill="#eaf3f5">orange</text><text x="0" y="102" fill="#90a6b4">#fb7a1e</text></g>
+    <g transform="translate(670,240)"><rect width="180" height="62" rx="12" fill="#eaf3f5"/><text x="0" y="84" font-weight="700" fill="#eaf3f5">ink</text><text x="0" y="102" fill="#90a6b4">#eaf3f5</text></g>
+  </g>
+
+  <!-- status badges -->
+  <text x="40" y="392" font-size="13" fill="#90a6b4">Delivery status colors (badges)</text>
+  <g font-size="13" font-weight="700" transform="translate(40,410)">
+    <g><rect width="150" height="40" rx="20" fill="none" stroke="#90a6b4"/><text x="75" y="25" fill="#90a6b4" text-anchor="middle">PENDING</text></g>
+    <g transform="translate(165,0)"><rect width="150" height="40" rx="20" fill="none" stroke="#5ac8ff"/><text x="75" y="25" fill="#5ac8ff" text-anchor="middle">SENT</text></g>
+    <g transform="translate(330,0)"><rect width="150" height="40" rx="20" fill="none" stroke="#2dd4c4"/><text x="75" y="25" fill="#2dd4c4" text-anchor="middle">DELIVERED</text></g>
+    <g transform="translate(495,0)"><rect width="150" height="40" rx="20" fill="none" stroke="#46e08a"/><text x="75" y="25" fill="#46e08a" text-anchor="middle">READ</text></g>
+    <g transform="translate(660,0)"><rect width="150" height="40" rx="20" fill="none" stroke="#ff6b6b"/><text x="75" y="25" fill="#ff6b6b" text-anchor="middle">FAILED</text></g>
+  </g>
+
+  <!-- signature gradient -->
+  <defs><linearGradient id="brand" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4c4"/><stop offset="1" stop-color="#46e08a"/></linearGradient></defs>
+  <text x="40" y="510" font-size="13" fill="#90a6b4">Signature gradient (primary button) — 135°, teal → green</text>
+  <rect x="40" y="522" width="500" height="48" rx="24" fill="url(#brand)"/>
+  <text x="290" y="551" font-size="15" font-weight="700" fill="#06231f" text-anchor="middle">إرسال / Send broadcast</text>
+
+  <!-- type -->
+  <text x="40" y="624" font-size="13" fill="#90a6b4">Typography</text>
+  <text x="40" y="656" font-size="22" font-weight="800" fill="#eaf3f5">Inter — Latin / English</text>
+  <text x="40" y="694" font-size="22" font-weight="800" fill="#eaf3f5" font-family="Cairo, 'Segoe UI Arabic', Tahoma, sans-serif" direction="rtl">Cairo — العربية</text>
+</svg>

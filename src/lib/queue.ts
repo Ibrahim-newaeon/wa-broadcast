@@ -1,0 +1,28 @@
+import { Queue } from "bullmq";
+import IORedis from "ioredis";
+import { env } from "./env";
+
+export const connection = new IORedis(env.REDIS_URL, {
+  maxRetriesPerRequest: null, // required by BullMQ
+});
+
+export interface SendJob {
+  broadcastId: string;
+  recipientId: string;
+  to: string;
+  templateName: string;
+  language: string;
+  bodyParams: string[];
+}
+
+export const SEND_QUEUE = "wa-send";
+
+export const sendQueue = new Queue<SendJob>(SEND_QUEUE, {
+  connection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: "exponential", delay: 2000 },
+    removeOnComplete: 1000,
+    removeOnFail: 5000,
+  },
+});

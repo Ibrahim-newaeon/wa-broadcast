@@ -1,0 +1,26 @@
+/* Broadcast Console — portable theme variables (brand: NazzilVideo).
+   The full component layer lives in src/app/globals.css; this is the
+   token-only subset for reuse in ads, emails, Canva exports, etc. */
+:root{
+  --bg:#0e1a24; --bg2:#0a131b; --card:#14222e; --card2:#172a38;
+  --line:#22323f; --line2:#2c4150;
+  --ink:#eaf3f5; --muted:#90a6b4;
+  --teal:#2dd4c4; --teal-soft:rgba(45,212,196,.12); --accent-hover:#3ee3d3;
+  --green:#46e08a; --orange:#fb7a1e; --accent:var(--teal);
+  --danger:#ff6b6b; --btn-text:#06231f;
+  /* delivery status */
+  --st-pending:#90a6b4; --st-sent:#5ac8ff; --st-delivered:#2dd4c4;
+  --st-read:#46e08a; --st-failed:#ff6b6b;
+  --st-scheduled:#c9a227; --st-sending:#2dd4c4; --st-completed:#46e08a;
+  --r:14px; --r-sm:10px; --r-pill:999px; --max:1180px;
+  --font-en:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-ar:"Cairo","Segoe UI Arabic","Tahoma",sans-serif;
+  --font:var(--font-en);
+  --grad-brand:linear-gradient(135deg,var(--teal),var(--green));
+}
+html[lang="ar"],[dir="rtl"]{ --font:var(--font-ar); }
+.btn{ font-family:var(--font); font-weight:700; cursor:pointer; border:0;
+  border-radius:var(--r-pill); padding:12px 24px; color:var(--btn-text);
+  background:var(--grad-brand); transition:filter .15s, transform .15s; }
+.btn:hover{ filter:brightness(1.08); } .btn:active{ transform:translateY(1px); }
+.brand .b1{ color:var(--orange); } .brand .b2{ color:var(--green); }

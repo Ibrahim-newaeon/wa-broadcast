@@ -1,0 +1,164 @@
+// Prisma schema — WhatsApp Broadcast System
+// Single-business v1. `tenantId` can be added to top-level models for multi-tenant later.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  // E.164 without '+', e.g. 9665XXXXXXXX — unique per business
+  phone     String   @unique
+  name      String?
+  // Free-form template variables + opt-in metadata (source, date)
+  attributes Json    @default("{}")
+  optedOut  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships ContactListMembership[]
+  recipients  BroadcastRecipient[]
+
+  @@index([optedOut])
+}
+
+model ContactList {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  memberships ContactListMembership[]
+  broadcasts  Broadcast[]
+}
+
+model ContactListMembership {
+  contact   Contact     @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId String
+  list      ContactList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  listId    String
+  addedAt   DateTime    @default(now())
+
+  @@id([contactId, listId])
+  @@index([listId])
+}
+
+model Template {
+  id            String   @id @default(cuid())
+  // Meta template name (must be approved)
+  name          String
+  language      String   @default("en")
+  category      String   // MARKETING | UTILITY | AUTHENTICATION
+  // Number of {{n}} body variables this template expects
+  variableCount Int      @default(0)
+  status        String   @default("APPROVED") // mirror of Meta status
+  createdAt     DateTime @default(now())
+
+  broadcasts Broadcast[]
+
+  @@unique([name, language])
+}
+
+model Broadcast {
+  id          String   @id @default(cuid())
+  template    Template @relation(fields: [templateId], references: [id])
+  templateId  String
+  list        ContactList @relation(fields: [listId], references: [id])
+  listId      String
+  status      BroadcastStatus @default(DRAFT)
+  totalCount  Int      @default(0)
+  sentCount   Int      @default(0)
+  failedCount Int      @default(0)
+  // Saved so failed recipients can be recomputed + retried later.
+  variableMap Json     @default("[]")
+  scheduledAt DateTime?           // null = send immediately
+  createdAt   DateTime @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  recipients BroadcastRecipient[]
+
+  @@index([status])
+}
+
+enum BroadcastStatus {
+  DRAFT
+  SCHEDULED
+  QUEUED
+  SENDING
+  COMPLETED
+  FAILED
+}
+
+model BroadcastRecipient {
+  id          String   @id @default(cuid())
+  broadcast   Broadcast @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
+  broadcastId String
+  contact     Contact   @relation(fields: [contactId], references: [id])
+  contactId   String
+  // Meta message id returned on send; key for matching webhook status
+  wamid       String?  @unique
+  status      RecipientStatus @default(PENDING)
+  error       String?
+  updatedAt   DateTime @updatedAt
+
+  events MessageEvent[]
+
+  @@unique([broadcastId, contactId]) // idempotency
+  @@index([status])
+}
+
+enum RecipientStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+model MessageEvent {
+  id          String   @id @default(cuid())
+  recipient   BroadcastRecipient? @relation(fields: [recipientId], references: [id])
+  recipientId String?
+  wamid       String?
+  // status callback or inbound message
+  type        String   // status:sent|delivered|read|failed | inbound
+  payload     Json
+  createdAt   DateTime @default(now())
+
+  @@index([wamid])
+}
+
+model RecurringCampaign {
+  id          String   @id @default(cuid())
+  name        String
+  templateId  String   // plain ids (no FK) to keep it decoupled
+  listId      String
+  variableMap Json     @default("[]")
+  cron        String   // 5-field cron, evaluated in UTC by the scheduler
+  active      Boolean  @default(true)
+  lastRunAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([active])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         String   @default("MEMBER") // ADMIN | MEMBER
+  createdAt    DateTime @default(now())
+}
+
+model OptOut {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  source    String   @default("keyword") // keyword | manual | api
+  createdAt DateTime @default(now())
+}

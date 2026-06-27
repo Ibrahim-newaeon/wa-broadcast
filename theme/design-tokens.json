@@ -1,0 +1,46 @@
+{
+  "name": "Broadcast Console",
+  "brand": "NazzilVideo",
+  "description": "Design tokens for the WhatsApp Broadcast Console. Dark theme, teal/green brand, bilingual EN/AR. Live stylesheet: src/app/globals.css.",
+  "color": {
+    "bg": "#0e1a24", "bg2": "#0a131b", "card": "#14222e", "card2": "#172a38",
+    "line": "#22323f", "line2": "#2c4150",
+    "ink": "#eaf3f5", "muted": "#90a6b4",
+    "teal": "#2dd4c4", "tealHover": "#3ee3d3", "tealSoft": "rgba(45,212,196,0.12)",
+    "green": "#46e08a", "orange": "#fb7a1e", "danger": "#ff6b6b", "btnText": "#06231f"
+  },
+  "status": {
+    "PENDING": "#90a6b4",
+    "SENT": "#5ac8ff",
+    "DELIVERED": "#2dd4c4",
+    "READ": "#46e08a",
+    "FAILED": "#ff6b6b",
+    "SCHEDULED": "#c9a227",
+    "SENDING": "#2dd4c4",
+    "COMPLETED": "#46e08a"
+  },
+  "gradient": { "brand": "linear-gradient(135deg, #2dd4c4, #46e08a)" },
+  "font": {
+    "en": "\"Inter\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+    "ar": "\"Cairo\", \"Segoe UI Arabic\", \"Tahoma\", sans-serif",
+    "weights": [400, 500, 600, 700, 800]
+  },
+  "radius": { "base": "14px", "sm": "10px", "pill": "999px", "logo": "7px" },
+  "layout": { "maxWidth": "1180px", "navHeight": "62px" },
+  "shadow": "0 10px 30px rgba(0,0,0,0.35)",
+  "typeScale": {
+    "h1": "clamp(26px, 4vw, 40px)",
+    "h2": "clamp(20px, 3vw, 28px)",
+    "h3": "17px",
+    "body": "16px",
+    "small": "12px"
+  },
+  "components": {
+    "button": "pill, teal→green gradient, #06231f text, 48px min-height",
+    "badge": "pill outline, color = status token",
+    "input": "bg2 fill, line2 border, teal focus ring rgba(45,212,196,.14)",
+    "card": "card fill, line border, radius 14, soft shadow",
+    "progress": "12px track, brand gradient bar",
+    "touchTarget": "44px minimum (mobile-first)"
+  }
+}
