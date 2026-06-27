@@ -4,9 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 
 interface Recipient { id: string; phone: string; name: string | null; status: string; error: string | null }
+interface Clicks { total: number; unique: number; byButton: { label: string; count: number }[] }
 interface Detail {
   broadcast: { id: string; status: string; totalCount: number; sentCount: number; failedCount: number };
   counts: Record<string, number>;
+  clicks: Clicks;
   page: { offset: number; limit: number; filteredTotal: number; status: string | null };
   recipients: Recipient[];
 }
@@ -64,6 +66,13 @@ export default function LiveProgress({
   const recipients = data?.recipients ?? [];
   const filteredTotal = data?.page.filteredTotal ?? 0;
 
+  // Delivery funnel — each stage is cumulative (a READ message was also delivered + sent).
+  const clicks = data?.clicks ?? { total: 0, unique: 0, byButton: [] };
+  const readN = counts.READ ?? 0;
+  const deliveredN = (counts.DELIVERED ?? 0) + readN;
+  const sentN = (counts.SENT ?? 0) + deliveredN;
+  const ctr = deliveredN > 0 ? Math.round((clicks.unique / deliveredN) * 100) : 0;
+
   const retryFailed = useCallback(async () => {
     setRetrying(true); setRetryMsg(null);
     const res = await apiFetch(`/api/broadcasts/${broadcastId}/retry`, { method: "POST" });
@@ -86,7 +95,34 @@ export default function LiveProgress({
       </div>
 
       <div className="progress"><div className="progress__bar" style={{ width: `${pct}%` }} /></div>
-      <div className="note" style={{ margin: "6px 0 16px" }}>{pct}% processed ({done}/{b.totalCount})</div>
+      <div className="note" style={{ margin: "6px 0 20px" }}>{pct}% processed ({done}/{b.totalCount})</div>
+
+      {/* ── Delivery funnel + button events ── */}
+      <h2 style={{ fontSize: 18, margin: "0 0 10px" }}>Analytics</h2>
+      <div className="analytics">
+        <div className="funnel" data-test-id="funnel">
+          <FunnelRow label="Sent" value={sentN} total={b.totalCount} />
+          <FunnelRow label="Delivered" value={deliveredN} total={b.totalCount} />
+          <FunnelRow label="Read · opened" value={readN} total={b.totalCount} />
+          <FunnelRow label="Clicked" value={clicks.unique} total={b.totalCount} accent />
+        </div>
+        <div className="clicks card" data-test-id="click-events">
+          <h3 style={{ marginBottom: 4 }}>Button events</h3>
+          <p className="note" style={{ margin: "0 0 12px" }}>
+            {clicks.total} tap(s) · {clicks.unique} unique · {ctr}% CTR of delivered
+          </p>
+          {clicks.byButton.length === 0 ? (
+            <p className="muted" style={{ fontSize: 13 }}>No button clicks recorded yet.</p>
+          ) : (
+            clicks.byButton.map((bn) => (
+              <div key={bn.label} className="clicks__row">
+                <span>{bn.label}</span>
+                <span className="badge badge--READ">{bn.count}</span>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
 
       {b.failedCount > 0 && (
         <div className="row" style={{ marginBottom: 16 }}>
@@ -136,6 +172,19 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
     <div className="stat">
       <div className="stat__num">{value}</div>
       <div className="stat__label">{label}</div>
+    </div>
+  );
+}
+
+function FunnelRow({ label, value, total, accent }: { label: string; value: number; total: number; accent?: boolean }) {
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+  return (
+    <div className="funnel__row">
+      <div className="funnel__label">{label}</div>
+      <div className="funnel__track">
+        <div className={`funnel__bar${accent ? " funnel__bar--accent" : ""}`} style={{ width: `${pct}%` }} />
+      </div>
+      <div className="funnel__val">{value.toLocaleString()} <span className="muted">· {pct}%</span></div>
     </div>
   );
 }

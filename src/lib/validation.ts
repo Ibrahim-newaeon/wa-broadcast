@@ -100,6 +100,19 @@ export const WebhookSchema = z.object({
                   from: z.string(),
                   type: z.string(),
                   text: z.object({ body: z.string() }).optional(),
+                  // Reply context: id = wamid of the message being replied to
+                  // (i.e. the template we sent) — links a click back to a recipient.
+                  context: z.object({ id: z.string() }).optional(),
+                  // Quick-reply button tap on a template message.
+                  button: z.object({ text: z.string().optional(), payload: z.string().optional() }).optional(),
+                  // Interactive reply buttons / lists.
+                  interactive: z
+                    .object({
+                      type: z.string().optional(),
+                      button_reply: z.object({ id: z.string().optional(), title: z.string().optional() }).optional(),
+                      list_reply: z.object({ id: z.string().optional(), title: z.string().optional() }).optional(),
+                    })
+                    .optional(),
                 }),
               )
               .optional(),

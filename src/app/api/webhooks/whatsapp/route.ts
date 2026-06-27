@@ -60,12 +60,34 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // Inbound messages → opt-out keyword handling
+      // Inbound messages → button-click tracking + opt-out keyword handling
       for (const m of change.value.messages ?? []) {
+        // A button tap (template quick-reply) or interactive reply = a "click".
+        const clickLabel =
+          m.button?.text ??
+          m.interactive?.button_reply?.title ??
+          m.interactive?.list_reply?.title ??
+          null;
+
+        if (clickLabel != null) {
+          // Link the click to the recipient via the replied-to message id.
+          const ctxId = m.context?.id;
+          const recipient = ctxId
+            ? await prisma.broadcastRecipient.findUnique({ where: { wamid: ctxId } })
+            : null;
+          await prisma.messageEvent.create({
+            data: {
+              recipientId: recipient?.id,
+              wamid: ctxId ?? null,
+              type: "click",
+              payload: { label: clickLabel, from: m.from, raw: m },
+            },
+          });
+        } else {
+          await prisma.messageEvent.create({ data: { wamid: null, type: "inbound", payload: m } });
+        }
+
         const text = m.text?.body?.trim().toUpperCase() ?? "";
-        await prisma.messageEvent.create({
-          data: { wamid: null, type: "inbound", payload: m },
-        });
         if (optOutKeywords.includes(text)) {
           await prisma.optOut.upsert({
             where: { phone: m.from },

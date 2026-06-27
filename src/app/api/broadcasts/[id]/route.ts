@@ -28,7 +28,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
 
   const where: Prisma.BroadcastRecipientWhereInput = { broadcastId: id, ...(status ? { status } : {}) };
 
-  const [recipients, filteredTotal, grouped] = await Promise.all([
+  const [recipients, filteredTotal, grouped, clickEvents] = await Promise.all([
     prisma.broadcastRecipient.findMany({
       where,
       orderBy: { updatedAt: "desc" },
@@ -42,7 +42,21 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
       where: { broadcastId: id },
       _count: { _all: true },
     }),
+    prisma.messageEvent.findMany({
+      where: { type: "click", recipient: { broadcastId: id } },
+      select: { recipientId: true, payload: true },
+    }),
   ]);
+
+  // Aggregate button-click events by label, with unique clicker count.
+  const byButton = new Map<string, number>();
+  const uniqueClickers = new Set<string>();
+  for (const e of clickEvents) {
+    if (e.recipientId) uniqueClickers.add(e.recipientId);
+    const p = e.payload as { label?: unknown } | null;
+    const label = p && typeof p.label === "string" && p.label ? p.label : "(button)";
+    byButton.set(label, (byButton.get(label) ?? 0) + 1);
+  }
 
   return NextResponse.json({
     broadcast: {
@@ -56,6 +70,13 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
       scheduledAt: broadcast.scheduledAt,
     },
     counts: Object.fromEntries(grouped.map((g) => [g.status, g._count._all])),
+    clicks: {
+      total: clickEvents.length,
+      unique: uniqueClickers.size,
+      byButton: [...byButton.entries()]
+        .map(([label, count]) => ({ label, count }))
+        .sort((a, b) => b.count - a.count),
+    },
     page: { offset, limit, filteredTotal, status: status ?? null },
     recipients: recipients.map((r) => ({
       id: r.id,
