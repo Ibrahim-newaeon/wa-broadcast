@@ -247,12 +247,14 @@ Verify token:  <span class="cm">(the webhook verify token from the form)</span><
       <ul data-lang="en">
         <li><b>Header attachment</b> (optional): Image, Document/PDF, or Video. Pick a sample file — it's uploaded to Meta's resumable-upload API and the returned <i>handle</i> is attached for review.</li>
         <li><b>Body</b> with <code>{{1}}</code>, <code>{{2}}</code> variables (one example value required per variable), plus an optional <b>footer</b>.</li>
-        <li><b>Buttons</b> (up to 3): <b>Quick reply</b>, <b>URL</b>, or <b>Call</b> (phone number).</li>
+        <li><b>Buttons</b> (up to 3): <b>Quick reply</b>, <b>URL</b>, <b>Call</b> (phone), or <b>Copy code</b> (coupon).</li>
+        <li><b>Carousel</b> (optional): 2–10 swipeable media cards, each with a media URL, text, and an optional link button.</li>
       </ul>
       <ul data-lang="ar">
         <li><b>مرفق الترويسة</b> (اختياري): صورة، أو مستند/PDF، أو فيديو. اختر ملفًا عيّنة — يُرفع إلى واجهة الرفع القابل للاستئناف لدى Meta ويُرفق <i>المُعرِّف (handle)</i> الناتج للمراجعة.</li>
         <li><b>النص</b> مع متغيّرات <code>{{1}}</code> و<code>{{2}}</code> (قيمة مثال مطلوبة لكل متغيّر)، مع <b>تذييل</b> اختياري.</li>
-        <li><b>الأزرار</b> (حتى 3): <b>ردّ سريع</b>، أو <b>رابط URL</b>، أو <b>اتصال</b> (رقم هاتف).</li>
+        <li><b>الأزرار</b> (حتى 3): <b>ردّ سريع</b>، أو <b>رابط URL</b>، أو <b>اتصال</b> (هاتف)، أو <b>نسخ كود</b> (كوبون).</li>
+        <li><b>كاروسيل</b> (اختياري): من 2 إلى 10 بطاقات وسائط قابلة للتمرير، لكل منها رابط وسائط ونص وزر رابط اختياري.</li>
       </ul>
       <p><span data-lang="en">Already have templates in Meta? Pull them in instead:</span><span data-lang="ar">لديك قوالب جاهزة في Meta؟ اسحبها بدلًا من ذلك:</span></p>
       <div class="code"><button class="copy">Copy</button><pre>GET /api/templates?sync=1</pre></div>
@@ -320,6 +322,7 @@ Verify token:  <span class="cm">(the webhook verify token from the form)</span><
         <li>Filter recipients by status (PENDING / SENT / DELIVERED / READ / FAILED) and load more.</li>
         <li>If any failed, hit <b>Retry N failed</b> — it re-queues just those with the saved variables.</li>
         <li>Inbound <code>STOP</code> auto-opts-out a contact from all future sends.</li>
+        <li><b>Replies land in the <a href="/inbox">Inbox</a></b> — a live two-way thread where you can answer with text or attachments within the 24-hour window (read receipts included).</li>
       </ul>
       <ul data-lang="ar">
         <li><b>قُمع التحليلات</b>: أُرسِلت ← وصلت ← قُرئت ← نُقِر، مع معدّلات التسليم والقراءة بلمحة.</li>
@@ -327,6 +330,7 @@ Verify token:  <span class="cm">(the webhook verify token from the form)</span><
         <li>صفِّ المستلمين حسب الحالة (PENDING / SENT / DELIVERED / READ / FAILED) وحمِّل المزيد.</li>
         <li>إن فشل بعضها، اضغط <b>إعادة محاولة N فاشلة</b> — يعيد فقط تلك مع المتغيّرات المحفوظة.</li>
         <li>رسالة <code>STOP</code> الواردة تُلغي اشتراك جهة الاتصال من كل الإرسالات المستقبلية تلقائيًا.</li>
+        <li><b>الردود تصل إلى <a href="/inbox">صندوق الوارد</a></b> — محادثة ثنائية مباشرة يمكنك الرد فيها بنص أو مرفقات خلال نافذة الـ 24 ساعة (مع إشعارات القراءة).</li>
       </ul>
       <div class="check"><input type="checkbox" id="c-mon"><label for="c-mon"><span data-lang="en">Watched a broadcast reach DELIVERED/READ and checked the analytics</span><span data-lang="ar">تابعت حملة حتى DELIVERED/READ واطّلعت على التحليلات</span></label></div>
     </section>
