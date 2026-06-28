@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "node:crypto";
 import { optOutKeywords } from "@/lib/env";
-import { getWaConfig, getClientIdByPhoneNumberId, DEFAULT_CLIENT_ID } from "@/lib/waConfig";
+import {
+  getWaConfig, getClientIdByPhoneNumberId, getWebhookClientByWaba,
+  isWebhookVerifyToken, DEFAULT_CLIENT_ID,
+} from "@/lib/waConfig";
 import { WebhookSchema } from "@/lib/validation";
+import { verifyWebhookSignature } from "@/lib/webhookSig";
 import { prisma } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -25,27 +28,32 @@ const TEMPLATE_EVENT_MAP: Record<string, string> = {
   PENDING_DELETION: "PENDING_DELETION",
 };
 
-/** GET — Meta webhook verification handshake. */
+/** GET — Meta webhook verification handshake (matches ANY client's verify token). */
 export async function GET(req: NextRequest) {
   const p = req.nextUrl.searchParams;
-  const { webhookVerifyToken } = await getWaConfig();
-  if (p.get("hub.mode") === "subscribe" && p.get("hub.verify_token") === webhookVerifyToken) {
+  if (p.get("hub.mode") === "subscribe" && (await isWebhookVerifyToken(p.get("hub.verify_token") ?? ""))) {
     return new NextResponse(p.get("hub.challenge") ?? "", { status: 200 });
   }
   return new NextResponse("forbidden", { status: 403 });
 }
 
-/** POST — status callbacks + inbound messages. Signature-verified. */
+/** POST — status callbacks + inbound messages. Signature-verified per client. */
 export async function POST(req: NextRequest) {
   const raw = await req.text();
+  const sig = req.headers.get("x-hub-signature-256");
 
-  // Verify X-Hub-Signature-256 = HMAC-SHA256(appSecret, rawBody)
-  const { appSecret } = await getWaConfig();
-  const sig = req.headers.get("x-hub-signature-256") ?? "";
-  const expected =
-    "sha256=" +
-    crypto.createHmac("sha256", appSecret).update(raw).digest("hex");
-  if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
+  // Identify the owning client by WABA id (entry.id) so we verify with THEIR app
+  // secret. Reading the body here only selects the secret — the HMAC is still
+  // what proves authenticity (a forged WABA id can't yield a valid signature).
+  let wabaId: string | undefined;
+  try {
+    wabaId = JSON.parse(raw)?.entry?.[0]?.id;
+  } catch {
+    return NextResponse.json({ ok: true }); // unparseable → ack & ignore
+  }
+  const routed = wabaId ? await getWebhookClientByWaba(String(wabaId)) : null;
+  const secret = routed?.appSecret || (await getWaConfig()).appSecret; // default for single-tenant
+  if (!verifyWebhookSignature(secret, raw, sig)) {
     return new NextResponse("invalid signature", { status: 401 });
   }
 
@@ -53,12 +61,15 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ ok: true }); // ack & ignore noise
 
   for (const entry of parsed.data.entry) {
+    // Per-entry owning client (covers template-status events, which carry no
+    // phone_number_id but do carry the WABA id).
+    const entryClientId = (entry.id ? (await getWebhookClientByWaba(entry.id))?.clientId : null) ?? DEFAULT_CLIENT_ID;
     for (const change of entry.changes) {
       const v = change.value;
-      // Route this change to the owning client via the business phone number id.
+      // Prefer the precise phone-number routing, else the entry's WABA client.
       const clientId =
         (v.metadata?.phone_number_id ? await getClientIdByPhoneNumberId(v.metadata.phone_number_id) : null) ??
-        DEFAULT_CLIENT_ID;
+        entryClientId;
 
       // Template approval/rejection — keep the local cache in sync automatically.
       if (v.event && v.message_template_name) {

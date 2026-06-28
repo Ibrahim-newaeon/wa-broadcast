@@ -26,6 +26,32 @@ export async function getClientIdByPhoneNumberId(phoneNumberId: string): Promise
   return row?.clientId ?? null;
 }
 
+/**
+ * Map a webhook's WABA id (entry.id) to the owning client + its effective app
+ * secret — used to verify the signature with the RIGHT client's secret. Present
+ * on every webhook (message and template-status events alike).
+ */
+export async function getWebhookClientByWaba(
+  businessAccountId: string,
+): Promise<{ clientId: string; appSecret: string } | null> {
+  const row = await prisma.whatsAppConfig
+    .findFirst({ where: { businessAccountId }, select: { clientId: true } })
+    .catch(() => null);
+  if (!row) return null;
+  const cfg = await getWaConfig(row.clientId); // effective secret (row over env)
+  return { clientId: row.clientId, appSecret: cfg.appSecret };
+}
+
+/** True if the token matches the default client's or any client's verify token. */
+export async function isWebhookVerifyToken(token: string): Promise<boolean> {
+  if (!token) return false;
+  if (token === (await getWaConfig()).webhookVerifyToken) return true;
+  const row = await prisma.whatsAppConfig
+    .findFirst({ where: { webhookVerifyToken: token }, select: { id: true } })
+    .catch(() => null);
+  return !!row;
+}
+
 export async function getWaConfig(clientId: string = DEFAULT_CLIENT_ID): Promise<WaConfig> {
   const row = await prisma.whatsAppConfig.findUnique({ where: { clientId } }).catch(() => null);
   return {

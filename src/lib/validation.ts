@@ -133,6 +133,7 @@ export const WebhookSchema = z.object({
   object: z.string(),
   entry: z.array(
     z.object({
+      id: z.string().optional(), // WABA id → owning client
       changes: z.array(
         z.object({
           field: z.string().optional(),
