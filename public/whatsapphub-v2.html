@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WhatsApp Hub — V2 Specification · NazzilVideo</title>
+<style>
+  :root{
+    --bg:#0b0f0e; --bg-2:#111817; --card:#121a18; --card-2:#0e1413;
+    --line:#1f2c29; --text:#e7efed; --muted:#8ba39d; --faint:#5f7771;
+    --teal:#16c79a; --green:#34d399; --teal-dim:#0e7c66;
+    --accent:#22d3a8; --warn:#fbbf24; --danger:#f87171;
+    --radius:14px; --maxw:980px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:radial-gradient(1200px 600px at 50% -10%, #10211c 0%, var(--bg) 60%) fixed;
+    color:var(--text); font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,"Cairo",sans-serif;
+    line-height:1.65; font-size:16px;
+  }
+  a{color:var(--teal); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 20px}
+
+  header.hero{
+    padding:64px 0 36px; border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(22,199,154,.06), transparent);
+  }
+  .brand{display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.2px; margin-bottom:26px}
+  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--teal),var(--green));
+    display:grid;place-items:center;color:#04130f;font-weight:900}
+  .brand .b1{color:var(--text)} .brand .b2{background:linear-gradient(90deg,var(--teal),var(--green));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  h1{font-size:clamp(30px,5vw,46px); line-height:1.1; margin:0 0 14px;
+    background:linear-gradient(90deg,#eafff8,#9ff0d8); -webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted); font-size:18px; max-width:70ch; margin:0 0 22px}
+  .pills{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px}
+  .pill{font-size:12.5px; color:var(--muted); border:1px solid var(--line); background:var(--card-2);
+    padding:5px 11px; border-radius:999px}
+  .pill b{color:var(--green); font-weight:600}
+
+  nav.toc{position:sticky; top:0; z-index:5; background:rgba(11,15,14,.86); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); padding:12px 0}
+  nav.toc .wrap{display:flex; flex-wrap:wrap; gap:6px 14px}
+  nav.toc a{color:var(--muted); font-size:13.5px}
+  nav.toc a:hover{color:var(--teal); text-decoration:none}
+
+  main{padding:36px 0 80px}
+  section{margin:0 0 14px; scroll-margin-top:64px}
+  h2{font-size:26px; margin:46px 0 6px; padding-top:10px}
+  h2 .num{color:var(--teal); font-weight:800; margin-inline-end:8px}
+  h3{font-size:18.5px; margin:26px 0 6px; color:#eafff8}
+  h4{font-size:15px; margin:18px 0 4px; color:var(--green); text-transform:uppercase; letter-spacing:.6px}
+  p{margin:8px 0}
+  .lead{color:var(--muted)}
+  hr{border:none; border-top:1px solid var(--line); margin:34px 0}
+
+  .card{background:linear-gradient(180deg,var(--card),var(--card-2)); border:1px solid var(--line);
+    border-radius:var(--radius); padding:18px 20px; margin:14px 0}
+  .grid{display:grid; gap:14px}
+  @media(min-width:760px){.grid.two{grid-template-columns:1fr 1fr}}
+
+  .feat{border-left:3px solid var(--teal); padding-left:16px; margin:22px 0}
+  .feat h3{margin-top:0}
+  .star{color:var(--green)}
+  .meta-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+  .tag{font-size:12px; padding:3px 10px; border-radius:999px; border:1px solid var(--line); background:var(--card-2); color:var(--muted)}
+  .tag.eff-S{color:#7ee7c7;border-color:#1c4a3e}
+  .tag.eff-M{color:var(--warn);border-color:#4a3c18}
+  .tag.eff-L{color:#fca5a5;border-color:#4a2424}
+
+  ul,ol{margin:8px 0; padding-inline-start:22px}
+  li{margin:4px 0}
+  code{background:#0c1413; border:1px solid var(--line); border-radius:6px; padding:1px 6px; font-size:13.5px;
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; color:#bdeede}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14.5px; display:block; overflow-x:auto}
+  th,td{border:1px solid var(--line); padding:9px 12px; text-align:left; vertical-align:top}
+  th{background:var(--card-2); color:var(--green); font-weight:600; white-space:nowrap}
+  tr:nth-child(even) td{background:rgba(255,255,255,.012)}
+
+  .badge{display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px}
+  .badge.ok{background:rgba(52,211,153,.14); color:var(--green)}
+  .badge.wip{background:rgba(251,191,36,.14); color:var(--warn)}
+  .note{color:var(--faint); font-size:13.5px}
+  .callout{border:1px solid var(--teal-dim); background:rgba(22,199,154,.06); border-radius:var(--radius); padding:14px 18px; margin:16px 0}
+  footer{border-top:1px solid var(--line); padding:26px 0; color:var(--faint); font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brand"><span class="logo">▶</span><span><span class="b1">whatsapp</span><span class="b2">hub</span></span></div>
+    <h1>WhatsApp Hub — V2 Specification</h1>
+    <p class="sub">A self-hosted, multi-tenant messaging platform on Meta's Cloud API. The single, fully-detailed reference for everything the system does today (V1) plus everything planned for Phase&nbsp;2 (V2) — evolving from a <b>broadcast tool</b> into a <b>conversational engagement hub</b>.</p>
+    <div class="pills">
+      <span class="pill">Brand: <b>NazzilVideo</b></span>
+      <span class="pill">Updated <b>2026-06-29</b></span>
+      <span class="pill">V1 <b>live &amp; green</b></span>
+      <span class="pill">Next.js 15 · Prisma · BullMQ · Redis</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="wrap">
+    <a href="#arch">Architecture</a>
+    <a href="#v1">Part I · V1 features</a>
+    <a href="#v2">Part II · V2 features</a>
+    <a href="#data">Data model</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="#nfr">Non-functional</a>
+    <a href="#limits">Limitations</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- ARCHITECTURE -->
+  <section id="arch">
+    <h2><span class="num">1.</span>Architecture &amp; stack</h2>
+    <table>
+      <tr><th>Layer</th><th>Technology</th></tr>
+      <tr><td>Web / app</td><td>Next.js 15 (App Router), React Server Components</td></tr>
+      <tr><td>Language</td><td>TypeScript strict (<code>noUncheckedIndexedAccess</code>)</td></tr>
+      <tr><td>Data</td><td>Prisma + PostgreSQL</td></tr>
+      <tr><td>Queue / jobs</td><td>BullMQ + Redis (send queue + recurring scheduler)</td></tr>
+      <tr><td>Auth</td><td>jose (JWT) + bcryptjs — access edge-verified, refresh stateful in Redis</td></tr>
+      <tr><td>Validation</td><td>Zod (every API body / CSV row / webhook payload)</td></tr>
+      <tr><td>Tests</td><td>Vitest (unit), Playwright (e2e)</td></tr>
+      <tr><td>Deploy</td><td>Docker / Railway — two processes from one image: <b>web</b> + <b>worker</b></td></tr>
+      <tr><td>External</td><td>Meta WhatsApp Cloud API (Graph API)</td></tr>
+    </table>
+    <p><b>Process model:</b> <code>web</code> serves UI + API and enqueues sends; <code>worker</code> consumes the rate-limited send queue, runs the recurring/drip scheduler, and does boot-time sync.</p>
+    <p><b>Edge boundary:</b> <code>middleware.ts</code> verifies the access token only (no Redis/DB/Prisma at the edge). Refresh rotation + revocation happen only in the Node runtime.</p>
+  </section>
+
+  <hr/>
+
+  <!-- PART I -->
+  <section id="v1">
+    <h2><span class="num">I.</span>V1 — existing features <span class="badge ok">built &amp; live</span></h2>
+
+    <div class="card">
+      <h3>1.1 · Authentication &amp; sessions</h3>
+      <ul>
+        <li>Email + password login; bcrypt-hashed (cost 12).</li>
+        <li><b>Split-token model:</b> short-lived stateless <b>access token</b> (edge-verified) + stateful <b>refresh token</b> (jti + version in Redis), rotated every refresh, revocation-checked only in <code>/api/auth/refresh</code>. Role + client id ride in the access claims.</li>
+        <li>Logout + <b>logout-all</b> (bumps token version to invalidate all refresh tokens).</li>
+        <li>Bootstrap SUPERADMIN via seed script; DB-backed thereafter.</li>
+        <li>Login rate limiting (Redis fixed-window, fails open); client wrapper does one-shot silent refresh on 401.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>1.2 · Multi-tenancy <span class="note">(Phase 3 — complete)</span></h3>
+      <ul>
+        <li><code>Client</code> model + <code>clientId</code> on every entity; all data &amp; routes scoped per client.</li>
+        <li>Pure tenant resolver: a SUPERADMIN's acting-client cookie (<code>acid</code>) overrides their own <code>cid</code>; regular users hard-pinned.</li>
+        <li>Super-admin <b>client switcher</b> + Clients management (create / switch / <b>cascade delete</b>).</li>
+        <li>Per-client uniqueness (phone, template name+language), per-client WhatsApp config, per-client webhook signature verification (routed by WABA id).</li>
+        <li><b>Provision admin login on client create</b> <span class="note">(2026-06-29)</span> — optional admin email + password (blank → strong 16-char auto-generated), creates the tenant's first <b>ADMIN</b>, shows credentials once; email uniqueness checked before the tenant is created.</li>
+      </ul>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h3>1.3 · Contacts</h3>
+        <ul>
+          <li>CSV import (Zod-validated, phone-normalized) with an <b>auto-snapshot before import</b>.</li>
+          <li>Single add, inline edit, bulk delete.</li>
+          <li>Custom attributes (JSON) usable as template variables.</li>
+          <li>Delete is FK-<code>RESTRICT</code> when broadcast history exists.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>1.4 · Lists</h3>
+        <ul>
+          <li>Lists + membership join; <b>restorable snapshots</b> (manual or pre-import) with one-click restore.</li>
+          <li><b>Unique list names per client</b> <span class="note">(2026-06-29)</span> — case-insensitive 409 + DB unique index (migration 0015 with defensive dedupe).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>1.5 · Templates</h3>
+      <ul>
+        <li>No-code builder → submit to Meta; cached with returned status. <b>Sync from Meta</b> pulls statuses (now surfaces Meta's real error).</li>
+        <li>Variables <code>{{1}}</code>…; <b>media-header (P0)</b> IMAGE/DOCUMENT/VIDEO via Resumable Upload; <b>template-status webhook (P1)</b> auto-syncs approval/rejection.</li>
+        <li>Rich templates (Phase 5): <span class="badge ok">done</span> coupon copy-code · <span class="badge ok">done</span> carousel (2–10 cards) · <span class="badge wip">todo</span> LTO, auth/OTP, catalog, Flows.</li>
+      </ul>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h3>1.6 · Broadcasts</h3>
+        <ul>
+          <li>Send-now or schedule; audience = a list (opt-outs excluded).</li>
+          <li>Per-recipient variable mapping; live delivery funnel (queued→sent→delivered→read→failed) + button-click tracking.</li>
+          <li><b>Retry failed</b> re-enqueues only failures; rate-limited worker honoring the Meta tier.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>1.7 · Recurring / drip campaigns</h3>
+        <ul>
+          <li><code>RecurringCampaign</code> + BullMQ cron scheduler (UTC).</li>
+          <li>Each tick spawns a fresh broadcast from template + list, honoring opt-outs.</li>
+          <li>Presets + raw 5-field cron; boot-time reconcile.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>1.8 · Two-way inbox <span class="note">(Phase 4 — complete)</span></h3>
+      <ul>
+        <li><code>Conversation</code>/<code>Message</code> models; inbound capture for text, image, document, audio, video, sticker, interactive, reaction, location — <b>idempotent on <code>wamid</code></b>.</li>
+        <li>24-hour service-window tracking; outbound text + attachments within the window.</li>
+        <li><b>Media rendering</b> via a token-safe proxy (<code>/api/media/:id</code>); read receipts (best-effort); live two-pane <code>/inbox</code>.</li>
+      </ul>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h3>1.9 · Opt-outs &amp; compliance</h3>
+        <ul>
+          <li><b>STOP</b> → <code>OptOut</code> (unique per client+phone); excluded from all future broadcasts.</li>
+          <li>Opt-in consent trusted from CSV (not yet structurally enforced → V2 §2.11).</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>1.10 · No-code WhatsApp setup</h3>
+        <ul>
+          <li>Per-client Phone number ID, <b>WABA ID</b>, App ID, token, app secret, verify token, API version.</li>
+          <li>Test connection; webhook URL + verify token; saved settings override env with no redeploy.</li>
+          <li>Field labels clarified to avoid the WABA-vs-Business-Portfolio-id mix-up.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>1.11 · Platform &amp; ops</h3>
+      <ul>
+        <li>Health endpoint; security headers; multi-stage non-root Docker image with healthcheck.</li>
+        <li>Hand-written SQL migrations <code>0001 → 0015</code> applied on boot; offline <code>verify.sh</code>; k6 webhook load test; bilingual tutorial at <code>/tutorial.html</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- PART II -->
+  <section id="v2">
+    <h2><span class="num">II.</span>V2 — Phase 2 features</h2>
+    <p class="lead">Each feature lists <b>What · How it works · Data model · Dependencies · Effort · Acceptance</b>. Effort assumes the existing stack.</p>
+
+    <div class="feat">
+      <h3><span class="star">★</span> 2.1 · Omnichannel inbox <span class="note">(WhatsApp + Instagram DM + Messenger)</span></h3>
+      <p><b>What:</b> extend the two-way inbox beyond WhatsApp to all Meta messaging surfaces in one unified agent view.</p>
+      <p><b>How:</b> add a <code>channel</code> enum to <code>Conversation</code>/<code>Message</code>; generalize the webhook handler (route by <code>object</code> + connected asset) and a thin per-channel send adapter over <code>whatsapp.ts</code>; channel filter + badge in <code>/inbox</code>.</p>
+      <p><b>Data:</b> <code>Conversation.channel</code>, <code>Message.channel</code>, <code>ChannelConnection</code>. <b>Deps:</b> IG Messaging + Messenger permissions.</p>
+      <p><b>Acceptance:</b> an IG DM and a Messenger message appear next to WhatsApp, are replyable, and respect each window.</p>
+      <div class="meta-row"><span class="tag eff-L">Effort: L</span><span class="tag">Fit: High</span><span class="tag">Your headline ask</span></div>
+    </div>
+
+    <div class="feat">
+      <h3><span class="star">★</span> 2.2 · Meta Embedded Signup <span class="note">(one-click WhatsApp onboarding)</span></h3>
+      <p><b>What:</b> replace manual Phone/WABA/token entry with Meta's Embedded Signup OAuth flow — a "Connect WhatsApp" button.</p>
+      <p><b>How:</b> launch the Embedded Signup popup, exchange the code server-side for a long-lived system-user token, auto-discover WABA + phone-number ids, persist to per-client config.</p>
+      <p><b>Why:</b> directly removes the #1 onboarding friction (the WABA-vs-portfolio-id confusion + token scopes). Enables true self-serve onboarding.</p>
+      <p><b>Data:</b> <code>WhatsAppConfig.wabaAutoConnected/tokenExpiresAt</code>. <b>Deps:</b> Tech-Provider config + app review.</p>
+      <div class="meta-row"><span class="tag eff-M">Effort: M</span><span class="tag">Fit: High</span><span class="tag">Recommended first</span></div>
+    </div>
+
+    <div class="feat">
+      <h3><span class="star">★</span> 2.3 · Team collaboration in the inbox</h3>
+      <p><b>What:</b> turn the inbox into a real shared helpdesk.</p>
+      <p><b>How:</b> conversation status (<code>OPEN/PENDING/CLOSED</code>), agent assignment + filters, internal notes + @mentions, canned replies/snippets, SLA timers.</p>
+      <p><b>Data:</b> <code>Conversation.status/assigneeId</code>, <code>InternalNote</code>, <code>CannedReply</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">Effort: M</span><span class="tag">Fit: High</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.4 · AI assist <span class="note">(Claude-powered)</span></h3>
+      <p><b>What:</b> an AI layer over conversations + content — suggested replies, conversation summary, AR↔EN translation, intent/sentiment tags, FAQ auto-answer from a per-client knowledge base, draft-broadcast copy.</p>
+      <p><b>How:</b> server-side calls to the latest Claude model via the Anthropic SDK; per-client KB retrieved (RAG); agent-in-the-loop by default, optional auto-responder mode.</p>
+      <p><b>Data:</b> <code>KnowledgeDoc</code>, <code>Message.aiTags</code>, <code>Conversation.aiSummary</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">Effort: M</span><span class="tag">Bilingual EN/AR</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.5 · Automation, auto-replies &amp; Flows</h3>
+      <p><b>What:</b> 24/7 deflection + lead capture — business-hours &amp; away messages, keyword auto-responders, a simple no-code flow builder, native <b>WhatsApp Flows</b> (in-chat forms), window reopen via template.</p>
+      <p><b>How:</b> a rules engine in the worker on inbound events; Flows submitted to Meta like templates.</p>
+      <p><b>Data:</b> <code>AutomationRule</code>, <code>Flow</code>.</p>
+      <div class="meta-row"><span class="tag eff-L">Effort: L</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.6 · Contact 360 / CRM-lite</h3>
+      <p><b>What:</b> a unified contact profile — full cross-channel timeline (conversations + broadcasts), tags, custom-attribute editor, notes, consent + window status.</p>
+      <p><b>Data:</b> <code>Contact.tags</code>, <code>ContactNote</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">Effort: M</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.7 · Dynamic segmentation, A/B testing &amp; send-time</h3>
+      <p><b>What:</b> dynamic segments (auto-membership by rules), A/B-test broadcasts (split + compare), send-time throttling and later per-contact timezone optimization.</p>
+      <p><b>Data:</b> <code>Segment</code>, <code>Broadcast.variantOf</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">Effort: M</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.8 · Growth &amp; lead capture</h3>
+      <p><b>What:</b> <code>wa.me</code> deep-link + QR-code generator (prefilled + tracked), embeddable website chat widget, Click-to-WhatsApp ad attribution.</p>
+      <p><b>Data:</b> <code>Contact.source</code>, <code>Conversation.referral</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">Effort: M</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.9 · Analytics, link tracking &amp; deliverability</h3>
+      <p><b>What:</b> per-recipient link-click tracking (URL shortener), conversion/ROI reporting, exportable reports, number-quality + messaging-limit dashboard with auto-pause on quality drop, template performance.</p>
+      <p><b>Data:</b> <code>ShortLink</code>, <code>LinkClick</code>, <code>QualitySnapshot</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">Effort: M</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.10 · Commerce</h3>
+      <p><b>What:</b> WhatsApp catalog / product / multi-product messages, order + shipping notifications, abandoned-cart flows, payment links.</p>
+      <p><b>Data:</b> <code>Catalog</code>, <code>Product</code>, <code>Order</code>. <b>Deps:</b> Meta Commerce catalog + payment provider.</p>
+      <div class="meta-row"><span class="tag eff-L">Effort: L</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.11 · Governance: RBAC, audit log &amp; consent</h3>
+      <p><b>What:</b> per-action RBAC (beyond today's auth-only), audit log with actor attribution on broadcasts/deletions/config, double opt-in, consent log + GDPR export/delete.</p>
+      <p><b>Data:</b> <code>AuditEvent</code>, <code>ConsentRecord</code>, richer <code>Role/Permission</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">Effort: M</span><span class="tag">Closes V1 gaps</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.12 · Billing &amp; self-serve <span class="note">(SaaS track)</span></h3>
+      <p><b>What:</b> usage metering (conversation-based, mirroring Meta), plans/quotas, Stripe billing, in-app upgrade, per-client usage dashboard. Pairs with Embedded Signup for fully self-serve onboarding.</p>
+      <p><b>Data:</b> <code>Subscription</code>, <code>UsageRecord</code>, <code>Plan</code>. <b>Deps:</b> Stripe.</p>
+      <div class="meta-row"><span class="tag eff-L">Effort: L</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.13 · Integrations &amp; public API</h3>
+      <p><b>What:</b> outbound webhooks (message/broadcast events), Zapier/Make app, documented public REST API with per-client keys, CRM/Sheets sync.</p>
+      <p><b>Data:</b> <code>ApiKey</code>, <code>OutboundWebhook</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">Effort: M</span></div>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- DATA MODEL -->
+  <section id="data">
+    <h2><span class="num">III.</span>Data model</h2>
+    <h4>Existing (V1)</h4>
+    <p><code>Client</code> · <code>Contact</code> · <code>ContactList</code> (+ <code>ContactListMembership</code>, <code>ContactListSnapshot</code>) · <code>Template</code> · <code>Broadcast</code> · <code>BroadcastRecipient</code> · <code>MessageEvent</code> · <code>OptOut</code> · <code>User</code> · <code>RecurringCampaign</code> · <code>WhatsAppConfig</code> · <code>Conversation</code> · <code>Message</code>.</p>
+    <h4>V2 additions</h4>
+    <table>
+      <tr><th>Feature</th><th>New / changed models</th></tr>
+      <tr><td>Omnichannel inbox</td><td><code>Conversation.channel</code>, <code>Message.channel</code>, <code>ChannelConnection</code></td></tr>
+      <tr><td>Embedded Signup</td><td><code>WhatsAppConfig.wabaAutoConnected/tokenExpiresAt</code></td></tr>
+      <tr><td>Team collaboration</td><td><code>Conversation.status/assigneeId</code>, <code>InternalNote</code>, <code>CannedReply</code></td></tr>
+      <tr><td>AI assist</td><td><code>KnowledgeDoc</code>, <code>Message.aiTags</code>, <code>Conversation.aiSummary</code></td></tr>
+      <tr><td>Automation / Flows</td><td><code>AutomationRule</code>, <code>Flow</code></td></tr>
+      <tr><td>Contact 360</td><td><code>Contact.tags</code>, <code>ContactNote</code></td></tr>
+      <tr><td>Segmentation / A-B</td><td><code>Segment</code>, <code>Broadcast.variantOf</code></td></tr>
+      <tr><td>Growth</td><td><code>Contact.source</code>, <code>Conversation.referral</code></td></tr>
+      <tr><td>Analytics / links</td><td><code>ShortLink</code>, <code>LinkClick</code>, <code>QualitySnapshot</code></td></tr>
+      <tr><td>Commerce</td><td><code>Catalog</code>, <code>Product</code>, <code>Order</code></td></tr>
+      <tr><td>Governance</td><td><code>AuditEvent</code>, <code>ConsentRecord</code>, <code>Role/Permission</code></td></tr>
+      <tr><td>Billing</td><td><code>Subscription</code>, <code>UsageRecord</code>, <code>Plan</code></td></tr>
+      <tr><td>Integrations</td><td><code>ApiKey</code>, <code>OutboundWebhook</code></td></tr>
+    </table>
+    <p class="note">All new tables carry a <code>clientId</code> and follow the per-client scoping + cascade-delete conventions.</p>
+  </section>
+
+  <hr/>
+
+  <!-- ROADMAP -->
+  <section id="roadmap">
+    <h2><span class="num">IV.</span>Roadmap &amp; sequencing</h2>
+    <ol>
+      <li><b>Embedded Signup (§2.2)</b> — small, removes the top onboarding friction, unblocks self-serve.</li>
+      <li><b>Omnichannel inbox (§2.1)</b> — the flagship Phase-2 capability.</li>
+      <li><b>Team collaboration (§2.3)</b> — layered onto the unified inbox.</li>
+      <li><b>AI assist (§2.4)</b> + <b>Automation/Flows (§2.5)</b> — compounding value once omnichannel.</li>
+      <li><b>Monetization:</b> Governance (§2.11) + Billing (§2.12) for SaaS, <i>or</i> Commerce (§2.10) for retail.</li>
+    </ol>
+    <table>
+      <tr><th>Milestone</th><th>Features</th><th>Size</th></tr>
+      <tr><td>M1 — Frictionless onboarding</td><td>Embedded Signup</td><td>M</td></tr>
+      <tr><td>M2 — Unified conversations</td><td>Omnichannel inbox + Team collaboration</td><td>L + M</td></tr>
+      <tr><td>M3 — Intelligence</td><td>AI assist + Automation/Flows</td><td>M + L</td></tr>
+      <tr><td>M4 — Targeting &amp; proof</td><td>Segmentation/A-B + Analytics + Contact 360</td><td>M each</td></tr>
+      <tr><td>M5 — Monetize / transact</td><td>Governance + Billing <i>or</i> Commerce</td><td>L</td></tr>
+    </table>
+  </section>
+
+  <hr/>
+
+  <!-- NFR -->
+  <section id="nfr">
+    <h2><span class="num">V.</span>Non-functional requirements</h2>
+    <ul>
+      <li><b>Security:</b> keep <code>middleware.ts</code> edge-safe; Zod-validate all new bodies/webhooks; extend per-client signature verification to every channel; secrets in per-client config, never committed.</li>
+      <li><b>Multi-tenancy:</b> every new entity carries <code>clientId</code>; always scope via the tenant resolver; respect the SUPERADMIN acting-client override.</li>
+      <li><b>Deliverability:</b> keep <code>WA_MPS × workers ≤ Meta tier</code>; quality monitoring to avoid throttling/bans.</li>
+      <li><b>Compliance:</b> double opt-in + consent logs before scaling outbound; honor opt-outs across all channels.</li>
+      <li><b>Done gate (unchanged):</b> <code>typecheck</code> · <code>test</code> · <code>build</code> all green; positive + negative tests for new logic; e2e for new routes. Migrations continue from <code>0016</code>.</li>
+    </ul>
+  </section>
+
+  <hr/>
+
+  <!-- LIMITS -->
+  <section id="limits">
+    <h2><span class="num">VI.</span>Known limitations &amp; open items</h2>
+    <ul>
+      <li>Authorization mostly authentication-only; only <code>/api/users</code> role-gated → <b>§2.11 RBAC</b>.</li>
+      <li>No actor attribution / audit log on broadcasts or deletions → <b>§2.11 Audit</b>.</li>
+      <li>Opt-in consent trusted from CSV, not structurally enforced → <b>§2.11 Consent</b>.</li>
+      <li>Contact delete is a no-op when broadcast history exists (FK <code>RESTRICT</code>).</li>
+      <li>Access-token revocation lags ≤15 min by design; login rate-limit fails open.</li>
+      <li>Per-worker rate limiting: N workers can exceed the Meta tier — keep <code>WA_MPS × workers ≤ tier</code>.</li>
+      <li><b>Live verification:</b> connection + template submit/sync verified; a full broadcast + inbox round-trip on a real number is the immediate next validation (<code>VERIFY.md</code>).</li>
+    </ul>
+    <div class="callout">Phase 5 (rich templates) remaining from V1 also stands: limited-time-offer → authentication/OTP → catalog → Flows (catalog &amp; Flows now folded into V2 §2.10 / §2.5).</div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">WhatsApp Hub — V2 Specification · NazzilVideo · companion to <code>whatsapphub-V2.md</code> · generated 2026-06-29</div>
+</footer>
+
+</body>
+</html>
