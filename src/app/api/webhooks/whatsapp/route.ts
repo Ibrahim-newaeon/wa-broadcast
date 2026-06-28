@@ -14,6 +14,17 @@ const STATUS_MAP = {
   failed: "FAILED",
 } as const;
 
+// Meta message_template_status_update events → our Template.status mirror.
+const TEMPLATE_EVENT_MAP: Record<string, string> = {
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+  PAUSED: "PAUSED",
+  DISABLED: "DISABLED",
+  FLAGGED: "FLAGGED",
+  PENDING: "PENDING",
+  PENDING_DELETION: "PENDING_DELETION",
+};
+
 /** GET — Meta webhook verification handshake. */
 export async function GET(req: NextRequest) {
   const p = req.nextUrl.searchParams;
@@ -43,6 +54,18 @@ export async function POST(req: NextRequest) {
 
   for (const entry of parsed.data.entry) {
     for (const change of entry.changes) {
+      // Template approval/rejection — keep the local cache in sync automatically.
+      const v = change.value;
+      if (v.event && v.message_template_name) {
+        const status = TEMPLATE_EVENT_MAP[v.event.toUpperCase()] ?? v.event.toUpperCase();
+        await prisma.template.updateMany({
+          where: v.message_template_language
+            ? { name: v.message_template_name, language: v.message_template_language }
+            : { name: v.message_template_name },
+          data: { status },
+        });
+      }
+
       // Delivery status updates
       for (const s of change.value.statuses ?? []) {
         const recipient = await prisma.broadcastRecipient.findUnique({ where: { wamid: s.id } });

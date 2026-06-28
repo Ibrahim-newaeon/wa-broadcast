@@ -130,7 +130,13 @@ export const WebhookSchema = z.object({
     z.object({
       changes: z.array(
         z.object({
+          field: z.string().optional(),
           value: z.object({
+            // Template approval/rejection updates (field: message_template_status_update)
+            event: z.string().optional(),
+            message_template_name: z.string().optional(),
+            message_template_language: z.string().optional(),
+            reason: z.string().nullish(),
             statuses: z
               .array(
                 z.object({
