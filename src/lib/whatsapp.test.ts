@@ -22,6 +22,16 @@ describe("buildTemplatePayload", () => {
 
   // NEGATIVE: template with no variables must omit components entirely
   // (Meta rejects an empty components array).
+  it("includes a media header component when the template has one", () => {
+    const p = buildTemplatePayload({
+      to: "+15551230000", templateName: "menu_pdf", language: "ar",
+      bodyParams: ["Ahmed"], headerFormat: "DOCUMENT", headerMediaUrl: "https://cdn.x/menu.pdf",
+    });
+    const comps = (p.template as { components?: Record<string, unknown>[] }).components ?? [];
+    expect(comps[0]).toEqual({ type: "header", parameters: [{ type: "document", document: { link: "https://cdn.x/menu.pdf" } }] });
+    expect(comps[1]).toMatchObject({ type: "body" });
+  });
+
   it("omits components when there are no params", () => {
     const p = buildTemplatePayload({
       to: "966500000000",

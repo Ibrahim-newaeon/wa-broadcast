@@ -14,16 +14,27 @@ export function buildTemplatePayload(args: {
   templateName: string;
   language: string;
   bodyParams: string[];
+  // When the template has a media header, the actual media is supplied per-send.
+  headerFormat?: string | null; // IMAGE | DOCUMENT | VIDEO
+  headerMediaUrl?: string | null;
 }) {
-  const components: TemplateComponent[] =
-    args.bodyParams.length > 0
-      ? [
-          {
-            type: "body",
-            parameters: args.bodyParams.map((text) => ({ type: "text", text })),
-          },
-        ]
-      : [];
+  const components: Record<string, unknown>[] = [];
+
+  // Media header component (image/document/video) — Meta requires the media on send.
+  if (args.headerFormat && args.headerMediaUrl) {
+    const kind = args.headerFormat.toLowerCase(); // image | document | video
+    components.push({
+      type: "header",
+      parameters: [{ type: kind, [kind]: { link: args.headerMediaUrl } }],
+    });
+  }
+
+  if (args.bodyParams.length > 0) {
+    components.push({
+      type: "body",
+      parameters: args.bodyParams.map((text) => ({ type: "text", text })),
+    });
+  }
 
   return {
     messaging_product: "whatsapp",
@@ -54,6 +65,8 @@ export async function sendTemplate(args: {
   templateName: string;
   language: string;
   bodyParams: string[];
+  headerFormat?: string | null;
+  headerMediaUrl?: string | null;
 }): Promise<string> {
   const cfg = await getWaConfig();
   const res = await fetch(`https://graph.facebook.com/${cfg.graphApiVersion}/${cfg.phoneNumberId}/messages`, {

@@ -70,6 +70,8 @@ model Template {
   category      String   // MARKETING | UTILITY | AUTHENTICATION
   // Number of {{n}} body variables this template expects
   variableCount Int      @default(0)
+  // Media header format if the template has one: IMAGE | DOCUMENT | VIDEO (null = none/text)
+  headerFormat  String?
   status        String   @default("APPROVED") // mirror of Meta status
   createdAt     DateTime @default(now())
 
@@ -90,6 +92,8 @@ model Broadcast {
   failedCount Int      @default(0)
   // Saved so failed recipients can be recomputed + retried later.
   variableMap Json     @default("[]")
+  // Media URL for the template's header (when the template has a media header).
+  headerMediaUrl String?
   scheduledAt DateTime?           // null = send immediately
   createdAt   DateTime @default(now())
   startedAt   DateTime?

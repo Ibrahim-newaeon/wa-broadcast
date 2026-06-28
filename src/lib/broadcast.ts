@@ -34,10 +34,18 @@ export async function createAndEnqueueBroadcast(opts: {
   listId: string;
   variableMap: VariableMap;
   scheduledAt?: Date | null;
+  headerMediaUrl?: string | null;
 }): Promise<EnqueueResult> {
   const template = await prisma.template.findUnique({ where: { id: opts.templateId } });
   if (!template) return { ok: false, error: "template not found", code: 404 };
   if (template.status !== "APPROVED") return { ok: false, error: "template not approved by Meta", code: 422 };
+
+  // A media-header template needs the media supplied for this send.
+  const mediaHeader = ["IMAGE", "DOCUMENT", "VIDEO"].includes(template.headerFormat ?? "");
+  const headerMediaUrl = mediaHeader ? (opts.headerMediaUrl ?? "").trim() : null;
+  if (mediaHeader && !headerMediaUrl) {
+    return { ok: false, error: "this template has a media header — provide a media URL", code: 422 };
+  }
 
   const optOuts = new Set((await prisma.optOut.findMany({ select: { phone: true } })).map((o) => o.phone));
   const members = await prisma.contactListMembership.findMany({
@@ -57,6 +65,7 @@ export async function createAndEnqueueBroadcast(opts: {
       status: scheduledAt ? "SCHEDULED" : "SENDING",
       totalCount: recipients.length,
       variableMap: opts.variableMap,
+      headerMediaUrl,
       scheduledAt,
       startedAt: scheduledAt ? null : new Date(),
     },
@@ -75,6 +84,8 @@ export async function createAndEnqueueBroadcast(opts: {
         templateName: template.name,
         language: template.language,
         bodyParams: resolveBodyParams(opts.variableMap, contact),
+        headerFormat: template.headerFormat,
+        headerMediaUrl,
       },
       { jobId: `${broadcast.id}:${contact.id}`, delay: delayMs },
     );

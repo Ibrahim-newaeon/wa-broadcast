@@ -13,7 +13,7 @@ import { env } from "../lib/env";
 const worker = new Worker<SendJob>(
   SEND_QUEUE,
   async (job) => {
-    const { recipientId, to, templateName, language, bodyParams } = job.data;
+    const { recipientId, to, templateName, language, bodyParams, headerFormat, headerMediaUrl } = job.data;
 
     // First job of a scheduled broadcast flips it to SENDING.
     await prisma.broadcast.updateMany({
@@ -22,7 +22,7 @@ const worker = new Worker<SendJob>(
     });
 
     try {
-      const wamid = await sendTemplate({ to, templateName, language, bodyParams });
+      const wamid = await sendTemplate({ to, templateName, language, bodyParams, headerFormat, headerMediaUrl });
 
       await prisma.broadcastRecipient.update({
         where: { id: recipientId },

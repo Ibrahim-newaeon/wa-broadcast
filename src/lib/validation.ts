@@ -52,6 +52,8 @@ export const CreateBroadcastSchema = z.object({
     .datetime()
     .refine((s) => new Date(s).getTime() > Date.now(), "scheduleAt must be in the future")
     .optional(),
+  // Media URL for the header — required when the chosen template has a media header.
+  headerMediaUrl: z.string().url().optional(),
 });
 
 export const LoginSchema = z.object({

@@ -32,13 +32,14 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await createTemplate(input);
+    const headerFormat = input.header?.format ?? null; // IMAGE | DOCUMENT | VIDEO
     const template = await prisma.template.upsert({
       where: { name_language: { name: input.name, language: input.language } },
       create: {
         name: input.name, language: input.language, category: input.category,
-        status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body),
+        status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body), headerFormat,
       },
-      update: { category: input.category, status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body) },
+      update: { category: input.category, status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body), headerFormat },
     });
     return NextResponse.json({ ok: true, template, metaId: result.id ?? null }, { status: 201 });
   } catch (err) {
@@ -74,10 +75,16 @@ async function syncFromMeta() {
       | undefined;
     const variableCount = body?.text ? (body.text.match(/\{\{\d+\}\}/g) ?? []).length : 0;
 
+    // Capture a media header format (IMAGE/DOCUMENT/VIDEO) if present.
+    const header = (t.components ?? []).find((c) => (c as { type?: string }).type === "HEADER") as
+      | { format?: string }
+      | undefined;
+    const headerFormat = header?.format && ["IMAGE", "DOCUMENT", "VIDEO"].includes(header.format) ? header.format : null;
+
     await prisma.template.upsert({
       where: { name_language: { name: t.name, language: t.language } },
-      create: { name: t.name, language: t.language, category: t.category, status: t.status, variableCount },
-      update: { category: t.category, status: t.status, variableCount },
+      create: { name: t.name, language: t.language, category: t.category, status: t.status, variableCount, headerFormat },
+      update: { category: t.category, status: t.status, variableCount, headerFormat },
     });
   }
 }

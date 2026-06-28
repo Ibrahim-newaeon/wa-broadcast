@@ -4,22 +4,25 @@ import { useMemo, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 
 interface List { id: string; name: string }
-interface Template { id: string; name: string; language: string; variableCount: number }
+interface Template { id: string; name: string; language: string; variableCount: number; headerFormat?: string | null }
 
 export default function BroadcastForm({ lists, templates }: { lists: List[]; templates: Template[] }) {
   const [templateId, setTemplateId] = useState("");
   const [listId, setListId] = useState("");
   const [vars, setVars] = useState<string[]>([]);
+  const [headerMediaUrl, setHeaderMediaUrl] = useState("");
   const [scheduleAt, setScheduleAt] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const selected = useMemo(() => templates.find((t) => t.id === templateId), [templateId, templates]);
+  const mediaHeader = !!selected && ["IMAGE", "DOCUMENT", "VIDEO"].includes(selected.headerFormat ?? "");
 
   function onTemplateChange(id: string) {
     setTemplateId(id);
     const t = templates.find((x) => x.id === id);
     setVars(Array(t?.variableCount ?? 0).fill(""));
+    setHeaderMediaUrl("");
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -28,6 +31,7 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
     setMsg(null);
     const variableMap = vars.map((v) => (v.startsWith("field:") ? { from: v.slice(6).trim() } : { literal: v }));
     const body: Record<string, unknown> = { templateId, listId, variableMap };
+    if (mediaHeader && headerMediaUrl.trim()) body.headerMediaUrl = headerMediaUrl.trim();
     if (scheduleAt) body.scheduleAt = new Date(scheduleAt).toISOString();
 
     const res = await apiFetch("/api/broadcasts", {
@@ -66,6 +70,17 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
         </select>
       </div>
 
+      {mediaHeader && (
+        <div className="field">
+          <label className="label" htmlFor="bc-hdr">
+            Header media URL <span className="muted">— this template has a {selected?.headerFormat?.toLowerCase()} header</span>
+          </label>
+          <input id="bc-hdr" data-test-id="bc-header-media" className="input" type="url" value={headerMediaUrl}
+            onChange={(e) => setHeaderMediaUrl(e.target.value)}
+            placeholder="https://… (public link to the image/PDF/video)" required />
+        </div>
+      )}
+
       {selected && selected.variableCount > 0 && (
         <div className="field">
           <label className="label">
@@ -84,7 +99,8 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
         <input id="sch" data-test-id="bc-schedule" className="input" type="datetime-local" value={scheduleAt} onChange={(e) => setScheduleAt(e.target.value)} />
       </div>
 
-      <button data-test-id="bc-submit" className="btn" type="submit" disabled={busy || !templateId || !listId} aria-busy={busy}>
+      <button data-test-id="bc-submit" className="btn" type="submit"
+        disabled={busy || !templateId || !listId || (mediaHeader && !headerMediaUrl.trim())} aria-busy={busy}>
         {busy ? "Submitting…" : scheduleAt ? "Schedule broadcast" : "Send now"}
       </button>
       {msg && <p data-test-id="bc-result" className="note" style={{ marginTop: 10 }}>{msg}</p>}
