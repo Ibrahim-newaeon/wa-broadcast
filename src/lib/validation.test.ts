@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PhoneSchema, ContactRowSchema, CreateContactSchema, composeName } from "./validation";
+import { PhoneSchema, ContactRowSchema, CreateContactSchema, composeName, CreateClientSchema } from "./validation";
 
 describe("PhoneSchema", () => {
   it("normalizes +966 50 000 0000 → 966500000000", () => {
@@ -32,6 +32,24 @@ describe("composeName", () => {
   });
   it("returns undefined when both are empty", () => {
     expect(composeName(undefined, null)).toBeUndefined();
+  });
+});
+
+describe("CreateClientSchema", () => {
+  it("accepts a name with no admin login", () => {
+    const r = CreateClientSchema.parse({ name: "Acme Cafe" });
+    expect(r.name).toBe("Acme Cafe");
+    expect(r.adminEmail).toBeUndefined();
+  });
+  it("accepts an optional admin email + password", () => {
+    const r = CreateClientSchema.parse({ name: "Acme", adminEmail: "owner@acme.com", adminPassword: "longenough1" });
+    expect(r.adminEmail).toBe("owner@acme.com");
+  });
+  it("rejects an invalid admin email", () => {
+    expect(CreateClientSchema.safeParse({ name: "Acme", adminEmail: "not-an-email" }).success).toBe(false);
+  });
+  it("rejects an admin password shorter than 8 chars", () => {
+    expect(CreateClientSchema.safeParse({ name: "Acme", adminEmail: "owner@acme.com", adminPassword: "short" }).success).toBe(false);
   });
 });
 

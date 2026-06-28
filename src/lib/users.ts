@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { randomBytes } from "node:crypto";
 import { NextRequest } from "next/server";
 import { prisma } from "./db";
 import { env } from "./env";
@@ -49,6 +50,15 @@ export async function createUser(input: { email: string; name?: string; password
     },
     select: { id: true, email: true, name: true, role: true, createdAt: true },
   });
+}
+
+/** Generate a strong, human-typeable random password (no ambiguous chars). */
+export function generatePassword(length = 16): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  const bytes = randomBytes(length);
+  let out = "";
+  for (let i = 0; i < length; i++) out += alphabet[bytes[i]! % alphabet.length];
+  return out;
 }
 
 export interface AuthContext { email: string; role: string; clientId: string }

@@ -49,6 +49,10 @@ model ContactList {
   memberships ContactListMembership[]
   broadcasts  Broadcast[]
   snapshots   ContactListSnapshot[]
+
+  // No two lists in the same client may share a name (exact-case backstop; the
+  // API additionally rejects case-insensitive clashes).
+  @@unique([clientId, name])
 }
 
 // Point-in-time backup of a list's membership, so a change can be restored.

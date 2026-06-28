@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { CreateClientSchema } from "@/lib/validation";
-import { requireSuperAdmin, getClientId } from "@/lib/users";
+import { requireSuperAdmin, getClientId, createUser, generatePassword } from "@/lib/users";
 
 export const runtime = "nodejs";
 
@@ -39,16 +39,35 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "invalid" }, { status: 400 });
   }
-  const { name, slug } = parsed.data;
+  const { name, slug, adminEmail, adminPassword } = parsed.data;
 
   if (slug) {
     const clash = await prisma.client.findUnique({ where: { slug }, select: { id: true } });
     if (clash) return NextResponse.json({ error: "That slug is already taken." }, { status: 409 });
   }
 
+  // Validate the admin email BEFORE creating the tenant, so a duplicate email
+  // never leaves an orphaned client behind.
+  if (adminEmail) {
+    const taken = await prisma.user.findUnique({ where: { email: adminEmail.toLowerCase() }, select: { id: true } });
+    if (taken) return NextResponse.json({ error: "That admin email is already in use." }, { status: 409 });
+  }
+
   const client = await prisma.client.create({ data: { name, slug: slug ?? null } });
   // Give the new tenant a blank WhatsApp config row so settings can be saved.
   await prisma.whatsAppConfig.create({ data: { clientId: client.id } });
 
-  return NextResponse.json({ client: { id: client.id, name: client.name, slug: client.slug } }, { status: 201 });
+  // Optionally provision the client's first ADMIN login. The returned password
+  // is shown to the super-admin ONCE — it isn't stored in plaintext anywhere.
+  let admin: { email: string; password: string; generated: boolean } | undefined;
+  if (adminEmail) {
+    const password = adminPassword || generatePassword();
+    await createUser({ email: adminEmail, password, role: "ADMIN", clientId: client.id });
+    admin = { email: adminEmail.toLowerCase(), password, generated: !adminPassword };
+  }
+
+  return NextResponse.json(
+    { client: { id: client.id, name: client.name, slug: client.slug }, admin },
+    { status: 201 },
+  );
 }

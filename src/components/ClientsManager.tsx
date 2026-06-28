@@ -12,8 +12,11 @@ export default function ClientsManager() {
   const [allowed, setAllowed] = useState(true);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [creds, setCreds] = useState<{ client: string; email: string; password: string; generated: boolean } | null>(null);
 
   async function refresh() {
     const r = await apiFetch("/api/clients");
@@ -27,16 +30,30 @@ export default function ClientsManager() {
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
-    setBusy(true); setMsg(null);
+    setBusy(true); setMsg(null); setCreds(null);
     const res = await apiFetch("/api/clients", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, slug: slug || undefined }),
+      body: JSON.stringify({
+        name,
+        slug: slug || undefined,
+        adminEmail: adminEmail.trim() || undefined,
+        adminPassword: adminPassword || undefined,
+      }),
     });
     const j = await res.json().catch(() => ({}));
     setBusy(false);
-    if (res.ok) { setName(""); setSlug(""); setMsg(`Created “${j.client.name}”.`); refresh(); }
-    else setMsg(j.error ?? "Could not create client");
+    if (res.ok) {
+      if (j.admin) setCreds({ client: j.client.name, email: j.admin.email, password: j.admin.password, generated: j.admin.generated });
+      else setMsg(`Created “${j.client.name}”.`);
+      setName(""); setSlug(""); setAdminEmail(""); setAdminPassword("");
+      refresh();
+    } else setMsg(j.error ?? "Could not create client");
+  }
+
+  function copyCreds() {
+    if (!creds) return;
+    navigator.clipboard?.writeText(`Login: ${window.location.origin}/login\nEmail: ${creds.email}\nPassword: ${creds.password}`).catch(() => {});
   }
 
   async function switchTo(clientId: string) {
@@ -95,7 +112,7 @@ export default function ClientsManager() {
         </tbody>
       </table>
 
-      <form onSubmit={onCreate} className="grid-forms" style={{ gridTemplateColumns: "1fr 1fr auto", alignItems: "end", gap: 12 }}>
+      <form onSubmit={onCreate} className="grid-forms" style={{ gridTemplateColumns: "1fr 1fr", alignItems: "end", gap: 12 }}>
         <div className="field">
           <label className="label" htmlFor="cl-name">New client name</label>
           <input id="cl-name" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme Cafe" required />
@@ -104,11 +121,39 @@ export default function ClientsManager() {
           <label className="label" htmlFor="cl-slug">Slug <span className="muted">(optional)</span></label>
           <input id="cl-slug" className="input" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="acme-cafe" />
         </div>
-        <button className="btn" type="submit" disabled={busy || !name.trim()} aria-busy={busy}>
+        <div className="field">
+          <label className="label" htmlFor="cl-email">Admin login email <span className="muted">(optional — creates the client&rsquo;s ADMIN account)</span></label>
+          <input id="cl-email" className="input" type="email" autoComplete="off" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} placeholder="owner@acme.com" />
+        </div>
+        <div className="field">
+          <label className="label" htmlFor="cl-pass">Admin password <span className="muted">(leave blank to auto-generate)</span></label>
+          <input id="cl-pass" className="input" autoComplete="new-password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} placeholder="auto-generated if blank" />
+        </div>
+        <button className="btn" type="submit" disabled={busy || !name.trim()} aria-busy={busy} style={{ gridColumn: "1 / -1", justifySelf: "start" }}>
           {busy ? "Creating…" : "Create client"}
         </button>
       </form>
       {msg && <p className="note" style={{ marginTop: 10 }}>{msg}</p>}
+
+      {creds && (
+        <div className="card" style={{ marginTop: 14, borderColor: "var(--green)" }}>
+          <strong>“{creds.client}” created with an ADMIN login.</strong>
+          <p className="note" style={{ margin: "6px 0 10px" }}>
+            {creds.generated
+              ? "Copy these credentials now — the password is shown only once and isn’t stored in plaintext."
+              : "Share these credentials with the client so they can sign in and connect their WhatsApp."}
+          </p>
+          <div style={{ fontFamily: "monospace", fontSize: 13, lineHeight: 1.7 }}>
+            <div>Login URL: {typeof window !== "undefined" ? window.location.origin : ""}/login</div>
+            <div>Email: {creds.email}</div>
+            <div>Password: {creds.password}</div>
+          </div>
+          <div className="row" style={{ marginTop: 10, gap: 8 }}>
+            <button type="button" className="btn btn--ghost btn--sm" onClick={copyCreds}>Copy</button>
+            <button type="button" className="btn btn--ghost btn--sm" onClick={() => setCreds(null)}>Dismiss</button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

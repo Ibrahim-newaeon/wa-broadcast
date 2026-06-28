@@ -30,11 +30,13 @@ export default function ListsManager() {
   async function createList(e: React.FormEvent) {
     e.preventDefault();
     if (!newName.trim()) return;
+    setMsg(null);
     const res = await apiFetch("/api/lists", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: newName.trim() }),
     });
     if (res.ok) { setNewName(""); await loadLists(); }
+    else { const j = await res.json().catch(() => ({})); setMsg(j.error ?? "Could not create list"); }
   }
 
   function toggle(listId: string) {

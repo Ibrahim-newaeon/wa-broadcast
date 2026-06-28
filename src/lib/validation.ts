@@ -154,6 +154,10 @@ export const SendMessageSchema = z.object({
 export const CreateClientSchema = z.object({
   name: z.string().trim().min(1, "Client name is required").max(120),
   slug: z.string().trim().regex(/^[a-z0-9-]{2,40}$/, "Slug: 2–40 lowercase letters, numbers, or hyphens").optional(),
+  // Optional: provision the client's first ADMIN login alongside the tenant.
+  // Blank password → the server auto-generates a strong one and returns it once.
+  adminEmail: z.string().trim().email("Enter a valid admin email").optional(),
+  adminPassword: z.string().min(8, "Password must be ≥8 chars").max(200).optional(),
 });
 
 // Inbound webhook payload — only the fields we consume, validated defensively.
