@@ -89,6 +89,9 @@ model Template {
   headerFormat  String?
   // True if the template has a COPY_CODE (coupon) button — the broadcast must supply a code.
   copyCode      Boolean  @default(false)
+  // Carousel card definitions (media URL + format per card) so sends can reuse them.
+  // [{ format: "IMAGE"|"VIDEO", mediaUrl, body, buttonText?, buttonUrl? }]
+  cards         Json?
   status        String   @default("APPROVED") // mirror of Meta status
   createdAt     DateTime @default(now())
 

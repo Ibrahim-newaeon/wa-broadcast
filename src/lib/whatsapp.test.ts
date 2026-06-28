@@ -44,6 +44,23 @@ describe("buildTemplatePayload", () => {
     });
   });
 
+  it("builds a carousel send component with each card's media (header only)", () => {
+    const p = buildTemplatePayload({
+      to: "15551230000", templateName: "lookbook", language: "en", bodyParams: ["Sarah"],
+      carouselCards: [
+        { format: "IMAGE", mediaUrl: "https://x.co/a.jpg" },
+        { format: "VIDEO", mediaUrl: "https://x.co/b.mp4" },
+      ],
+    });
+    const comps = (p.template as { components?: Record<string, unknown>[] }).components ?? [];
+    const carousel = comps.find((c) => c.type === "carousel") as { cards: { card_index: number; components: unknown[] }[] };
+    expect(carousel.cards[0]).toEqual({
+      card_index: 0,
+      components: [{ type: "header", parameters: [{ type: "image", image: { link: "https://x.co/a.jpg" } }] }],
+    });
+    expect(carousel.cards[1]!.components[0]).toEqual({ type: "header", parameters: [{ type: "video", video: { link: "https://x.co/b.mp4" } }] });
+  });
+
   it("omits components when there are no params", () => {
     const p = buildTemplatePayload({
       to: "966500000000",
@@ -99,6 +116,24 @@ describe("buildTemplateComponents", () => {
     });
     const buttons = c.find((x) => x.type === "BUTTONS") as { buttons: unknown[] };
     expect(buttons.buttons[0]).toEqual({ type: "COPY_CODE", example: "SAVE20" });
+  });
+
+  // POSITIVE: a carousel builds a CAROUSEL component; cards carry header+body (+optional button)
+  it("builds a carousel template with cards", () => {
+    const c = buildTemplateComponents({
+      name: "lookbook", language: "en", category: "MARKETING",
+      body: "New arrivals, {{1}}!", bodyExamples: ["Sarah"], buttons: [],
+      carousel: { cards: [
+        { format: "IMAGE", example: "h1", body: "Summer dress", buttonText: "Shop", buttonUrl: "https://x.co/1" },
+        { format: "IMAGE", example: "h2", body: "Sun hat" },
+      ] },
+    });
+    const carousel = c.find((x) => x.type === "CAROUSEL") as { cards: { components: { type: string }[] }[] };
+    expect(carousel.cards).toHaveLength(2);
+    expect(carousel.cards[0]!.components[0]).toEqual({ type: "HEADER", format: "IMAGE", example: { header_handle: ["h1"] } });
+    expect(carousel.cards[0]!.components[1]).toEqual({ type: "BODY", text: "Summer dress" });
+    expect(carousel.cards[0]!.components[2]).toEqual({ type: "BUTTONS", buttons: [{ type: "URL", text: "Shop", url: "https://x.co/1" }] });
+    expect(carousel.cards[1]!.components).toHaveLength(2); // no button on card 2
   });
 
   // NEGATIVE: a body with no variables must omit the example object

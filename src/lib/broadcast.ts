@@ -57,6 +57,11 @@ export async function createAndEnqueueBroadcast(opts: {
     return { ok: false, error: "this template has a copy-code button — provide a coupon code", code: 422 };
   }
 
+  // Carousel cards (media is reused from the template on every send).
+  const carouselCards = Array.isArray(template.cards)
+    ? (template.cards as { format: string; mediaUrl: string }[]).map((c) => ({ format: c.format, mediaUrl: c.mediaUrl }))
+    : null;
+
   const optOuts = new Set(
     (await prisma.optOut.findMany({ where: { clientId: opts.clientId }, select: { phone: true } })).map((o) => o.phone),
   );
@@ -104,6 +109,7 @@ export async function createAndEnqueueBroadcast(opts: {
         headerFormat: template.headerFormat,
         headerMediaUrl,
         couponCode,
+        carouselCards,
       },
       { jobId: `${broadcast.id}:${contact.id}`, delay: delayMs },
     );

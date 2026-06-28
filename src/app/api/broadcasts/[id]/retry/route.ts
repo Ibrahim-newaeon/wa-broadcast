@@ -72,6 +72,9 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
         headerFormat: broadcast.template.headerFormat,
         headerMediaUrl: broadcast.headerMediaUrl,
         couponCode: broadcast.couponCode,
+        carouselCards: Array.isArray(broadcast.template.cards)
+          ? (broadcast.template.cards as { format: string; mediaUrl: string }[]).map((c) => ({ format: c.format, mediaUrl: c.mediaUrl }))
+          : null,
       },
       { jobId: `${id}:${rec.contactId}:r${stamp}` }, // fresh id avoids dedupe
     );

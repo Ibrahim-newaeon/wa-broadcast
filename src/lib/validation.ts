@@ -96,6 +96,23 @@ export const CreateTemplateSchema = z
       )
       .max(3)
       .default([]),
+    // Carousel: 2–10 cards, each a media URL + static body + optional URL button.
+    carousel: z
+      .object({
+        cards: z
+          .array(
+            z.object({
+              format: z.enum(["IMAGE", "VIDEO"]),
+              mediaUrl: z.string().url(),
+              body: z.string().trim().min(1).max(160),
+              buttonText: z.string().trim().max(25).optional(),
+              buttonUrl: z.string().url().optional(),
+            }),
+          )
+          .min(2, "A carousel needs at least 2 cards")
+          .max(10),
+      })
+      .optional(),
   })
   .refine((t) => t.buttons.every((b) => b.type !== "URL" || !!b.url), {
     message: "URL buttons need a URL",

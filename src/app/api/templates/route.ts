@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { CreateTemplateSchema } from "@/lib/validation";
-import { createTemplate, countTemplateVars, WhatsAppError } from "@/lib/whatsapp";
+import { createTemplate, countTemplateVars, uploadTemplateMediaFromUrl, type CarouselCardInput, WhatsAppError } from "@/lib/whatsapp";
 import { getWaConfig } from "@/lib/waConfig";
 import { getClientId } from "@/lib/users";
 
@@ -34,7 +35,22 @@ export async function POST(req: NextRequest) {
   const clientId = await getClientId(req);
 
   try {
-    const result = await createTemplate(input, clientId);
+    // Carousel: upload each card's media (URL → handle) for the approval sample,
+    // and keep the original URLs to reuse on every send.
+    const { carousel: zodCarousel, ...rest } = input;
+    let carouselArg: { cards: CarouselCardInput[] } | undefined;
+    let cards: Prisma.InputJsonValue | undefined;
+    if (zodCarousel?.cards.length) {
+      const withHandles: CarouselCardInput[] = [];
+      for (const card of zodCarousel.cards) {
+        const example = await uploadTemplateMediaFromUrl(card.mediaUrl, clientId);
+        withHandles.push({ format: card.format, example, body: card.body, buttonText: card.buttonText, buttonUrl: card.buttonUrl });
+      }
+      carouselArg = { cards: withHandles };
+      cards = zodCarousel.cards as unknown as Prisma.InputJsonValue;
+    }
+
+    const result = await createTemplate({ ...rest, carousel: carouselArg }, clientId);
     const headerFormat = input.header?.format ?? null; // IMAGE | DOCUMENT | VIDEO
     const copyCode = input.buttons.some((b) => b.type === "COPY_CODE");
     const template = await prisma.template.upsert({
@@ -43,8 +59,13 @@ export async function POST(req: NextRequest) {
         clientId,
         name: input.name, language: input.language, category: input.category,
         status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body), headerFormat, copyCode,
+        ...(cards ? { cards } : {}),
       },
-      update: { category: input.category, status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body), headerFormat, copyCode },
+      update: {
+        category: input.category, status: result.status ?? "PENDING",
+        variableCount: countTemplateVars(input.body), headerFormat, copyCode,
+        ...(cards ? { cards } : {}),
+      },
     });
     return NextResponse.json({ ok: true, template, metaId: result.id ?? null }, { status: 201 });
   } catch (err) {

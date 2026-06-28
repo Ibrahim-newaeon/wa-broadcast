@@ -19,6 +19,8 @@ export function buildTemplatePayload(args: {
   headerMediaUrl?: string | null;
   // Coupon code for a COPY_CODE button (assumed at button index 0).
   couponCode?: string | null;
+  // Carousel cards: each card's media is supplied per-send (body/buttons are static).
+  carouselCards?: { format: string; mediaUrl: string }[] | null;
 }) {
   const components: Record<string, unknown>[] = [];
 
@@ -45,6 +47,20 @@ export function buildTemplatePayload(args: {
       sub_type: "copy_code",
       index: "0",
       parameters: [{ type: "coupon_code", coupon_code: args.couponCode }],
+    });
+  }
+
+  // Carousel — supply each card's media (body/buttons are baked into the template).
+  if (args.carouselCards && args.carouselCards.length > 0) {
+    components.push({
+      type: "carousel",
+      cards: args.carouselCards.map((c, i) => {
+        const kind = c.format.toLowerCase(); // image | video
+        return {
+          card_index: i,
+          components: [{ type: "header", parameters: [{ type: kind, [kind]: { link: c.mediaUrl } }] }],
+        };
+      }),
     });
   }
 
@@ -80,6 +96,7 @@ export async function sendTemplate(args: {
   headerFormat?: string | null;
   headerMediaUrl?: string | null;
   couponCode?: string | null;
+  carouselCards?: { format: string; mediaUrl: string }[] | null;
   clientId?: string;
 }): Promise<string> {
   const cfg = await getWaConfig(args.clientId);
@@ -223,6 +240,14 @@ export interface TemplateButtonInput {
   couponExample?: string; // sample coupon code (COPY_CODE buttons, for approval)
 }
 export interface TemplateHeaderInput { format: "IMAGE" | "DOCUMENT" | "VIDEO"; example: string }
+// A carousel card: media header (handle for approval) + static body + optional URL button.
+export interface CarouselCardInput {
+  format: "IMAGE" | "VIDEO";
+  example: string; // media handle for the create-time sample
+  body: string;
+  buttonText?: string;
+  buttonUrl?: string;
+}
 export interface CreateTemplateInput {
   name: string;
   language: string;
@@ -232,6 +257,7 @@ export interface CreateTemplateInput {
   bodyExamples: string[];
   footer?: string;
   buttons: TemplateButtonInput[];
+  carousel?: { cards: CarouselCardInput[] };
 }
 
 /** Count {{n}} placeholders in a template body. */
@@ -276,6 +302,23 @@ export function buildTemplateComponents(input: CreateTemplateInput): Record<stri
       }),
     });
   }
+
+  // Carousel: a CAROUSEL component with 2–10 cards (each a media header + static
+  // body + optional URL button). Top-level body above comes from input.body.
+  if (input.carousel && input.carousel.cards.length > 0) {
+    components.push({
+      type: "CAROUSEL",
+      cards: input.carousel.cards.map((card) => ({
+        components: [
+          { type: "HEADER", format: card.format, example: { header_handle: [card.example] } },
+          { type: "BODY", text: card.body },
+          ...(card.buttonText && card.buttonUrl
+            ? [{ type: "BUTTONS", buttons: [{ type: "URL", text: card.buttonText, url: card.buttonUrl }] }]
+            : []),
+        ],
+      })),
+    });
+  }
   return components;
 }
 
@@ -316,6 +359,17 @@ export async function uploadTemplateMedia(
     throw new WhatsAppError(up.error?.message ?? `media upload failed (${upRes.status})`, upRes.status, false);
   }
   return up.h;
+}
+
+/** Fetch a public media URL and upload it to Meta; returns a media handle.
+ *  Used for carousel card samples (the user gives a URL, we need a handle). */
+export async function uploadTemplateMediaFromUrl(url: string, clientId?: string): Promise<string> {
+  const res = await fetch(url);
+  if (!res.ok) throw new WhatsAppError(`could not fetch media at ${url} (${res.status})`, 400, false);
+  const mime = (res.headers.get("content-type") ?? "application/octet-stream").split(";")[0]!;
+  const bytes = await res.arrayBuffer();
+  const name = url.split("/").pop()?.split("?")[0] || "media";
+  return uploadTemplateMedia(bytes, name, mime, clientId);
 }
 
 /** Submit a template to Meta for approval. Returns the new template id + status. */

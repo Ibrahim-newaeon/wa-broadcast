@@ -5,6 +5,7 @@ import { apiFetch } from "@/lib/apiFetch";
 
 interface Template { id: string; name: string; language: string; category: string; status: string; variableCount: number }
 interface Btn { type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER" | "COPY_CODE"; text: string; url: string; phoneNumber: string; couponExample: string }
+interface Card { format: "IMAGE" | "VIDEO"; mediaUrl: string; body: string; buttonText: string; buttonUrl: string }
 
 const HEADER_FORMATS = [
   { value: "", label: "None" },
@@ -41,11 +42,15 @@ export default function TemplatesManager() {
   const [examples, setExamples] = useState<string[]>([]);
   const [footer, setFooter] = useState("");
   const [buttons, setButtons] = useState<Btn[]>([]);
+  const [carouselOn, setCarouselOn] = useState(false);
+  const [cards, setCards] = useState<Card[]>([]);
   const [busy, setBusy] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
   const varCount = useMemo(() => (body.match(/\{\{\d+\}\}/g) ?? []).length, [body]);
+  const carouselInvalid =
+    carouselOn && (cards.length < 2 || cards.some((c) => !c.mediaUrl.trim() || !c.body.trim()));
 
   async function loadTemplates(sync = false) {
     if (sync) setSyncing(true);
@@ -68,6 +73,16 @@ export default function TemplatesManager() {
   }
   function removeButton(i: number) {
     setButtons((prev) => prev.filter((_, idx) => idx !== i));
+  }
+  function addCard() {
+    if (cards.length >= 10) return;
+    setCards((prev) => [...prev, { format: "IMAGE", mediaUrl: "", body: "", buttonText: "", buttonUrl: "" }]);
+  }
+  function updateCard(i: number, patch: Partial<Card>) {
+    setCards((prev) => prev.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
+  }
+  function removeCard(i: number) {
+    setCards((prev) => prev.filter((_, idx) => idx !== i));
   }
 
   function changeHeaderFormat(f: HeaderFormat) {
@@ -99,16 +114,20 @@ export default function TemplatesManager() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name, language, category, body,
-        header: headerFormat ? { format: headerFormat, example: headerExample.trim() } : undefined,
+        // Carousel replaces the top-level header + buttons.
+        header: carouselOn || !headerFormat ? undefined : { format: headerFormat, example: headerExample.trim() },
         bodyExamples: examples.slice(0, varCount),
-        footer: footer.trim() || undefined,
-        buttons: buttons.map((b) => ({
+        footer: carouselOn ? undefined : footer.trim() || undefined,
+        buttons: carouselOn ? [] : buttons.map((b) => ({
           type: b.type,
           text: b.text || (b.type === "COPY_CODE" ? "Copy code" : b.text),
           url: b.type === "URL" ? b.url : undefined,
           phoneNumber: b.type === "PHONE_NUMBER" ? b.phoneNumber : undefined,
           couponExample: b.type === "COPY_CODE" ? b.couponExample : undefined,
         })),
+        carousel: carouselOn
+          ? { cards: cards.map((c) => ({ format: c.format, mediaUrl: c.mediaUrl.trim(), body: c.body.trim(), buttonText: c.buttonText.trim() || undefined, buttonUrl: c.buttonUrl.trim() || undefined })) }
+          : undefined,
       }),
     });
     const j = await res.json().catch(() => ({}));
@@ -117,6 +136,7 @@ export default function TemplatesManager() {
       setMsg({ kind: "ok", text: `Submitted “${j.template.name}” to Meta — status: ${j.template.status}.` });
       setName(""); setBody(""); setExamples([]); setFooter(""); setButtons([]);
       setHeaderFormat(""); setHeaderExample(""); setHeaderFile(""); setHeaderErr("");
+      setCarouselOn(false); setCards([]);
       void loadTemplates();
     } else {
       setMsg({ kind: "err", text: j.error ?? `Error ${res.status}` });
@@ -222,8 +242,49 @@ export default function TemplatesManager() {
             <button type="button" className="btn btn--ghost btn--sm" onClick={addButton}>+ Add button</button>
           )}
         </div>
+
+        <div className="field">
+          <label className="label" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input type="checkbox" checked={carouselOn} onChange={(e) => setCarouselOn(e.target.checked)} />
+            Carousel (media cards) <span className="muted">— replaces the header &amp; buttons above; 2–10 cards, each with a public media URL</span>
+          </label>
+          {carouselOn && (
+            <div style={{ marginTop: 8 }}>
+              {cards.map((c, i) => (
+                <div key={i} className="card" style={{ padding: 12, marginBottom: 8 }}>
+                  <div className="row" style={{ gap: 8, marginBottom: 8 }}>
+                    <strong style={{ fontSize: 13 }}>Card {i + 1}</strong>
+                    <span className="spacer" />
+                    <button type="button" className="btn btn--ghost btn--sm" onClick={() => removeCard(i)} aria-label="Remove card">✕</button>
+                  </div>
+                  <div className="row" style={{ gap: 8, marginBottom: 8 }}>
+                    <select className="input input--sm" style={{ flex: "0 0 auto", width: "auto" }} value={c.format}
+                      onChange={(e) => updateCard(i, { format: e.target.value as Card["format"] })}>
+                      <option value="IMAGE">Image</option>
+                      <option value="VIDEO">Video</option>
+                    </select>
+                    <input className="input input--sm" style={{ flex: 1 }} value={c.mediaUrl} placeholder="Public media URL (https://…)"
+                      onChange={(e) => updateCard(i, { mediaUrl: e.target.value })} />
+                  </div>
+                  <input className="input input--sm" style={{ marginBottom: 8, width: "100%" }} value={c.body} placeholder="Card text" maxLength={160}
+                    onChange={(e) => updateCard(i, { body: e.target.value })} />
+                  <div className="row" style={{ gap: 8 }}>
+                    <input className="input input--sm" style={{ flex: 1 }} value={c.buttonText} placeholder="Button text (optional)" maxLength={25}
+                      onChange={(e) => updateCard(i, { buttonText: e.target.value })} />
+                    <input className="input input--sm" style={{ flex: 1 }} value={c.buttonUrl} placeholder="Button URL (optional)"
+                      onChange={(e) => updateCard(i, { buttonUrl: e.target.value })} />
+                  </div>
+                </div>
+              ))}
+              {cards.length < 10 && (
+                <button type="button" className="btn btn--ghost btn--sm" onClick={addCard}>+ Add card</button>
+              )}
+            </div>
+          )}
+        </div>
+
         <button data-test-id="tmpl-submit" className="btn" type="submit"
-          disabled={busy || !name || !body || headerUploading || (!!headerFormat && !headerExample)} aria-busy={busy}>
+          disabled={busy || !name || !body || headerUploading || (!carouselOn && !!headerFormat && !headerExample) || carouselInvalid} aria-busy={busy}>
           {busy ? "Submitting to Meta…" : "Submit to Meta"}
         </button>
         {msg && (
