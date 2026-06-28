@@ -69,15 +69,24 @@ export const CreateTemplateSchema = z
     name: z.string().trim().regex(/^[a-z0-9_]{1,512}$/, "Use lowercase letters, numbers, and underscores only"),
     language: z.string().trim().min(2).max(12),
     category: z.enum(["MARKETING", "UTILITY", "AUTHENTICATION"]),
+    // Optional media header (attachment). PDF counts as DOCUMENT. The example is
+    // a sample media URL/handle Meta uses while reviewing the template.
+    header: z
+      .object({
+        format: z.enum(["IMAGE", "DOCUMENT", "VIDEO"]),
+        example: z.string().trim().min(1, "Add a sample media URL for the header"),
+      })
+      .optional(),
     body: z.string().trim().min(1).max(1024),
     bodyExamples: z.array(z.string()).default([]),
     footer: z.string().trim().max(60).optional(),
     buttons: z
       .array(
         z.object({
-          type: z.enum(["QUICK_REPLY", "URL"]),
+          type: z.enum(["QUICK_REPLY", "URL", "PHONE_NUMBER"]),
           text: z.string().trim().min(1).max(25),
           url: z.string().url().optional(),
+          phoneNumber: z.string().trim().regex(/^\+?[0-9]{6,20}$/, "Use digits, optional leading +").optional(),
         }),
       )
       .max(3)
@@ -85,6 +94,10 @@ export const CreateTemplateSchema = z
   })
   .refine((t) => t.buttons.every((b) => b.type !== "URL" || !!b.url), {
     message: "URL buttons need a URL",
+    path: ["buttons"],
+  })
+  .refine((t) => t.buttons.every((b) => b.type !== "PHONE_NUMBER" || !!b.phoneNumber), {
+    message: "Call buttons need a phone number",
     path: ["buttons"],
   })
   .refine(

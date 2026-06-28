@@ -4,7 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 
 interface Template { id: string; name: string; language: string; category: string; status: string; variableCount: number }
-interface Btn { type: "QUICK_REPLY" | "URL"; text: string; url: string }
+interface Btn { type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER"; text: string; url: string; phoneNumber: string }
+
+const HEADER_FORMATS = [
+  { value: "", label: "None" },
+  { value: "IMAGE", label: "Image" },
+  { value: "DOCUMENT", label: "Document / PDF" },
+  { value: "VIDEO", label: "Video" },
+] as const;
+type HeaderFormat = (typeof HEADER_FORMATS)[number]["value"];
 
 const LANGUAGES = [
   { code: "ar", label: "Arabic (ar)" },
@@ -24,6 +32,8 @@ export default function TemplatesManager() {
   const [name, setName] = useState("");
   const [language, setLanguage] = useState("ar");
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("MARKETING");
+  const [headerFormat, setHeaderFormat] = useState<HeaderFormat>("");
+  const [headerExample, setHeaderExample] = useState("");
   const [body, setBody] = useState("");
   const [examples, setExamples] = useState<string[]>([]);
   const [footer, setFooter] = useState("");
@@ -48,7 +58,7 @@ export default function TemplatesManager() {
   }
   function addButton() {
     if (buttons.length >= 3) return;
-    setButtons((prev) => [...prev, { type: "QUICK_REPLY", text: "", url: "" }]);
+    setButtons((prev) => [...prev, { type: "QUICK_REPLY", text: "", url: "", phoneNumber: "" }]);
   }
   function updateButton(i: number, patch: Partial<Btn>) {
     setButtons((prev) => prev.map((b, idx) => (idx === i ? { ...b, ...patch } : b)));
@@ -66,9 +76,15 @@ export default function TemplatesManager() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name, language, category, body,
+        header: headerFormat ? { format: headerFormat, example: headerExample.trim() } : undefined,
         bodyExamples: examples.slice(0, varCount),
         footer: footer.trim() || undefined,
-        buttons: buttons.map((b) => ({ type: b.type, text: b.text, url: b.type === "URL" ? b.url : undefined })),
+        buttons: buttons.map((b) => ({
+          type: b.type,
+          text: b.text,
+          url: b.type === "URL" ? b.url : undefined,
+          phoneNumber: b.type === "PHONE_NUMBER" ? b.phoneNumber : undefined,
+        })),
       }),
     });
     const j = await res.json().catch(() => ({}));
@@ -76,6 +92,7 @@ export default function TemplatesManager() {
     if (res.ok) {
       setMsg({ kind: "ok", text: `Submitted “${j.template.name}” to Meta — status: ${j.template.status}.` });
       setName(""); setBody(""); setExamples([]); setFooter(""); setButtons([]);
+      setHeaderFormat(""); setHeaderExample("");
       void loadTemplates();
     } else {
       setMsg({ kind: "err", text: j.error ?? `Error ${res.status}` });
@@ -107,6 +124,20 @@ export default function TemplatesManager() {
           </div>
         </div>
         <div className="field">
+          <label className="label" htmlFor="t-hdr">Header attachment <span className="muted">(optional — image, document/PDF, or video)</span></label>
+          <div className="row" style={{ gap: 8 }}>
+            <select id="t-hdr" className="input input--sm" style={{ flex: "0 0 auto", width: "auto" }}
+              value={headerFormat} onChange={(e) => setHeaderFormat(e.target.value as HeaderFormat)}>
+              {HEADER_FORMATS.map((h) => <option key={h.value} value={h.value}>{h.label}</option>)}
+            </select>
+            {headerFormat && (
+              <input className="input input--sm" style={{ flex: 1 }} value={headerExample}
+                onChange={(e) => setHeaderExample(e.target.value)}
+                placeholder="Sample media URL (used by Meta to review)" />
+            )}
+          </div>
+        </div>
+        <div className="field">
           <label className="label" htmlFor="t-body">Body <span className="muted">— use {"{{1}}"}, {"{{2}}"} for variables</span></label>
           <textarea id="t-body" data-test-id="tmpl-body" className="input" style={{ minHeight: 96, resize: "vertical" }}
             value={body} onChange={(e) => setBody(e.target.value)} placeholder="Hello {{1}}, today's menu is ready!" required />
@@ -133,12 +164,17 @@ export default function TemplatesManager() {
                 onChange={(e) => updateButton(i, { type: e.target.value as Btn["type"] })}>
                 <option value="QUICK_REPLY">Quick reply</option>
                 <option value="URL">URL</option>
+                <option value="PHONE_NUMBER">Call (phone)</option>
               </select>
               <input className="input input--sm" style={{ flex: 1 }} value={b.text} placeholder="Button text"
                 maxLength={25} onChange={(e) => updateButton(i, { text: e.target.value })} />
               {b.type === "URL" && (
                 <input className="input input--sm" style={{ flex: 1 }} value={b.url} placeholder="https://…"
                   onChange={(e) => updateButton(i, { url: e.target.value })} />
+              )}
+              {b.type === "PHONE_NUMBER" && (
+                <input className="input input--sm" style={{ flex: 1 }} value={b.phoneNumber} placeholder="+15551234567"
+                  onChange={(e) => updateButton(i, { phoneNumber: e.target.value })} />
               )}
               <button type="button" className="btn btn--ghost btn--sm" onClick={() => removeButton(i)} aria-label="Remove">✕</button>
             </div>

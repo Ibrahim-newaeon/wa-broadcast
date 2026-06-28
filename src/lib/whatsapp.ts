@@ -86,11 +86,18 @@ export async function sendTemplate(args: {
 }
 
 // ── Template creation (submit for Meta approval) ─────────────────────
-export interface TemplateButtonInput { type: "QUICK_REPLY" | "URL"; text: string; url?: string }
+export interface TemplateButtonInput {
+  type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER";
+  text: string;
+  url?: string;
+  phoneNumber?: string;
+}
+export interface TemplateHeaderInput { format: "IMAGE" | "DOCUMENT" | "VIDEO"; example: string }
 export interface CreateTemplateInput {
   name: string;
   language: string;
   category: string;
+  header?: TemplateHeaderInput;
   body: string;
   bodyExamples: string[];
   footer?: string;
@@ -109,6 +116,15 @@ export function countTemplateVars(body: string): number {
 export function buildTemplateComponents(input: CreateTemplateInput): Record<string, unknown>[] {
   const components: Record<string, unknown>[] = [];
 
+  // Media header (attachment). Meta wants a sample under example.header_handle.
+  if (input.header) {
+    components.push({
+      type: "HEADER",
+      format: input.header.format,
+      example: { header_handle: [input.header.example] },
+    });
+  }
+
   const body: Record<string, unknown> = { type: "BODY", text: input.body };
   const varCount = countTemplateVars(input.body);
   if (varCount > 0) {
@@ -122,11 +138,11 @@ export function buildTemplateComponents(input: CreateTemplateInput): Record<stri
   if (input.buttons.length > 0) {
     components.push({
       type: "BUTTONS",
-      buttons: input.buttons.map((b) =>
-        b.type === "URL"
-          ? { type: "URL", text: b.text, url: b.url }
-          : { type: "QUICK_REPLY", text: b.text },
-      ),
+      buttons: input.buttons.map((b) => {
+        if (b.type === "URL") return { type: "URL", text: b.text, url: b.url };
+        if (b.type === "PHONE_NUMBER") return { type: "PHONE_NUMBER", text: b.text, phone_number: b.phoneNumber };
+        return { type: "QUICK_REPLY", text: b.text };
+      }),
     });
   }
   return components;

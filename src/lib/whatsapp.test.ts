@@ -50,6 +50,24 @@ describe("buildTemplateComponents", () => {
     expect(buttons.buttons[1]).toEqual({ type: "URL", text: "Order", url: "https://x.co" });
   });
 
+  // POSITIVE: media header (attachment) + a call (phone) button map to Meta shape
+  it("builds a media header and a phone-number button", () => {
+    const c = buildTemplateComponents({
+      name: "menu_pdf", language: "ar", category: "MARKETING",
+      header: { format: "DOCUMENT", example: "https://cdn.example.com/menu.pdf" },
+      body: "Today's menu is attached.",
+      bodyExamples: [],
+      buttons: [{ type: "PHONE_NUMBER", text: "Call us", phoneNumber: "+15551234567" }],
+    });
+    expect(c[0]).toEqual({
+      type: "HEADER",
+      format: "DOCUMENT",
+      example: { header_handle: ["https://cdn.example.com/menu.pdf"] },
+    });
+    const buttons = c.find((x) => x.type === "BUTTONS") as { buttons: unknown[] };
+    expect(buttons.buttons[0]).toEqual({ type: "PHONE_NUMBER", text: "Call us", phone_number: "+15551234567" });
+  });
+
   // NEGATIVE: a body with no variables must omit the example object
   it("omits the example when there are no variables", () => {
     const c = buildTemplateComponents({
