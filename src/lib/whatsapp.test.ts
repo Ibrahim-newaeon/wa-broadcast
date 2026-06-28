@@ -32,6 +32,18 @@ describe("buildTemplatePayload", () => {
     expect(comps[1]).toMatchObject({ type: "body" });
   });
 
+  it("adds a copy-code button parameter when a coupon code is supplied", () => {
+    const p = buildTemplatePayload({
+      to: "15551230000", templateName: "summer_coupon", language: "en",
+      bodyParams: ["Sarah"], couponCode: "SAVE20",
+    });
+    const comps = (p.template as { components?: Record<string, unknown>[] }).components ?? [];
+    expect(comps).toContainEqual({
+      type: "button", sub_type: "copy_code", index: "0",
+      parameters: [{ type: "coupon_code", coupon_code: "SAVE20" }],
+    });
+  });
+
   it("omits components when there are no params", () => {
     const p = buildTemplatePayload({
       to: "966500000000",
@@ -76,6 +88,17 @@ describe("buildTemplateComponents", () => {
     });
     const buttons = c.find((x) => x.type === "BUTTONS") as { buttons: unknown[] };
     expect(buttons.buttons[0]).toEqual({ type: "PHONE_NUMBER", text: "Call us", phone_number: "+15551234567" });
+  });
+
+  // POSITIVE: a copy-code (coupon) button maps to Meta's COPY_CODE shape with an example
+  it("builds a copy-code (coupon) button with a sample code", () => {
+    const c = buildTemplateComponents({
+      name: "summer_coupon", language: "en", category: "MARKETING",
+      body: "Here's your discount, {{1}}!", bodyExamples: ["Sarah"],
+      buttons: [{ type: "COPY_CODE", text: "Copy code", couponExample: "SAVE20" }],
+    });
+    const buttons = c.find((x) => x.type === "BUTTONS") as { buttons: unknown[] };
+    expect(buttons.buttons[0]).toEqual({ type: "COPY_CODE", example: "SAVE20" });
   });
 
   // NEGATIVE: a body with no variables must omit the example object

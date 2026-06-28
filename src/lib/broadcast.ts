@@ -36,6 +36,7 @@ export async function createAndEnqueueBroadcast(opts: {
   variableMap: VariableMap;
   scheduledAt?: Date | null;
   headerMediaUrl?: string | null;
+  couponCode?: string | null;
 }): Promise<EnqueueResult> {
   // Scope everything to the caller's tenant so a broadcast can't reach another
   // client's template/list/contacts.
@@ -48,6 +49,12 @@ export async function createAndEnqueueBroadcast(opts: {
   const headerMediaUrl = mediaHeader ? (opts.headerMediaUrl ?? "").trim() : null;
   if (mediaHeader && !headerMediaUrl) {
     return { ok: false, error: "this template has a media header — provide a media URL", code: 422 };
+  }
+
+  // A copy-code (coupon) template needs the code for this send.
+  const couponCode = template.copyCode ? (opts.couponCode ?? "").trim() : null;
+  if (template.copyCode && !couponCode) {
+    return { ok: false, error: "this template has a copy-code button — provide a coupon code", code: 422 };
   }
 
   const optOuts = new Set(
@@ -74,6 +81,7 @@ export async function createAndEnqueueBroadcast(opts: {
       totalCount: recipients.length,
       variableMap: opts.variableMap,
       headerMediaUrl,
+      couponCode,
       scheduledAt,
       startedAt: scheduledAt ? null : new Date(),
     },
@@ -95,6 +103,7 @@ export async function createAndEnqueueBroadcast(opts: {
         bodyParams: resolveBodyParams(opts.variableMap, contact),
         headerFormat: template.headerFormat,
         headerMediaUrl,
+        couponCode,
       },
       { jobId: `${broadcast.id}:${contact.id}`, delay: delayMs },
     );

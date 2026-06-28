@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 
 interface Template { id: string; name: string; language: string; category: string; status: string; variableCount: number }
-interface Btn { type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER"; text: string; url: string; phoneNumber: string }
+interface Btn { type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER" | "COPY_CODE"; text: string; url: string; phoneNumber: string; couponExample: string }
 
 const HEADER_FORMATS = [
   { value: "", label: "None" },
@@ -61,7 +61,7 @@ export default function TemplatesManager() {
   }
   function addButton() {
     if (buttons.length >= 3) return;
-    setButtons((prev) => [...prev, { type: "QUICK_REPLY", text: "", url: "", phoneNumber: "" }]);
+    setButtons((prev) => [...prev, { type: "QUICK_REPLY", text: "", url: "", phoneNumber: "", couponExample: "" }]);
   }
   function updateButton(i: number, patch: Partial<Btn>) {
     setButtons((prev) => prev.map((b, idx) => (idx === i ? { ...b, ...patch } : b)));
@@ -104,9 +104,10 @@ export default function TemplatesManager() {
         footer: footer.trim() || undefined,
         buttons: buttons.map((b) => ({
           type: b.type,
-          text: b.text,
+          text: b.text || (b.type === "COPY_CODE" ? "Copy code" : b.text),
           url: b.type === "URL" ? b.url : undefined,
           phoneNumber: b.type === "PHONE_NUMBER" ? b.phoneNumber : undefined,
+          couponExample: b.type === "COPY_CODE" ? b.couponExample : undefined,
         })),
       }),
     });
@@ -196,9 +197,12 @@ export default function TemplatesManager() {
                 <option value="QUICK_REPLY">Quick reply</option>
                 <option value="URL">URL</option>
                 <option value="PHONE_NUMBER">Call (phone)</option>
+                <option value="COPY_CODE">Copy code (coupon)</option>
               </select>
-              <input className="input input--sm" style={{ flex: 1 }} value={b.text} placeholder="Button text"
-                maxLength={25} onChange={(e) => updateButton(i, { text: e.target.value })} />
+              {b.type !== "COPY_CODE" && (
+                <input className="input input--sm" style={{ flex: 1 }} value={b.text} placeholder="Button text"
+                  maxLength={25} onChange={(e) => updateButton(i, { text: e.target.value })} />
+              )}
               {b.type === "URL" && (
                 <input className="input input--sm" style={{ flex: 1 }} value={b.url} placeholder="https://…"
                   onChange={(e) => updateButton(i, { url: e.target.value })} />
@@ -206,6 +210,10 @@ export default function TemplatesManager() {
               {b.type === "PHONE_NUMBER" && (
                 <input className="input input--sm" style={{ flex: 1 }} value={b.phoneNumber} placeholder="+15551234567"
                   onChange={(e) => updateButton(i, { phoneNumber: e.target.value })} />
+              )}
+              {b.type === "COPY_CODE" && (
+                <input className="input input--sm" style={{ flex: 1 }} value={b.couponExample} placeholder="Sample code e.g. SAVE20"
+                  maxLength={15} onChange={(e) => updateButton(i, { couponExample: e.target.value })} />
               )}
               <button type="button" className="btn btn--ghost btn--sm" onClick={() => removeButton(i)} aria-label="Remove">✕</button>
             </div>

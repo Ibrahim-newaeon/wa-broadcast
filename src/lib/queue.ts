@@ -16,6 +16,7 @@ export interface SendJob {
   bodyParams: string[];
   headerFormat?: string | null;   // IMAGE | DOCUMENT | VIDEO (media-header templates)
   headerMediaUrl?: string | null; // media link for the header component
+  couponCode?: string | null;     // code for a COPY_CODE (coupon) button
 }
 
 export const SEND_QUEUE = "wa-send";

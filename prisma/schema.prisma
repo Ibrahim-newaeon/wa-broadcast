@@ -87,6 +87,8 @@ model Template {
   variableCount Int      @default(0)
   // Media header format if the template has one: IMAGE | DOCUMENT | VIDEO (null = none/text)
   headerFormat  String?
+  // True if the template has a COPY_CODE (coupon) button — the broadcast must supply a code.
+  copyCode      Boolean  @default(false)
   status        String   @default("APPROVED") // mirror of Meta status
   createdAt     DateTime @default(now())
 
@@ -111,6 +113,8 @@ model Broadcast {
   variableMap Json     @default("[]")
   // Media URL for the template's header (when the template has a media header).
   headerMediaUrl String?
+  // Coupon code for a COPY_CODE button template.
+  couponCode  String?
   scheduledAt DateTime?           // null = send immediately
   createdAt   DateTime @default(now())
   startedAt   DateTime?

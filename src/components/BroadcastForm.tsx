@@ -4,25 +4,28 @@ import { useMemo, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 
 interface List { id: string; name: string }
-interface Template { id: string; name: string; language: string; variableCount: number; headerFormat?: string | null }
+interface Template { id: string; name: string; language: string; variableCount: number; headerFormat?: string | null; copyCode?: boolean }
 
 export default function BroadcastForm({ lists, templates }: { lists: List[]; templates: Template[] }) {
   const [templateId, setTemplateId] = useState("");
   const [listId, setListId] = useState("");
   const [vars, setVars] = useState<string[]>([]);
   const [headerMediaUrl, setHeaderMediaUrl] = useState("");
+  const [couponCode, setCouponCode] = useState("");
   const [scheduleAt, setScheduleAt] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const selected = useMemo(() => templates.find((t) => t.id === templateId), [templateId, templates]);
   const mediaHeader = !!selected && ["IMAGE", "DOCUMENT", "VIDEO"].includes(selected.headerFormat ?? "");
+  const needsCoupon = !!selected?.copyCode;
 
   function onTemplateChange(id: string) {
     setTemplateId(id);
     const t = templates.find((x) => x.id === id);
     setVars(Array(t?.variableCount ?? 0).fill(""));
     setHeaderMediaUrl("");
+    setCouponCode("");
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -32,6 +35,7 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
     const variableMap = vars.map((v) => (v.startsWith("field:") ? { from: v.slice(6).trim() } : { literal: v }));
     const body: Record<string, unknown> = { templateId, listId, variableMap };
     if (mediaHeader && headerMediaUrl.trim()) body.headerMediaUrl = headerMediaUrl.trim();
+    if (needsCoupon && couponCode.trim()) body.couponCode = couponCode.trim();
     if (scheduleAt) body.scheduleAt = new Date(scheduleAt).toISOString();
 
     const res = await apiFetch("/api/broadcasts", {
@@ -81,6 +85,16 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
         </div>
       )}
 
+      {needsCoupon && (
+        <div className="field">
+          <label className="label" htmlFor="bc-coupon">
+            Coupon code <span className="muted">— this template has a copy-code button</span>
+          </label>
+          <input id="bc-coupon" data-test-id="bc-coupon" className="input" value={couponCode}
+            maxLength={15} onChange={(e) => setCouponCode(e.target.value)} placeholder="e.g. SAVE20" required />
+        </div>
+      )}
+
       {selected && selected.variableCount > 0 && (
         <div className="field">
           <label className="label">
@@ -100,7 +114,7 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
       </div>
 
       <button data-test-id="bc-submit" className="btn" type="submit"
-        disabled={busy || !templateId || !listId || (mediaHeader && !headerMediaUrl.trim())} aria-busy={busy}>
+        disabled={busy || !templateId || !listId || (mediaHeader && !headerMediaUrl.trim()) || (needsCoupon && !couponCode.trim())} aria-busy={busy}>
         {busy ? "Submitting…" : scheduleAt ? "Schedule broadcast" : "Send now"}
       </button>
       {msg && <p data-test-id="bc-result" className="note" style={{ marginTop: 10 }}>{msg}</p>}

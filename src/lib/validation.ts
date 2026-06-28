@@ -54,6 +54,8 @@ export const CreateBroadcastSchema = z.object({
     .optional(),
   // Media URL for the header — required when the chosen template has a media header.
   headerMediaUrl: z.string().url().optional(),
+  // Coupon code — required when the chosen template has a COPY_CODE button.
+  couponCode: z.string().trim().min(1).max(15).optional(),
 });
 
 export const LoginSchema = z.object({
@@ -85,10 +87,11 @@ export const CreateTemplateSchema = z
     buttons: z
       .array(
         z.object({
-          type: z.enum(["QUICK_REPLY", "URL", "PHONE_NUMBER"]),
+          type: z.enum(["QUICK_REPLY", "URL", "PHONE_NUMBER", "COPY_CODE"]),
           text: z.string().trim().min(1).max(25),
           url: z.string().url().optional(),
           phoneNumber: z.string().trim().regex(/^\+?[0-9]{6,20}$/, "Use digits, optional leading +").optional(),
+          couponExample: z.string().trim().min(1).max(15).optional(),
         }),
       )
       .max(3)
@@ -100,6 +103,10 @@ export const CreateTemplateSchema = z
   })
   .refine((t) => t.buttons.every((b) => b.type !== "PHONE_NUMBER" || !!b.phoneNumber), {
     message: "Call buttons need a phone number",
+    path: ["buttons"],
+  })
+  .refine((t) => t.buttons.every((b) => b.type !== "COPY_CODE" || !!b.couponExample), {
+    message: "Copy-code buttons need a sample coupon code",
     path: ["buttons"],
   })
   .refine(

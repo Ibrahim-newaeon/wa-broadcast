@@ -36,14 +36,15 @@ export async function POST(req: NextRequest) {
   try {
     const result = await createTemplate(input, clientId);
     const headerFormat = input.header?.format ?? null; // IMAGE | DOCUMENT | VIDEO
+    const copyCode = input.buttons.some((b) => b.type === "COPY_CODE");
     const template = await prisma.template.upsert({
       where: { clientId_name_language: { clientId, name: input.name, language: input.language } },
       create: {
         clientId,
         name: input.name, language: input.language, category: input.category,
-        status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body), headerFormat,
+        status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body), headerFormat, copyCode,
       },
-      update: { category: input.category, status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body), headerFormat },
+      update: { category: input.category, status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body), headerFormat, copyCode },
     });
     return NextResponse.json({ ok: true, template, metaId: result.id ?? null }, { status: 201 });
   } catch (err) {
@@ -85,10 +86,16 @@ async function syncFromMeta(clientId: string) {
       | undefined;
     const headerFormat = header?.format && ["IMAGE", "DOCUMENT", "VIDEO"].includes(header.format) ? header.format : null;
 
+    // Detect a COPY_CODE button in the BUTTONS component.
+    const buttonsComp = (t.components ?? []).find((c) => (c as { type?: string }).type === "BUTTONS") as
+      | { buttons?: { type?: string }[] }
+      | undefined;
+    const copyCode = (buttonsComp?.buttons ?? []).some((b) => b.type === "COPY_CODE");
+
     await prisma.template.upsert({
       where: { clientId_name_language: { clientId, name: t.name, language: t.language } },
-      create: { clientId, name: t.name, language: t.language, category: t.category, status: t.status, variableCount, headerFormat },
-      update: { category: t.category, status: t.status, variableCount, headerFormat },
+      create: { clientId, name: t.name, language: t.language, category: t.category, status: t.status, variableCount, headerFormat, copyCode },
+      update: { category: t.category, status: t.status, variableCount, headerFormat, copyCode },
     });
   }
 }

@@ -71,6 +71,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
         bodyParams: resolveBodyParams(variableMap, rec.contact),
         headerFormat: broadcast.template.headerFormat,
         headerMediaUrl: broadcast.headerMediaUrl,
+        couponCode: broadcast.couponCode,
       },
       { jobId: `${id}:${rec.contactId}:r${stamp}` }, // fresh id avoids dedupe
     );
