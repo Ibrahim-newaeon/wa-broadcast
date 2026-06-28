@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { createUser, requireAdmin } from "@/lib/users";
-import { DEFAULT_CLIENT_ID } from "@/lib/waConfig";
+import { createUser, requireAdmin, getClientId } from "@/lib/users";
 
 export const runtime = "nodejs";
 
@@ -13,22 +12,22 @@ const CreateUserSchema = z.object({
   role: z.enum(["ADMIN", "MEMBER"]).default("MEMBER"),
 });
 
-/** GET /api/users — list teammates in the caller's client (ADMIN only). */
+/** GET /api/users — list teammates in the caller's (acting) client (ADMIN only). */
 export async function GET(req: NextRequest) {
-  const admin = await requireAdmin(req);
-  if (!admin) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!(await requireAdmin(req))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  // getClientId honors a super-admin's acting-client, so the team list matches
+  // whichever client they're managing.
   const users = await prisma.user.findMany({
-    where: { clientId: admin.cid ?? DEFAULT_CLIENT_ID },
+    where: { clientId: await getClientId(req) },
     orderBy: { createdAt: "asc" },
     select: { id: true, email: true, name: true, role: true, createdAt: true },
   });
   return NextResponse.json({ users });
 }
 
-/** POST /api/users — invite a teammate into the caller's client (ADMIN only). */
+/** POST /api/users — invite a teammate into the caller's (acting) client (ADMIN only). */
 export async function POST(req: NextRequest) {
-  const admin = await requireAdmin(req);
-  if (!admin) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!(await requireAdmin(req))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   const parsed = CreateUserSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -38,6 +37,6 @@ export async function POST(req: NextRequest) {
   const exists = await prisma.user.findUnique({ where: { email: parsed.data.email.toLowerCase() } });
   if (exists) return NextResponse.json({ error: "email already exists" }, { status: 409 });
 
-  const user = await createUser({ ...parsed.data, clientId: admin.cid ?? DEFAULT_CLIENT_ID });
+  const user = await createUser({ ...parsed.data, clientId: await getClientId(req) });
   return NextResponse.json({ user }, { status: 201 });
 }
