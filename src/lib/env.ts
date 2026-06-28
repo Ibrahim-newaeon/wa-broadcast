@@ -5,6 +5,8 @@ const EnvSchema = z.object({
   GRAPH_API_VERSION: z.string().default("v21.0"),
   WA_PHONE_NUMBER_ID: z.string().min(1),
   WA_BUSINESS_ACCOUNT_ID: z.string().min(1),
+  WA_APP_ID: z.string().default(""), // Meta App ID; only needed for media (template header) uploads
+
   WA_ACCESS_TOKEN: z.string().min(1),
   META_APP_SECRET: z.string().min(1),
   WA_WEBHOOK_VERIFY_TOKEN: z.string().min(1),

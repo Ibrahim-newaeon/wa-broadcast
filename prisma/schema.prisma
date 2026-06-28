@@ -177,6 +177,7 @@ model WhatsAppConfig {
   id                 String   @id @default("default")
   phoneNumberId      String?
   businessAccountId  String?
+  appId              String? // Meta App ID — needed for resumable media upload (template header samples)
   accessToken        String?
   appSecret          String?
   webhookVerifyToken String?

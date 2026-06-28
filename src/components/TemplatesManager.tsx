@@ -33,7 +33,10 @@ export default function TemplatesManager() {
   const [language, setLanguage] = useState("ar");
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("MARKETING");
   const [headerFormat, setHeaderFormat] = useState<HeaderFormat>("");
-  const [headerExample, setHeaderExample] = useState("");
+  const [headerExample, setHeaderExample] = useState(""); // Meta media handle after upload
+  const [headerFile, setHeaderFile] = useState("");       // uploaded file name (for display)
+  const [headerUploading, setHeaderUploading] = useState(false);
+  const [headerErr, setHeaderErr] = useState("");
   const [body, setBody] = useState("");
   const [examples, setExamples] = useState<string[]>([]);
   const [footer, setFooter] = useState("");
@@ -67,6 +70,26 @@ export default function TemplatesManager() {
     setButtons((prev) => prev.filter((_, idx) => idx !== i));
   }
 
+  function changeHeaderFormat(f: HeaderFormat) {
+    setHeaderFormat(f);
+    setHeaderExample(""); setHeaderFile(""); setHeaderErr("");
+  }
+  async function onHeaderFile(file: File | undefined) {
+    if (!file) return;
+    setHeaderUploading(true); setHeaderErr(""); setHeaderExample(""); setHeaderFile("");
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await apiFetch("/api/templates/media", { method: "POST", body: fd });
+    const j = await res.json().catch(() => ({}));
+    setHeaderUploading(false);
+    if (res.ok) { setHeaderExample(j.handle); setHeaderFile(file.name); }
+    else setHeaderErr(j.error ?? `Upload failed (${res.status})`);
+  }
+  const headerAccept =
+    headerFormat === "IMAGE" ? "image/jpeg,image/png"
+    : headerFormat === "DOCUMENT" ? "application/pdf"
+    : headerFormat === "VIDEO" ? "video/mp4" : "";
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -92,7 +115,7 @@ export default function TemplatesManager() {
     if (res.ok) {
       setMsg({ kind: "ok", text: `Submitted “${j.template.name}” to Meta — status: ${j.template.status}.` });
       setName(""); setBody(""); setExamples([]); setFooter(""); setButtons([]);
-      setHeaderFormat(""); setHeaderExample("");
+      setHeaderFormat(""); setHeaderExample(""); setHeaderFile(""); setHeaderErr("");
       void loadTemplates();
     } else {
       setMsg({ kind: "err", text: j.error ?? `Error ${res.status}` });
@@ -125,17 +148,25 @@ export default function TemplatesManager() {
         </div>
         <div className="field">
           <label className="label" htmlFor="t-hdr">Header attachment <span className="muted">(optional — image, document/PDF, or video)</span></label>
-          <div className="row" style={{ gap: 8 }}>
+          <div className="row" style={{ gap: 8, alignItems: "center" }}>
             <select id="t-hdr" className="input input--sm" style={{ flex: "0 0 auto", width: "auto" }}
-              value={headerFormat} onChange={(e) => setHeaderFormat(e.target.value as HeaderFormat)}>
+              value={headerFormat} onChange={(e) => changeHeaderFormat(e.target.value as HeaderFormat)}>
               {HEADER_FORMATS.map((h) => <option key={h.value} value={h.value}>{h.label}</option>)}
             </select>
             {headerFormat && (
-              <input className="input input--sm" style={{ flex: 1 }} value={headerExample}
-                onChange={(e) => setHeaderExample(e.target.value)}
-                placeholder="Sample media URL (used by Meta to review)" />
+              <input className="input input--sm" type="file" accept={headerAccept} style={{ flex: 1 }}
+                disabled={headerUploading}
+                onChange={(e) => onHeaderFile(e.target.files?.[0])} />
             )}
           </div>
+          {headerFormat && (
+            <p className="muted" style={{ marginTop: 6, fontSize: 13 }}>
+              {headerUploading ? "Uploading sample to Meta…"
+                : headerErr ? <span style={{ color: "var(--danger,#e5484d)" }}>{headerErr}</span>
+                : headerExample ? `✓ Sample uploaded${headerFile ? ` — ${headerFile}` : ""}`
+                : "Pick a sample file — it's uploaded to Meta to review the template."}
+            </p>
+          )}
         </div>
         <div className="field">
           <label className="label" htmlFor="t-body">Body <span className="muted">— use {"{{1}}"}, {"{{2}}"} for variables</span></label>
@@ -183,7 +214,8 @@ export default function TemplatesManager() {
             <button type="button" className="btn btn--ghost btn--sm" onClick={addButton}>+ Add button</button>
           )}
         </div>
-        <button data-test-id="tmpl-submit" className="btn" type="submit" disabled={busy || !name || !body} aria-busy={busy}>
+        <button data-test-id="tmpl-submit" className="btn" type="submit"
+          disabled={busy || !name || !body || headerUploading || (!!headerFormat && !headerExample)} aria-busy={busy}>
           {busy ? "Submitting to Meta…" : "Submit to Meta"}
         </button>
         {msg && (

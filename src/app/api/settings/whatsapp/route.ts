@@ -12,6 +12,7 @@ export async function GET() {
 const SaveSchema = z.object({
   phoneNumberId: z.string().trim().max(64).optional(),
   businessAccountId: z.string().trim().max(64).optional(),
+  appId: z.string().trim().max(64).optional(),
   accessToken: z.string().trim().max(1024).optional(),
   appSecret: z.string().trim().max(256).optional(),
   webhookVerifyToken: z.string().trim().max(256).optional(),

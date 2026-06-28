@@ -148,6 +148,44 @@ export function buildTemplateComponents(input: CreateTemplateInput): Record<stri
   return components;
 }
 
+/**
+ * Upload a sample file to Meta's Resumable Upload API and return a media handle
+ * for use as a template header sample (example.header_handle). Two steps:
+ * create an upload session, then upload the bytes from offset 0.
+ */
+export async function uploadTemplateMedia(
+  bytes: ArrayBuffer,
+  fileName: string,
+  mimeType: string,
+): Promise<string> {
+  const cfg = await getWaConfig();
+  if (!cfg.appId) {
+    throw new WhatsAppError("Set the Meta App ID in Settings → Connect WhatsApp to upload media.", 400, false);
+  }
+  const base = `https://graph.facebook.com/${cfg.graphApiVersion}`;
+  // 1) create an upload session
+  const q = new URLSearchParams({ file_name: fileName, file_length: String(bytes.byteLength), file_type: mimeType });
+  const sessRes = await fetch(`${base}/${cfg.appId}/uploads?${q.toString()}`, {
+    method: "POST",
+    headers: { Authorization: `OAuth ${cfg.accessToken}` },
+  });
+  const sess = (await sessRes.json().catch(() => ({}))) as { id?: string; error?: { message?: string } };
+  if (!sessRes.ok || !sess.id) {
+    throw new WhatsAppError(sess.error?.message ?? `upload session failed (${sessRes.status})`, sessRes.status, false);
+  }
+  // 2) upload the bytes (single shot from offset 0) — returns the handle in `h`
+  const upRes = await fetch(`${base}/${sess.id}`, {
+    method: "POST",
+    headers: { Authorization: `OAuth ${cfg.accessToken}`, file_offset: "0" },
+    body: new Blob([bytes]),
+  });
+  const up = (await upRes.json().catch(() => ({}))) as { h?: string; error?: { message?: string } };
+  if (!upRes.ok || !up.h) {
+    throw new WhatsAppError(up.error?.message ?? `media upload failed (${upRes.status})`, upRes.status, false);
+  }
+  return up.h;
+}
+
 /** Submit a template to Meta for approval. Returns the new template id + status. */
 export async function createTemplate(input: CreateTemplateInput): Promise<{ id?: string; status?: string }> {
   const cfg = await getWaConfig();

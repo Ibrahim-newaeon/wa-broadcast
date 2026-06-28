@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/apiFetch";
 interface Status {
   phoneNumberId: string;
   businessAccountId: string;
+  appId: string;
   webhookVerifyToken: string;
   graphApiVersion: string;
   hasAccessToken: boolean;
@@ -16,6 +17,7 @@ interface Status {
 export default function WhatsAppSetup() {
   const [phoneNumberId, setPhoneNumberId] = useState("");
   const [businessAccountId, setBusinessAccountId] = useState("");
+  const [appId, setAppId] = useState("");
   const [accessToken, setAccessToken] = useState("");
   const [appSecret, setAppSecret] = useState("");
   const [webhookVerifyToken, setWebhookVerifyToken] = useState("");
@@ -33,6 +35,7 @@ export default function WhatsAppSetup() {
   function applyStatus(s: Status) {
     setPhoneNumberId(s.phoneNumberId);
     setBusinessAccountId(s.businessAccountId);
+    setAppId(s.appId);
     setWebhookVerifyToken(s.webhookVerifyToken);
     setGraphApiVersion(s.graphApiVersion || "v21.0");
     setHasAccessToken(s.hasAccessToken);
@@ -56,7 +59,7 @@ export default function WhatsAppSetup() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        phoneNumberId, businessAccountId, webhookVerifyToken, graphApiVersion,
+        phoneNumberId, businessAccountId, appId, webhookVerifyToken, graphApiVersion,
         ...(accessToken ? { accessToken } : {}),
         ...(appSecret ? { appSecret } : {}),
       }),
@@ -105,6 +108,11 @@ export default function WhatsAppSetup() {
           <input id="waba" className="input" value={businessAccountId} autoComplete="off"
             onChange={(e) => setBusinessAccountId(e.target.value)} placeholder="123456789012345" />
         </div>
+      </div>
+      <div className="field">
+        <label className="label" htmlFor="appid">App ID <span className="muted">— Meta app, needed to upload template media</span></label>
+        <input id="appid" className="input" value={appId} autoComplete="off"
+          onChange={(e) => setAppId(e.target.value)} placeholder="123456789012345" />
       </div>
 
       <div className="field">

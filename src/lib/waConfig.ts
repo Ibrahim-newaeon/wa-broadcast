@@ -7,6 +7,7 @@ import { env } from "./env";
 export interface WaConfig {
   phoneNumberId: string;
   businessAccountId: string;
+  appId: string;
   accessToken: string;
   appSecret: string;
   webhookVerifyToken: string;
@@ -20,6 +21,7 @@ export async function getWaConfig(): Promise<WaConfig> {
   return {
     phoneNumberId: row?.phoneNumberId || env.WA_PHONE_NUMBER_ID,
     businessAccountId: row?.businessAccountId || env.WA_BUSINESS_ACCOUNT_ID,
+    appId: row?.appId || env.WA_APP_ID,
     accessToken: row?.accessToken || env.WA_ACCESS_TOKEN,
     appSecret: row?.appSecret || env.META_APP_SECRET,
     webhookVerifyToken: row?.webhookVerifyToken || env.WA_WEBHOOK_VERIFY_TOKEN,
@@ -45,6 +47,7 @@ export async function saveWaConfig(patch: Partial<Record<keyof WaConfig, string 
 export async function getWaConfigStatus(): Promise<{
   phoneNumberId: string;
   businessAccountId: string;
+  appId: string;
   webhookVerifyToken: string;
   graphApiVersion: string;
   hasAccessToken: boolean;
@@ -56,6 +59,7 @@ export async function getWaConfigStatus(): Promise<{
   return {
     phoneNumberId: row?.phoneNumberId ?? "",
     businessAccountId: row?.businessAccountId ?? "",
+    appId: row?.appId ?? "",
     webhookVerifyToken: row?.webhookVerifyToken ?? "",
     graphApiVersion: row?.graphApiVersion || env.GRAPH_API_VERSION,
     hasAccessToken: Boolean(cfg.accessToken),
