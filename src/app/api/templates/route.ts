@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const result = await createTemplate(input, clientId);
     const headerFormat = input.header?.format ?? null; // IMAGE | DOCUMENT | VIDEO
     const template = await prisma.template.upsert({
-      where: { name_language: { name: input.name, language: input.language } },
+      where: { clientId_name_language: { clientId, name: input.name, language: input.language } },
       create: {
         clientId,
         name: input.name, language: input.language, category: input.category,
@@ -86,7 +86,7 @@ async function syncFromMeta(clientId: string) {
     const headerFormat = header?.format && ["IMAGE", "DOCUMENT", "VIDEO"].includes(header.format) ? header.format : null;
 
     await prisma.template.upsert({
-      where: { name_language: { name: t.name, language: t.language } },
+      where: { clientId_name_language: { clientId, name: t.name, language: t.language } },
       create: { clientId, name: t.name, language: t.language, category: t.category, status: t.status, variableCount, headerFormat },
       update: { category: t.category, status: t.status, variableCount, headerFormat },
     });

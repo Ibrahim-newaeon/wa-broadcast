@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { optOutKeywords } from "@/lib/env";
-import { getWaConfig } from "@/lib/waConfig";
+import { getWaConfig, getClientIdByPhoneNumberId, DEFAULT_CLIENT_ID } from "@/lib/waConfig";
 import { WebhookSchema } from "@/lib/validation";
 import { prisma } from "@/lib/db";
 
@@ -54,14 +54,21 @@ export async function POST(req: NextRequest) {
 
   for (const entry of parsed.data.entry) {
     for (const change of entry.changes) {
-      // Template approval/rejection — keep the local cache in sync automatically.
       const v = change.value;
+      // Route this change to the owning client via the business phone number id.
+      const clientId =
+        (v.metadata?.phone_number_id ? await getClientIdByPhoneNumberId(v.metadata.phone_number_id) : null) ??
+        DEFAULT_CLIENT_ID;
+
+      // Template approval/rejection — keep the local cache in sync automatically.
       if (v.event && v.message_template_name) {
         const status = TEMPLATE_EVENT_MAP[v.event.toUpperCase()] ?? v.event.toUpperCase();
         await prisma.template.updateMany({
-          where: v.message_template_language
-            ? { name: v.message_template_name, language: v.message_template_language }
-            : { name: v.message_template_name },
+          where: {
+            clientId,
+            name: v.message_template_name,
+            ...(v.message_template_language ? { language: v.message_template_language } : {}),
+          },
           data: { status },
         });
       }
@@ -113,11 +120,11 @@ export async function POST(req: NextRequest) {
         const text = m.text?.body?.trim().toUpperCase() ?? "";
         if (optOutKeywords.includes(text)) {
           await prisma.optOut.upsert({
-            where: { phone: m.from },
-            create: { phone: m.from, source: "keyword" },
+            where: { clientId_phone: { clientId, phone: m.from } },
+            create: { clientId, phone: m.from, source: "keyword" },
             update: {},
           });
-          await prisma.contact.updateMany({ where: { phone: m.from }, data: { optedOut: true } });
+          await prisma.contact.updateMany({ where: { phone: m.from, clientId }, data: { optedOut: true } });
         }
       }
     }

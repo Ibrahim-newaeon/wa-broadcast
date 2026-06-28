@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import type { Prisma, RecipientStatus } from "@prisma/client";
+import { getClientId } from "@/lib/users";
 
 export const runtime = "nodejs";
 
@@ -20,8 +21,8 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
   const offset = Math.max(0, Number(sp.get("offset") ?? 0) || 0);
   const limit = Math.min(200, Math.max(1, Number(sp.get("limit") ?? 50) || 50));
 
-  const broadcast = await prisma.broadcast.findUnique({
-    where: { id },
+  const broadcast = await prisma.broadcast.findFirst({
+    where: { id, clientId: await getClientId(req) },
     include: { template: true, list: true },
   });
   if (!broadcast) return NextResponse.json({ error: "not found" }, { status: 404 });

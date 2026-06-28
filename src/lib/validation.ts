@@ -132,6 +132,8 @@ export const WebhookSchema = z.object({
         z.object({
           field: z.string().optional(),
           value: z.object({
+            // Identifies which business phone number (→ which client) this is for.
+            metadata: z.object({ phone_number_id: z.string() }).optional(),
             // Template approval/rejection updates (field: message_template_status_update)
             event: z.string().optional(),
             message_template_name: z.string().optional(),

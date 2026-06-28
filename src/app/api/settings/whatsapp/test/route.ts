@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getWaConfig } from "@/lib/waConfig";
+import { getClientId } from "@/lib/users";
 
 export const runtime = "nodejs";
 
@@ -7,8 +8,8 @@ export const runtime = "nodejs";
  * POST /api/settings/whatsapp/test — verify the saved credentials by asking
  * Meta for the phone number's details. Always 200; `ok` indicates success.
  */
-export async function POST() {
-  const cfg = await getWaConfig();
+export async function POST(req: NextRequest) {
+  const cfg = await getWaConfig(await getClientId(req));
   if (!cfg.phoneNumberId || !cfg.accessToken) {
     return NextResponse.json({ ok: false, error: "Phone number ID and access token are required." });
   }

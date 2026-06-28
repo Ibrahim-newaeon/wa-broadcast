@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
   let inserted = 0;
   for (const row of accepted) {
     const contact = await prisma.contact.upsert({
-      where: { phone: row.phone },
+      where: { clientId_phone: { clientId, phone: row.phone } },
       create: { clientId, phone: row.phone, name: row.name, attributes: row.attributes },
       update: { name: row.name, attributes: row.attributes },
     });

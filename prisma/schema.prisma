@@ -23,8 +23,8 @@ model Client {
 model Contact {
   id        String   @id @default(cuid())
   clientId  String   @default("default")
-  // E.164 without '+', e.g. 9665XXXXXXXX — unique per business
-  phone     String   @unique
+  // E.164 without '+', e.g. 9665XXXXXXXX — unique per client (tenant)
+  phone     String
   name      String?
   // Free-form template variables + opt-in metadata (source, date)
   attributes Json    @default("{}")
@@ -35,6 +35,7 @@ model Contact {
   memberships ContactListMembership[]
   recipients  BroadcastRecipient[]
 
+  @@unique([clientId, phone])
   @@index([optedOut])
 }
 
@@ -90,7 +91,8 @@ model Template {
 
   broadcasts Broadcast[]
 
-  @@unique([name, language])
+  @@unique([clientId, name, language])
+  @@index([clientId])
 }
 
 model Broadcast {
@@ -211,9 +213,10 @@ model WhatsAppConfig {
 model OptOut {
   id        String   @id @default(cuid())
   clientId  String   @default("default")
-  phone     String   @unique
+  phone     String
   source    String   @default("keyword") // keyword | manual | api
   createdAt DateTime @default(now())
 
+  @@unique([clientId, phone])
   @@index([clientId])
 }

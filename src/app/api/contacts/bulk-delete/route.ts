@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { getClientId } from "@/lib/users";
 
 export const runtime = "nodejs";
 
@@ -20,14 +21,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "invalid" }, { status: 400 });
   }
 
+  const clientId = await getClientId(req);
   let deleted = 0;
   let skipped = 0;
   for (const id of parsed.data.ids) {
     try {
-      await prisma.contact.delete({ where: { id } });
-      deleted++;
+      // Scoped delete — count 0 means not found / not this client's.
+      const r = await prisma.contact.deleteMany({ where: { id, clientId } });
+      if (r.count > 0) deleted++;
+      else skipped++;
     } catch {
-      // Not found, or has broadcast history (FK RESTRICT) — leave it in place.
+      // Has broadcast history (FK RESTRICT) — leave it in place.
       skipped++;
     }
   }

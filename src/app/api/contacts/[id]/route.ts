@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { PhoneSchema } from "@/lib/validation";
+import { getClientId } from "@/lib/users";
 
 export const runtime = "nodejs";
 
@@ -28,14 +29,15 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "invalid" }, { status: 400 });
   }
 
-  const contact = await prisma.contact.findUnique({ where: { id } });
+  const clientId = await getClientId(req);
+  const contact = await prisma.contact.findFirst({ where: { id, clientId } });
   if (!contact) return NextResponse.json({ error: "not found" }, { status: 404 });
 
   const { optedOut, name, phone } = parsed.data;
 
-  // Reject a phone change that would collide with another contact.
+  // Reject a phone change that would collide with another contact (same client).
   if (phone !== undefined && phone !== contact.phone) {
-    const clash = await prisma.contact.findUnique({ where: { phone }, select: { id: true } });
+    const clash = await prisma.contact.findFirst({ where: { phone, clientId }, select: { id: true } });
     if (clash) {
       return NextResponse.json({ error: "Another contact already uses this phone number." }, { status: 409 });
     }
@@ -51,17 +53,14 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   // Mirror opt-out into the OptOut table. If the phone also changed, drop the
   // stale row under the old number first so both tables stay consistent.
   if (phone !== undefined && phone !== contact.phone) {
-    await prisma.optOut.deleteMany({ where: { phone: contact.phone } });
+    await prisma.optOut.deleteMany({ where: { phone: contact.phone, clientId } });
   }
   if (optedOut !== undefined || (phone !== undefined && phone !== contact.phone)) {
     if (updated.optedOut) {
-      await prisma.optOut.upsert({
-        where: { phone: updated.phone },
-        create: { phone: updated.phone, source: "manual" },
-        update: {},
-      });
+      const existing = await prisma.optOut.findFirst({ where: { phone: updated.phone, clientId }, select: { id: true } });
+      if (!existing) await prisma.optOut.create({ data: { phone: updated.phone, clientId, source: "manual" } });
     } else {
-      await prisma.optOut.deleteMany({ where: { phone: updated.phone } });
+      await prisma.optOut.deleteMany({ where: { phone: updated.phone, clientId } });
     }
   }
 
@@ -71,9 +70,9 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   });
 }
 
-/** DELETE /api/contacts/:id */
-export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+/** DELETE /api/contacts/:id (scoped to the caller's client). */
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
-  await prisma.contact.delete({ where: { id } }).catch(() => null);
+  await prisma.contact.deleteMany({ where: { id, clientId: await getClientId(req) } }).catch(() => null);
   return NextResponse.json({ ok: true });
 }

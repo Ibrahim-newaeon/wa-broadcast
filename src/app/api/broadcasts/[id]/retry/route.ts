@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendQueue } from "@/lib/queue";
 import { resolveBodyParams, type VariableMap } from "@/lib/broadcast";
+import { getClientId } from "@/lib/users";
 
 export const runtime = "nodejs";
 
@@ -11,11 +12,12 @@ export const runtime = "nodejs";
  * template params from the saved variableMap, and queues fresh jobs (new jobId
  * so BullMQ doesn't dedupe against the original completed job).
  */
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
+  const clientId = await getClientId(req);
 
-  const broadcast = await prisma.broadcast.findUnique({
-    where: { id },
+  const broadcast = await prisma.broadcast.findFirst({
+    where: { id, clientId },
     include: { template: true },
   });
   if (!broadcast) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -25,7 +27,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
 
   // Skip opted-out contacts even on retry.
   const optOuts = new Set(
-    (await prisma.optOut.findMany({ select: { phone: true } })).map((o) => o.phone),
+    (await prisma.optOut.findMany({ where: { clientId }, select: { phone: true } })).map((o) => o.phone),
   );
 
   const failed = await prisma.broadcastRecipient.findMany({
@@ -61,11 +63,14 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
       "send",
       {
         broadcastId: id,
+        clientId,
         recipientId: rec.id,
         to: rec.contact.phone,
         templateName: broadcast.template.name,
         language: broadcast.template.language,
         bodyParams: resolveBodyParams(variableMap, rec.contact),
+        headerFormat: broadcast.template.headerFormat,
+        headerMediaUrl: broadcast.headerMediaUrl,
       },
       { jobId: `${id}:${rec.contactId}:r${stamp}` }, // fresh id avoids dedupe
     );
