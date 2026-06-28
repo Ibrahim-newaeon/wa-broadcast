@@ -40,6 +40,6 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD wget -qO- "http://localhost:${PORT:-8080}/api/health" || exit 1
 
-# Default = web on $PORT (Railway default 8080), bound to :: for IPv6 reach.
-# docker-compose / railway.json override this command per service.
-CMD ["sh", "-c", "npx next start -H :: -p ${PORT:-8080}"]
+# Default = web. next start binds 0.0.0.0:$PORT (Railway injects PORT; 8080 local
+# fallback is overridden by compose's PORT=3000). railway.json/compose override.
+CMD ["npm", "run", "start"]
