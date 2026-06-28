@@ -16,7 +16,13 @@ export const runtime = "nodejs";
 export async function GET(req: NextRequest) {
   const clientId = await getClientId(req);
   if (req.nextUrl.searchParams.get("sync") === "1") {
-    await syncFromMeta(clientId);
+    try {
+      await syncFromMeta(clientId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Template sync failed";
+      const code = err instanceof WhatsAppError ? err.status : 502;
+      return NextResponse.json({ error: message }, { status: code });
+    }
   }
   const templates = await prisma.template.findMany({ where: { clientId }, orderBy: { name: "asc" } });
   return NextResponse.json({ templates });
@@ -89,9 +95,15 @@ const MetaTemplateSchema = z.object({
 
 async function syncFromMeta(clientId: string) {
   const cfg = await getWaConfig(clientId);
+  if (!cfg.businessAccountId) {
+    throw new WhatsAppError("Set the Business account ID in Settings → Connect WhatsApp first.", 400, false);
+  }
   const url = `https://graph.facebook.com/${cfg.graphApiVersion}/${cfg.businessAccountId}/message_templates?limit=200`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${cfg.accessToken}` } });
-  if (!res.ok) throw new Error(`template sync failed (${res.status})`);
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+    throw new WhatsAppError(body.error?.message ?? `Meta returned ${res.status}`, res.status, false);
+  }
 
   const parsed = MetaTemplateSchema.parse(await res.json());
   for (const t of parsed.data) {

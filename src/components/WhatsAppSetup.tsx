@@ -99,12 +99,12 @@ export default function WhatsAppSetup() {
 
       <div className="row" style={{ gap: 12 }}>
         <div className="field" style={{ flex: 1 }}>
-          <label className="label" htmlFor="pn">Phone number ID</label>
+          <label className="label" htmlFor="pn">Phone number ID <span className="muted">— from WhatsApp → API Setup, not the phone number itself</span></label>
           <input id="pn" data-test-id="wa-phone-id" className="input" value={phoneNumberId} autoComplete="off"
             onChange={(e) => setPhoneNumberId(e.target.value)} placeholder="123456789012345" />
         </div>
         <div className="field" style={{ flex: 1 }}>
-          <label className="label" htmlFor="waba">Business account ID</label>
+          <label className="label" htmlFor="waba">WhatsApp Business Account ID (WABA) <span className="muted">— from API Setup, not your Business Portfolio ID</span></label>
           <input id="waba" className="input" value={businessAccountId} autoComplete="off"
             onChange={(e) => setBusinessAccountId(e.target.value)} placeholder="123456789012345" />
         </div>

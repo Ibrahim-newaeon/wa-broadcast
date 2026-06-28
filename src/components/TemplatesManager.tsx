@@ -56,8 +56,9 @@ export default function TemplatesManager() {
     if (sync) setSyncing(true);
     const res = await apiFetch(`/api/templates${sync ? "?sync=1" : ""}`);
     if (sync) setSyncing(false);
-    if (res.ok) setTemplates((await res.json()).templates ?? []);
-    else if (sync) setMsg({ kind: "err", text: "Sync failed — check your Meta credentials." });
+    const j = await res.json().catch(() => ({}));
+    if (res.ok) setTemplates(j.templates ?? []);
+    else if (sync) setMsg({ kind: "err", text: j.error ? `Sync failed: ${j.error}` : "Sync failed — check your Meta credentials." });
   }
   useEffect(() => { void loadTemplates(); }, []);
 
