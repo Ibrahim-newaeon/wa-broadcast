@@ -1,5 +1,6 @@
 import { prisma } from "./db";
 import { env } from "./env";
+import { DEFAULT_CLIENT_ID } from "./tenancy";
 
 // Effective WhatsApp Cloud API connection config. Values saved through the
 // no-code setup page (WhatsAppConfig row) take precedence; env vars are the
@@ -15,7 +16,7 @@ export interface WaConfig {
 }
 
 // Bootstrap tenant that owns all pre-existing data until multi-client onboarding.
-export const DEFAULT_CLIENT_ID = "default";
+export { DEFAULT_CLIENT_ID };
 
 /** Map an inbound webhook's phone_number_id to the client that owns it. */
 export async function getClientIdByPhoneNumberId(phoneNumberId: string): Promise<string | null> {

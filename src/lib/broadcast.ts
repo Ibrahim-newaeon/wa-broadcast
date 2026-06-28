@@ -57,7 +57,9 @@ export async function createAndEnqueueBroadcast(opts: {
     where: { listId: opts.listId, list: { clientId: opts.clientId } },
     include: { contact: true },
   });
-  const recipients = members.map((m) => m.contact).filter((c) => !c.optedOut && !optOuts.has(c.phone));
+  const recipients = members
+    .map((m) => m.contact)
+    .filter((c) => c.clientId === opts.clientId && !c.optedOut && !optOuts.has(c.phone));
   if (recipients.length === 0) return { ok: false, error: "no opted-in recipients in list", code: 422 };
 
   const scheduledAt = opts.scheduledAt ?? null;

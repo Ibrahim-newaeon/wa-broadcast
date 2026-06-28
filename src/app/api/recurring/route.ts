@@ -41,6 +41,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "template not approved" }, { status: 422 });
   }
 
+  const list = await prisma.contactList.findFirst({ where: { id: listId, clientId }, select: { id: true } });
+  if (!list) return NextResponse.json({ error: "list not found" }, { status: 404 });
+
   const campaign = await prisma.recurringCampaign.create({
     data: { clientId, name, templateId, listId, cron, variableMap, active: true },
   });

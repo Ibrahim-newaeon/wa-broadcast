@@ -20,9 +20,17 @@ export async function POST(req: NextRequest) {
   const form = await req.formData();
   const file = form.get("file");
   const listId = form.get("listId");
+  const clientId = await getClientId(req);
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "file is required" }, { status: 400 });
+  }
+
+  // A supplied listId must belong to the caller's client — otherwise an uploader
+  // could inject their contacts into another tenant's list.
+  if (typeof listId === "string" && listId) {
+    const owned = await prisma.contactList.findFirst({ where: { id: listId, clientId }, select: { id: true } });
+    if (!owned) return NextResponse.json({ error: "list not found" }, { status: 404 });
   }
 
   const text = await file.text();
@@ -79,7 +87,6 @@ export async function POST(req: NextRequest) {
   }
 
   // Upsert contacts (dedupe by phone), optionally attach to list.
-  const clientId = await getClientId(req);
   let inserted = 0;
   for (const row of accepted) {
     const contact = await prisma.contact.upsert({

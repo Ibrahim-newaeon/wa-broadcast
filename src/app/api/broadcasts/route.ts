@@ -27,9 +27,10 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ broadcastId: result.broadcastId, queued: result.queued, scheduledAt: result.scheduledAt });
 }
 
-/** GET /api/broadcasts — list with progress. */
-export async function GET() {
+/** GET /api/broadcasts — list this client's broadcasts with progress. */
+export async function GET(req: NextRequest) {
   const broadcasts = await prisma.broadcast.findMany({
+    where: { clientId: await getClientId(req) },
     orderBy: { createdAt: "desc" },
     take: 50,
     include: { template: true, list: true },

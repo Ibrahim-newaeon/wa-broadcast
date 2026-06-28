@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "./db";
 import { env } from "./env";
 import { verifyToken, ACCESS_COOKIE, ACTING_CLIENT_COOKIE } from "./auth";
-import { DEFAULT_CLIENT_ID } from "./waConfig";
+import { DEFAULT_CLIENT_ID, resolveActingClientId } from "./tenancy";
 
 // Node-only auth helpers (DB + bcrypt). The single env admin is used to
 // BOOTSTRAP when no users exist yet; afterwards everything is DB-backed.
@@ -53,13 +53,6 @@ export async function createUser(input: { email: string; name?: string; password
 
 export interface AuthContext { email: string; role: string; clientId: string }
 
-// A SUPERADMIN's own clientId; the acting-client cookie can point them elsewhere.
-function actingClientId(role: string, ownClientId: string, acting: string | undefined): string {
-  // Only super-admins may override their tenant (cookie is set by a gated endpoint).
-  if (role === "SUPERADMIN" && acting) return acting;
-  return ownClientId;
-}
-
 /** Read the verified access token and return the caller's tenant context.
  *  Routes are already gated by middleware; this just exposes the claims.
  *  For super-admins, an "acting client" cookie overrides their own clientId. */
@@ -71,7 +64,7 @@ export async function getAuthContext(req: NextRequest): Promise<AuthContext | nu
   return {
     email: claims.sub,
     role,
-    clientId: actingClientId(role, own, req.cookies.get(ACTING_CLIENT_COOKIE)?.value),
+    clientId: resolveActingClientId(role, own, req.cookies.get(ACTING_CLIENT_COOKIE)?.value),
   };
 }
 
@@ -86,7 +79,7 @@ export async function getClientIdFromCookies(): Promise<string> {
   const jar = await cookies();
   const claims = await verifyToken(jar.get(ACCESS_COOKIE)?.value, "access");
   if (!claims?.sub) return DEFAULT_CLIENT_ID;
-  return actingClientId(claims.role ?? "MEMBER", claims.cid ?? DEFAULT_CLIENT_ID, jar.get(ACTING_CLIENT_COOKIE)?.value);
+  return resolveActingClientId(claims.role ?? "MEMBER", claims.cid ?? DEFAULT_CLIENT_ID, jar.get(ACTING_CLIENT_COOKIE)?.value);
 }
 
 /** Read the access token and require ADMIN (or SUPERADMIN). Returns claims or null. */

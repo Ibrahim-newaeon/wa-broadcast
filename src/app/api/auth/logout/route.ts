@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken, cookieBase, ACCESS_COOKIE, REFRESH_COOKIE } from "@/lib/auth";
+import { verifyToken, cookieBase, ACCESS_COOKIE, REFRESH_COOKIE, ACTING_CLIENT_COOKIE } from "@/lib/auth";
 import { revokeJti } from "@/lib/tokenStore";
 
 export const runtime = "nodejs";
@@ -12,5 +12,7 @@ export async function POST(req: NextRequest) {
   const res = NextResponse.json({ ok: true });
   res.cookies.set(ACCESS_COOKIE, "", { ...cookieBase, maxAge: 0 });
   res.cookies.set(REFRESH_COOKIE, "", { ...cookieBase, maxAge: 0 });
+  // Drop any super-admin acting-client selection so it can't leak into the next session.
+  res.cookies.set(ACTING_CLIENT_COOKIE, "", { ...cookieBase, maxAge: 0 });
   return res;
 }
