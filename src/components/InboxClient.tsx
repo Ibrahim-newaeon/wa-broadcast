@@ -23,6 +23,33 @@ function bodyOf(m: Msg): string {
 }
 const hhmm = (s: string) => new Date(s).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
+/** Render a bubble's content — media is streamed (token-safe) via /api/media/:id. */
+function MessageContent({ m }: { m: Msg }) {
+  const src = `/api/media/${m.id}`;
+  if (m.type === "image" || m.type === "sticker") {
+    return (
+      <>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="bubble__media" src={src} alt={m.text ?? "image"} loading="lazy" />
+        {m.text && <div className="bubble__text">{m.text}</div>}
+      </>
+    );
+  }
+  if (m.type === "video") {
+    return (
+      <>
+        <video className="bubble__media" src={src} controls />
+        {m.text && <div className="bubble__text">{m.text}</div>}
+      </>
+    );
+  }
+  if (m.type === "audio") return <audio className="bubble__audio" src={src} controls />;
+  if (m.type === "document") {
+    return <a className="bubble__doc" href={src} target="_blank" rel="noreferrer">📄 {m.mediaFilename ?? "Document"}</a>;
+  }
+  return <div className="bubble__text">{bodyOf(m)}</div>;
+}
+
 export default function InboxClient() {
   const [convos, setConvos] = useState<Convo[]>([]);
   const [activeId, setActiveId] = useState("");
@@ -33,6 +60,7 @@ export default function InboxClient() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const threadRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const loadConvos = useCallback(async () => {
     const r = await apiFetch("/api/conversations");
@@ -94,6 +122,25 @@ export default function InboxClient() {
     }
   }
 
+  async function sendFile(file: File) {
+    if (!activeId) return;
+    setBusy(true);
+    setErr(null);
+    const fd = new FormData();
+    fd.append("file", file);
+    if (reply.trim()) fd.append("caption", reply.trim());
+    const r = await apiFetch(`/api/conversations/${activeId}/media`, { method: "POST", body: fd });
+    const j = await r.json().catch(() => ({}));
+    setBusy(false);
+    if (r.ok) {
+      setReply("");
+      setMessages((m) => [...m, j.message]);
+      loadConvos();
+    } else {
+      setErr(j.error ?? "Could not send file");
+    }
+  }
+
   return (
     <div className="inbox">
       <aside className="inbox__list">
@@ -124,7 +171,7 @@ export default function InboxClient() {
             <div className="thread__body" ref={threadRef}>
               {messages.map((m) => (
                 <div key={m.id} className={`bubble bubble--${m.direction === "OUT" ? "out" : "in"}`}>
-                  <div className="bubble__text">{bodyOf(m)}</div>
+                  <MessageContent m={m} />
                   <div className="bubble__meta">
                     {hhmm(m.createdAt)}
                     {m.direction === "OUT" && m.status ? ` · ${m.status.toLowerCase()}` : ""}
@@ -140,6 +187,26 @@ export default function InboxClient() {
                 </div>
               )}
               <div className="thread__inputrow">
+                <input
+                  ref={fileRef}
+                  type="file"
+                  hidden
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) sendFile(f);
+                    e.target.value = "";
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn btn--ghost thread__attach"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={busy}
+                  title="Attach a file"
+                  aria-label="Attach a file"
+                >
+                  📎
+                </button>
                 <input
                   className="input"
                   placeholder={windowOpen ? "Type a reply…" : "Window closed — a free-form reply may be rejected"}

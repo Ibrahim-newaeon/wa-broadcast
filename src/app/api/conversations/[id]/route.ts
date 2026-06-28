@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getClientId } from "@/lib/users";
+import { sendReadReceipt } from "@/lib/whatsapp";
 
 export const runtime = "nodejs";
 
@@ -23,8 +24,18 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     take: 300,
   });
 
-  // Opening the thread clears the unread badge.
-  if (convo.unread > 0) await prisma.conversation.update({ where: { id }, data: { unread: 0 } });
+  // Opening the thread clears the unread badge + sends a WhatsApp read receipt
+  // for the latest inbound message (only on the unread→read transition, so polls
+  // don't spam Meta).
+  if (convo.unread > 0) {
+    await prisma.conversation.update({ where: { id }, data: { unread: 0 } });
+    const lastIn = await prisma.message.findFirst({
+      where: { conversationId: id, direction: "IN", wamid: { not: null } },
+      orderBy: { createdAt: "desc" },
+      select: { wamid: true },
+    });
+    if (lastIn?.wamid) await sendReadReceipt(lastIn.wamid, clientId);
+  }
 
   const windowOpen = convo.lastInboundAt ? Date.now() - new Date(convo.lastInboundAt).getTime() < WINDOW_MS : false;
 

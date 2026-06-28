@@ -141,6 +141,66 @@ export async function sendReadReceipt(wamid: string, clientId?: string): Promise
   }
 }
 
+/** Resolve a media id → its bytes (two-step: get the temp URL, then download). */
+export async function fetchMediaBytes(
+  mediaId: string,
+  clientId?: string,
+): Promise<{ bytes: ArrayBuffer; mime: string } | null> {
+  const cfg = await getWaConfig(clientId);
+  const auth = { Authorization: `Bearer ${cfg.accessToken}` };
+  const metaRes = await fetch(`https://graph.facebook.com/${cfg.graphApiVersion}/${mediaId}`, { headers: auth });
+  if (!metaRes.ok) return null;
+  const meta = (await metaRes.json().catch(() => ({}))) as { url?: string; mime_type?: string };
+  if (!meta.url) return null;
+  const bin = await fetch(meta.url, { headers: auth }); // the URL itself also needs the token
+  if (!bin.ok) return null;
+  return { bytes: await bin.arrayBuffer(), mime: meta.mime_type || "application/octet-stream" };
+}
+
+/** Upload a file to the messages media store; returns the media id. */
+export async function uploadMedia(bytes: ArrayBuffer, mime: string, filename: string, clientId?: string): Promise<string> {
+  const cfg = await getWaConfig(clientId);
+  const form = new FormData();
+  form.append("messaging_product", "whatsapp");
+  form.append("file", new Blob([bytes], { type: mime }), filename);
+  const res = await fetch(`https://graph.facebook.com/${cfg.graphApiVersion}/${cfg.phoneNumberId}/media`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${cfg.accessToken}` },
+    body: form,
+  });
+  const json = (await res.json().catch(() => ({}))) as { id?: string; error?: { message?: string } };
+  if (!res.ok || !json.id) throw new WhatsAppError(json.error?.message ?? `media upload failed (${res.status})`, res.status, false);
+  return json.id;
+}
+
+/** Send a media message (by media id). Returns the wamid. */
+export async function sendMedia(args: {
+  to: string;
+  type: "image" | "document" | "audio" | "video";
+  mediaId: string;
+  caption?: string;
+  filename?: string;
+  clientId?: string;
+}): Promise<string> {
+  const cfg = await getWaConfig(args.clientId);
+  const media: Record<string, unknown> = { id: args.mediaId };
+  if (args.caption && args.type !== "audio") media.caption = args.caption;
+  if (args.filename && args.type === "document") media.filename = args.filename;
+  const res = await fetch(`https://graph.facebook.com/${cfg.graphApiVersion}/${cfg.phoneNumberId}/messages`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${cfg.accessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ messaging_product: "whatsapp", recipient_type: "individual", to: args.to, type: args.type, [args.type]: media }),
+  });
+  const json = (await res.json().catch(() => ({}))) as { messages?: { id: string }[]; error?: { message?: string } };
+  if (!res.ok) {
+    const retryable = res.status === 429 || res.status >= 500;
+    throw new WhatsAppError(json.error?.message ?? `WA media send failed (${res.status})`, res.status, retryable);
+  }
+  const wamid = json.messages?.[0]?.id;
+  if (!wamid) throw new WhatsAppError("No wamid in response", 500, true);
+  return wamid;
+}
+
 // ── Template creation (submit for Meta approval) ─────────────────────
 export interface TemplateButtonInput {
   type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER";
