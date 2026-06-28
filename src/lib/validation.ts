@@ -123,6 +123,11 @@ export const CreateRecurringSchema = z.object({
 });
 export type CreateBroadcastInput = z.infer<typeof CreateBroadcastSchema>;
 
+export const CreateClientSchema = z.object({
+  name: z.string().trim().min(1, "Client name is required").max(120),
+  slug: z.string().trim().regex(/^[a-z0-9-]{2,40}$/, "Slug: 2–40 lowercase letters, numbers, or hyphens").optional(),
+});
+
 // Inbound webhook payload — only the fields we consume, validated defensively.
 export const WebhookSchema = z.object({
   object: z.string(),

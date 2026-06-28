@@ -51,6 +51,14 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
 .nav__links a { color:var(--muted); font-weight:600; font-size:14px; }
 .nav__links a.is-active, .nav__links a:hover { color:var(--ink); }
 
+/* super-admin client switcher */
+.client-switch { display:inline-flex; align-items:center; gap:7px; padding:5px 10px;
+  border:1px solid var(--line2); border-radius:var(--r-pill, 999px); background:var(--teal-soft); }
+.client-switch__dot { width:7px; height:7px; border-radius:50%; background:var(--teal); flex:none; }
+.client-switch__select { background:none; border:0; color:var(--ink); font:inherit; font-size:13px;
+  font-weight:600; cursor:pointer; padding-inline-end:2px; }
+.client-switch__select:focus { outline:none; }
+
 /* brand wordmark */
 .brand { display:inline-flex; align-items:center; gap:10px; font-weight:800; font-size:20px; }
 .brand .mark { width:26px; height:26px; border-radius:7px; border:2.5px solid var(--teal);

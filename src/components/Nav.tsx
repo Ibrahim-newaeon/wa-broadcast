@@ -1,5 +1,6 @@
 import Link from "next/link";
 import LogoutButton from "./LogoutButton";
+import ClientSwitcher from "./ClientSwitcher";
 
 /** Brand wordmark + primary nav (3 links, per the design system). */
 export default function Nav() {
@@ -16,6 +17,7 @@ export default function Nav() {
         <Link href="/templates">Templates</Link>
         <Link href="/campaigns">Campaigns</Link>
         <Link href="/settings">Settings</Link>
+        <ClientSwitcher />
         <LogoutButton />
       </div>
     </nav>

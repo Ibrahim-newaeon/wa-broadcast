@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { NextRequest } from "next/server";
 import { prisma } from "./db";
 import { env } from "./env";
-import { verifyToken, ACCESS_COOKIE } from "./auth";
+import { verifyToken, ACCESS_COOKIE, ACTING_CLIENT_COOKIE } from "./auth";
 import { DEFAULT_CLIENT_ID } from "./waConfig";
 
 // Node-only auth helpers (DB + bcrypt). The single env admin is used to
@@ -23,17 +23,17 @@ export async function verifyCredentials(email: string, password: string): Promis
   const count = await prisma.user.count();
   if (count === 0 && email.toLowerCase() === env.ADMIN_EMAIL.toLowerCase()) {
     return (await bcrypt.compare(password, env.ADMIN_PASSWORD_HASH))
-      ? { email: env.ADMIN_EMAIL.toLowerCase(), role: "ADMIN", clientId: DEFAULT_CLIENT_ID }
+      ? { email: env.ADMIN_EMAIL.toLowerCase(), role: "SUPERADMIN", clientId: DEFAULT_CLIENT_ID }
       : null;
   }
   return null;
 }
 
-/** Role + clientId for a known subject (used on refresh). Env admin → ADMIN. */
+/** Role + clientId for a known subject (used on refresh). Env admin → SUPERADMIN. */
 export async function getUserAuth(email: string): Promise<{ role: string; clientId: string }> {
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   if (user) return { role: user.role, clientId: user.clientId };
-  if (email.toLowerCase() === env.ADMIN_EMAIL.toLowerCase()) return { role: "ADMIN", clientId: DEFAULT_CLIENT_ID };
+  if (email.toLowerCase() === env.ADMIN_EMAIL.toLowerCase()) return { role: "SUPERADMIN", clientId: DEFAULT_CLIENT_ID };
   return { role: "MEMBER", clientId: DEFAULT_CLIENT_ID };
 }
 
@@ -53,30 +53,52 @@ export async function createUser(input: { email: string; name?: string; password
 
 export interface AuthContext { email: string; role: string; clientId: string }
 
+// A SUPERADMIN's own clientId; the acting-client cookie can point them elsewhere.
+function actingClientId(role: string, ownClientId: string, acting: string | undefined): string {
+  // Only super-admins may override their tenant (cookie is set by a gated endpoint).
+  if (role === "SUPERADMIN" && acting) return acting;
+  return ownClientId;
+}
+
 /** Read the verified access token and return the caller's tenant context.
- *  Routes are already gated by middleware; this just exposes the claims. */
+ *  Routes are already gated by middleware; this just exposes the claims.
+ *  For super-admins, an "acting client" cookie overrides their own clientId. */
 export async function getAuthContext(req: NextRequest): Promise<AuthContext | null> {
   const claims = await verifyToken(req.cookies.get(ACCESS_COOKIE)?.value, "access");
   if (!claims?.sub) return null;
-  return { email: claims.sub, role: claims.role ?? "MEMBER", clientId: claims.cid ?? DEFAULT_CLIENT_ID };
+  const role = claims.role ?? "MEMBER";
+  const own = claims.cid ?? DEFAULT_CLIENT_ID;
+  return {
+    email: claims.sub,
+    role,
+    clientId: actingClientId(role, own, req.cookies.get(ACTING_CLIENT_COOKIE)?.value),
+  };
 }
 
-/** Shortcut: the caller's clientId (falls back to the bootstrap tenant). */
+/** Shortcut: the caller's effective clientId (honors a super-admin's acting client). */
 export async function getClientId(req: NextRequest): Promise<string> {
   return (await getAuthContext(req))?.clientId ?? DEFAULT_CLIENT_ID;
 }
 
-/** Server-component variant: read the caller's clientId from the request cookies. */
+/** Server-component variant: read the caller's effective clientId from cookies. */
 export async function getClientIdFromCookies(): Promise<string> {
   const { cookies } = await import("next/headers");
-  const token = (await cookies()).get(ACCESS_COOKIE)?.value;
-  const claims = await verifyToken(token, "access");
-  return claims?.cid ?? DEFAULT_CLIENT_ID;
+  const jar = await cookies();
+  const claims = await verifyToken(jar.get(ACCESS_COOKIE)?.value, "access");
+  if (!claims?.sub) return DEFAULT_CLIENT_ID;
+  return actingClientId(claims.role ?? "MEMBER", claims.cid ?? DEFAULT_CLIENT_ID, jar.get(ACTING_CLIENT_COOKIE)?.value);
 }
 
 /** Read the access token and require ADMIN (or SUPERADMIN). Returns claims or null. */
 export async function requireAdmin(req: NextRequest) {
   const claims = await verifyToken(req.cookies.get(ACCESS_COOKIE)?.value, "access");
   if (!claims || (claims.role !== "ADMIN" && claims.role !== "SUPERADMIN")) return null;
+  return claims;
+}
+
+/** Require SUPERADMIN (cross-client management). Returns claims or null. */
+export async function requireSuperAdmin(req: NextRequest) {
+  const claims = await verifyToken(req.cookies.get(ACCESS_COOKIE)?.value, "access");
+  if (!claims || claims.role !== "SUPERADMIN") return null;
   return claims;
 }

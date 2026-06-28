@@ -5,6 +5,8 @@ const secret = new TextEncoder().encode(env.AUTH_JWT_SECRET);
 
 export const ACCESS_COOKIE = "at";
 export const REFRESH_COOKIE = "rt";
+// SUPERADMIN-only: the client a super-admin is currently "acting as".
+export const ACTING_CLIENT_COOKIE = "acid";
 export const REFRESH_TTL_SECONDS = 60 * 60 * 24 * 7; // 7d
 export const ACCESS_MAX_AGE = 60 * 15; // 15m
 

@@ -14,8 +14,8 @@ if (!email || !passwordHash) {
 
 const user = await prisma.user.upsert({
   where: { email },
-  create: { email, passwordHash, role: "ADMIN", name: "Admin" },
-  update: { passwordHash, role: "ADMIN" },
+  create: { email, passwordHash, role: "SUPERADMIN", name: "Admin" },
+  update: { passwordHash, role: "SUPERADMIN" },
   select: { email: true, role: true },
 });
 console.log("Seeded:", user);
