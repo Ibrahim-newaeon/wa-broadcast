@@ -47,6 +47,19 @@ export default function ClientsManager() {
     if (res.ok) window.location.reload();
   }
 
+  async function remove(c: Client) {
+    if (!window.confirm(`Permanently delete “${c.name}” and ALL of its contacts, lists, templates, and broadcasts? This cannot be undone.`)) return;
+    const res = await apiFetch(`/api/clients/${c.id}`, { method: "DELETE" });
+    if (res.ok) {
+      // Deleting the active client clears the acting cookie server-side → reload.
+      if (c.id === active) window.location.reload();
+      else { setMsg(`Deleted “${c.name}”.`); refresh(); }
+    } else {
+      const j = await res.json().catch(() => ({}));
+      setMsg(j.error ?? "Could not delete client");
+    }
+  }
+
   return (
     <section className="card">
       <h3>Clients <span className="muted" style={{ fontWeight: 400 }}>· super-admin</span></h3>
@@ -69,9 +82,12 @@ export default function ClientsManager() {
               </td>
               <td>{c.contacts}</td>
               <td>{c.users}</td>
-              <td style={{ textAlign: "end" }}>
+              <td style={{ textAlign: "end", whiteSpace: "nowrap" }}>
                 {c.id !== active && (
-                  <button type="button" className="btn btn--ghost" onClick={() => switchTo(c.id)}>Switch to</button>
+                  <button type="button" className="btn btn--ghost btn--sm" onClick={() => switchTo(c.id)}>Switch to</button>
+                )}
+                {c.id !== "default" && (
+                  <button type="button" className="btn btn--danger btn--sm" style={{ marginInlineStart: 8 }} onClick={() => remove(c)}>Delete</button>
                 )}
               </td>
             </tr>
