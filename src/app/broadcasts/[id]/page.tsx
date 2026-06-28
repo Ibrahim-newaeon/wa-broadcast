@@ -3,14 +3,15 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import Nav from "@/components/Nav";
 import LiveProgress from "@/components/LiveProgress";
+import { getClientIdFromCookies } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
 
 export default async function BroadcastDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const b = await prisma.broadcast.findUnique({
-    where: { id },
+  const b = await prisma.broadcast.findFirst({
+    where: { id, clientId: await getClientIdFromCookies() },
     include: { template: true, list: true },
   });
   if (!b) notFound();

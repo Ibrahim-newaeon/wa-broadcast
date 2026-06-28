@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadTemplateMedia, WhatsAppError } from "@/lib/whatsapp";
+import { getClientId } from "@/lib/users";
 
 // Node runtime: we read the uploaded file bytes and stream them to Meta's
 // Resumable Upload API. Auth is enforced by middleware (access token).
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
   }
   try {
     const bytes = await file.arrayBuffer();
-    const handle = await uploadTemplateMedia(bytes, file.name || "sample", file.type);
+    const handle = await uploadTemplateMedia(bytes, file.name || "sample", file.type, await getClientId(req));
     return NextResponse.json({ handle, fileName: file.name });
   } catch (e) {
     if (e instanceof WhatsAppError) return NextResponse.json({ error: e.message }, { status: e.status });

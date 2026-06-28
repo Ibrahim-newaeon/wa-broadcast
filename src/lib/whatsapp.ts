@@ -67,8 +67,9 @@ export async function sendTemplate(args: {
   bodyParams: string[];
   headerFormat?: string | null;
   headerMediaUrl?: string | null;
+  clientId?: string;
 }): Promise<string> {
-  const cfg = await getWaConfig();
+  const cfg = await getWaConfig(args.clientId);
   const res = await fetch(`https://graph.facebook.com/${cfg.graphApiVersion}/${cfg.phoneNumberId}/messages`, {
     method: "POST",
     headers: {
@@ -170,8 +171,9 @@ export async function uploadTemplateMedia(
   bytes: ArrayBuffer,
   fileName: string,
   mimeType: string,
+  clientId?: string,
 ): Promise<string> {
-  const cfg = await getWaConfig();
+  const cfg = await getWaConfig(clientId);
   if (!cfg.appId) {
     throw new WhatsAppError("Set the Meta App ID in Settings → Connect WhatsApp to upload media.", 400, false);
   }
@@ -200,8 +202,8 @@ export async function uploadTemplateMedia(
 }
 
 /** Submit a template to Meta for approval. Returns the new template id + status. */
-export async function createTemplate(input: CreateTemplateInput): Promise<{ id?: string; status?: string }> {
-  const cfg = await getWaConfig();
+export async function createTemplate(input: CreateTemplateInput, clientId?: string): Promise<{ id?: string; status?: string }> {
+  const cfg = await getWaConfig(clientId);
   const res = await fetch(`https://graph.facebook.com/${cfg.graphApiVersion}/${cfg.businessAccountId}/message_templates`, {
     method: "POST",
     headers: {

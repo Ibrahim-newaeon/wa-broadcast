@@ -2,11 +2,13 @@ import Nav from "@/components/Nav";
 import ContactsTable from "@/components/ContactsTable";
 import AddContactForm from "@/components/AddContactForm";
 import { prisma } from "@/lib/db";
+import { getClientIdFromCookies } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
 
 export default async function ContactsPage() {
   const lists = await prisma.contactList.findMany({
+    where: { clientId: await getClientIdFromCookies() },
     orderBy: { createdAt: "desc" },
     select: { id: true, name: true },
   });

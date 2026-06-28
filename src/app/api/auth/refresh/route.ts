@@ -5,7 +5,7 @@ import {
   ACCESS_COOKIE, REFRESH_COOKIE, ACCESS_MAX_AGE, REFRESH_TTL_SECONDS,
 } from "@/lib/auth";
 import { getVersion, isJtiActive, registerJti, revokeJti, bumpVersion } from "@/lib/tokenStore";
-import { getUserRole } from "@/lib/users";
+import { getUserAuth } from "@/lib/users";
 
 export const runtime = "nodejs";
 
@@ -36,10 +36,10 @@ export async function POST(req: NextRequest) {
   await revokeJti(claims.jti);
   const newJti = crypto.randomUUID();
   await registerJti(newJti);
-  const role = await getUserRole(claims.sub);
+  const { role, clientId } = await getUserAuth(claims.sub);
 
   const [access, refresh] = await Promise.all([
-    signAccess(claims.sub, role),
+    signAccess(claims.sub, role, clientId),
     signRefresh(claims.sub, currentVer, newJti),
   ]);
 

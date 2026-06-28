@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { CreateBroadcastSchema } from "@/lib/validation";
 import { prisma } from "@/lib/db";
 import { createAndEnqueueBroadcast } from "@/lib/broadcast";
+import { getClientId } from "@/lib/users";
 
 export const runtime = "nodejs";
 
@@ -14,6 +15,7 @@ export async function POST(req: NextRequest) {
   const { templateId, listId, variableMap, scheduleAt, headerMediaUrl } = parsed.data;
 
   const result = await createAndEnqueueBroadcast({
+    clientId: await getClientId(req),
     templateId,
     listId,
     variableMap,

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getWaConfigStatus, saveWaConfig } from "@/lib/waConfig";
+import { getClientId } from "@/lib/users";
 
 export const runtime = "nodejs";
 
 /** GET /api/settings/whatsapp — current connection settings (secrets masked). */
-export async function GET() {
-  return NextResponse.json(await getWaConfigStatus());
+export async function GET(req: NextRequest) {
+  return NextResponse.json(await getWaConfigStatus(await getClientId(req)));
 }
 
 const SaveSchema = z.object({
@@ -25,6 +26,7 @@ export async function PUT(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input" }, { status: 400 });
   }
-  await saveWaConfig(parsed.data);
-  return NextResponse.json({ ok: true, ...(await getWaConfigStatus()) });
+  const clientId = await getClientId(req);
+  await saveWaConfig(parsed.data, clientId);
+  return NextResponse.json({ ok: true, ...(await getWaConfigStatus(clientId)) });
 }

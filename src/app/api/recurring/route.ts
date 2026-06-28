@@ -2,15 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { CreateRecurringSchema } from "@/lib/validation";
 import { prisma } from "@/lib/db";
 import { upsertSchedule } from "@/lib/recurring";
+import { getClientId } from "@/lib/users";
 
 export const runtime = "nodejs";
 
 /** GET /api/recurring — list campaigns with template/list names. */
-export async function GET() {
-  const campaigns = await prisma.recurringCampaign.findMany({ orderBy: { createdAt: "desc" } });
+export async function GET(req: NextRequest) {
+  const clientId = await getClientId(req);
+  const campaigns = await prisma.recurringCampaign.findMany({ where: { clientId }, orderBy: { createdAt: "desc" } });
   const [templates, lists] = await Promise.all([
-    prisma.template.findMany({ select: { id: true, name: true } }),
-    prisma.contactList.findMany({ select: { id: true, name: true } }),
+    prisma.template.findMany({ where: { clientId }, select: { id: true, name: true } }),
+    prisma.contactList.findMany({ where: { clientId }, select: { id: true, name: true } }),
   ]);
   const tName = new Map(templates.map((t) => [t.id, t.name]));
   const lName = new Map(lists.map((l) => [l.id, l.name]));
@@ -32,14 +34,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "invalid" }, { status: 400 });
   }
   const { name, templateId, listId, cron, variableMap } = parsed.data;
+  const clientId = await getClientId(req);
 
-  const template = await prisma.template.findUnique({ where: { id: templateId } });
+  const template = await prisma.template.findFirst({ where: { id: templateId, clientId } });
   if (!template || template.status !== "APPROVED") {
     return NextResponse.json({ error: "template not approved" }, { status: 422 });
   }
 
   const campaign = await prisma.recurringCampaign.create({
-    data: { name, templateId, listId, cron, variableMap, active: true },
+    data: { clientId, name, templateId, listId, cron, variableMap, active: true },
   });
   await upsertSchedule(campaign.id, cron);
 

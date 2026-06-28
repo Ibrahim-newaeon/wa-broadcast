@@ -3,11 +3,12 @@ import { NextRequest } from "next/server";
 import { prisma } from "./db";
 import { env } from "./env";
 import { verifyToken, ACCESS_COOKIE } from "./auth";
+import { DEFAULT_CLIENT_ID } from "./waConfig";
 
 // Node-only auth helpers (DB + bcrypt). The single env admin is used to
 // BOOTSTRAP when no users exist yet; afterwards everything is DB-backed.
 
-export interface VerifiedUser { email: string; role: string }
+export interface VerifiedUser { email: string; role: string; clientId: string }
 
 /** Verify credentials against the DB, falling back to the env admin only when
  *  the Users table is empty (first-run bootstrap). Returns null on failure. */
@@ -15,28 +16,28 @@ export async function verifyCredentials(email: string, password: string): Promis
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   if (user) {
     return (await bcrypt.compare(password, user.passwordHash))
-      ? { email: user.email, role: user.role }
+      ? { email: user.email, role: user.role, clientId: user.clientId }
       : null;
   }
   // Bootstrap path: no DB user with this email.
   const count = await prisma.user.count();
   if (count === 0 && email.toLowerCase() === env.ADMIN_EMAIL.toLowerCase()) {
     return (await bcrypt.compare(password, env.ADMIN_PASSWORD_HASH))
-      ? { email: env.ADMIN_EMAIL.toLowerCase(), role: "ADMIN" }
+      ? { email: env.ADMIN_EMAIL.toLowerCase(), role: "ADMIN", clientId: DEFAULT_CLIENT_ID }
       : null;
   }
   return null;
 }
 
-/** Role for a known subject (used on refresh). Env admin → ADMIN. */
-export async function getUserRole(email: string): Promise<string> {
+/** Role + clientId for a known subject (used on refresh). Env admin → ADMIN. */
+export async function getUserAuth(email: string): Promise<{ role: string; clientId: string }> {
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
-  if (user) return user.role;
-  if (email.toLowerCase() === env.ADMIN_EMAIL.toLowerCase()) return "ADMIN";
-  return "MEMBER";
+  if (user) return { role: user.role, clientId: user.clientId };
+  if (email.toLowerCase() === env.ADMIN_EMAIL.toLowerCase()) return { role: "ADMIN", clientId: DEFAULT_CLIENT_ID };
+  return { role: "MEMBER", clientId: DEFAULT_CLIENT_ID };
 }
 
-export async function createUser(input: { email: string; name?: string; password: string; role: string }) {
+export async function createUser(input: { email: string; name?: string; password: string; role: string; clientId: string }) {
   const passwordHash = await bcrypt.hash(input.password, 12);
   return prisma.user.create({
     data: {
@@ -44,14 +45,38 @@ export async function createUser(input: { email: string; name?: string; password
       name: input.name ?? null,
       passwordHash,
       role: input.role === "ADMIN" ? "ADMIN" : "MEMBER",
+      clientId: input.clientId,
     },
     select: { id: true, email: true, name: true, role: true, createdAt: true },
   });
 }
 
-/** Read the access token and require ADMIN. Returns claims or null. */
+export interface AuthContext { email: string; role: string; clientId: string }
+
+/** Read the verified access token and return the caller's tenant context.
+ *  Routes are already gated by middleware; this just exposes the claims. */
+export async function getAuthContext(req: NextRequest): Promise<AuthContext | null> {
+  const claims = await verifyToken(req.cookies.get(ACCESS_COOKIE)?.value, "access");
+  if (!claims?.sub) return null;
+  return { email: claims.sub, role: claims.role ?? "MEMBER", clientId: claims.cid ?? DEFAULT_CLIENT_ID };
+}
+
+/** Shortcut: the caller's clientId (falls back to the bootstrap tenant). */
+export async function getClientId(req: NextRequest): Promise<string> {
+  return (await getAuthContext(req))?.clientId ?? DEFAULT_CLIENT_ID;
+}
+
+/** Server-component variant: read the caller's clientId from the request cookies. */
+export async function getClientIdFromCookies(): Promise<string> {
+  const { cookies } = await import("next/headers");
+  const token = (await cookies()).get(ACCESS_COOKIE)?.value;
+  const claims = await verifyToken(token, "access");
+  return claims?.cid ?? DEFAULT_CLIENT_ID;
+}
+
+/** Read the access token and require ADMIN (or SUPERADMIN). Returns claims or null. */
 export async function requireAdmin(req: NextRequest) {
   const claims = await verifyToken(req.cookies.get(ACCESS_COOKIE)?.value, "access");
-  if (!claims || claims.role !== "ADMIN") return null;
+  if (!claims || (claims.role !== "ADMIN" && claims.role !== "SUPERADMIN")) return null;
   return claims;
 }

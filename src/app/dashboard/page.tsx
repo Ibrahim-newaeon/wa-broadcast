@@ -4,16 +4,19 @@ import Nav from "@/components/Nav";
 import UploadForm from "@/components/UploadForm";
 import NewListForm from "@/components/NewListForm";
 import BroadcastForm from "@/components/BroadcastForm";
+import { getClientIdFromCookies } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
+  const clientId = await getClientIdFromCookies();
   const [contacts, optedOut, lists, templates, broadcasts] = await Promise.all([
-    prisma.contact.count(),
-    prisma.contact.count({ where: { optedOut: true } }),
-    prisma.contactList.findMany({ orderBy: { createdAt: "desc" } }),
-    prisma.template.findMany({ where: { status: "APPROVED" }, orderBy: { name: "asc" } }),
+    prisma.contact.count({ where: { clientId } }),
+    prisma.contact.count({ where: { clientId, optedOut: true } }),
+    prisma.contactList.findMany({ where: { clientId }, orderBy: { createdAt: "desc" } }),
+    prisma.template.findMany({ where: { clientId, status: "APPROVED" }, orderBy: { name: "asc" } }),
     prisma.broadcast.findMany({
+      where: { clientId },
       orderBy: { createdAt: "desc" },
       take: 20,
       include: { template: true, list: true },

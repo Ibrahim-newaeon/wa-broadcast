@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   await registerJti(jti);
 
   const [access, refresh] = await Promise.all([
-    signAccess(sub, user.role),
+    signAccess(sub, user.role, user.clientId),
     signRefresh(sub, ver, jti),
   ]);
 

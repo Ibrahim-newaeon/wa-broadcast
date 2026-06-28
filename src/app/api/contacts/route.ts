@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { CreateContactSchema, composeName } from "@/lib/validation";
+import { getClientId } from "@/lib/users";
 
 export const runtime = "nodejs";
 
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(200, Math.max(1, Number(sp.get("limit") ?? 50) || 50));
 
   const where: Prisma.ContactWhereInput = {
+    clientId: await getClientId(req),
     ...(query
       ? { OR: [{ phone: { contains: query } }, { name: { contains: query, mode: "insensitive" } }] }
       : {}),
@@ -53,9 +55,10 @@ export async function POST(req: NextRequest) {
     );
   }
   const { firstName, lastName, phone, listId, attributes } = parsed.data;
+  const clientId = await getClientId(req);
 
   // Reject duplicates explicitly so the single-add UI can show a clear message.
-  const existing = await prisma.contact.findUnique({ where: { phone }, select: { id: true } });
+  const existing = await prisma.contact.findFirst({ where: { phone, clientId }, select: { id: true } });
   if (existing) {
     return NextResponse.json(
       { error: "A contact with this phone number already exists.", contactId: existing.id },
@@ -65,7 +68,7 @@ export async function POST(req: NextRequest) {
 
   // Validate the list up front so a bad id is a 400, not a 500.
   if (listId) {
-    const list = await prisma.contactList.findUnique({ where: { id: listId }, select: { id: true } });
+    const list = await prisma.contactList.findFirst({ where: { id: listId, clientId }, select: { id: true } });
     if (!list) return NextResponse.json({ error: "List not found" }, { status: 400 });
   }
 
@@ -77,6 +80,7 @@ export async function POST(req: NextRequest) {
 
   const contact = await prisma.contact.create({
     data: {
+      clientId,
       phone,
       name: composeName(firstName, lastName),
       attributes: mergedAttributes as Prisma.InputJsonValue,

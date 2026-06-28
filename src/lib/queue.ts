@@ -8,6 +8,7 @@ export const connection = new IORedis(env.REDIS_URL, {
 
 export interface SendJob {
   broadcastId: string;
+  clientId?: string;
   recipientId: string;
   to: string;
   templateName: string;

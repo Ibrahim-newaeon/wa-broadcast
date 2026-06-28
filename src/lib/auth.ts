@@ -11,13 +11,14 @@ export const ACCESS_MAX_AGE = 60 * 15; // 15m
 export interface AuthClaims extends JWTPayload {
   sub: string;            // user email
   typ: "access" | "refresh";
-  role?: string;          // access only: ADMIN | MEMBER
+  role?: string;          // access only: SUPERADMIN | ADMIN | MEMBER
+  cid?: string;           // access only: the user's clientId (tenant)
   ver?: number;           // refresh only: user token-version for revoke-all
   jti?: string;           // refresh only: rotation id
 }
 
-export async function signAccess(sub: string, role: string): Promise<string> {
-  return new SignJWT({ typ: "access", role })
+export async function signAccess(sub: string, role: string, clientId: string): Promise<string> {
+  return new SignJWT({ typ: "access", role, cid: clientId })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(sub)
     .setIssuedAt()

@@ -13,7 +13,7 @@ import { env } from "../lib/env";
 const worker = new Worker<SendJob>(
   SEND_QUEUE,
   async (job) => {
-    const { recipientId, to, templateName, language, bodyParams, headerFormat, headerMediaUrl } = job.data;
+    const { recipientId, to, templateName, language, bodyParams, headerFormat, headerMediaUrl, clientId } = job.data;
 
     // First job of a scheduled broadcast flips it to SENDING.
     await prisma.broadcast.updateMany({
@@ -22,7 +22,7 @@ const worker = new Worker<SendJob>(
     });
 
     try {
-      const wamid = await sendTemplate({ to, templateName, language, bodyParams, headerFormat, headerMediaUrl });
+      const wamid = await sendTemplate({ to, templateName, language, bodyParams, headerFormat, headerMediaUrl, clientId });
 
       await prisma.broadcastRecipient.update({
         where: { id: recipientId },
@@ -86,6 +86,7 @@ const recurringWorker = new Worker<RecurringJob>(
     if (!campaign || !campaign.active) return { skipped: true };
 
     const result = await createAndEnqueueBroadcast({
+      clientId: campaign.clientId,
       templateId: campaign.templateId,
       listId: campaign.listId,
       variableMap: (campaign.variableMap ?? []) as VariableMap,

@@ -30,13 +30,16 @@ export interface EnqueueResult {
  * opt-out filtering, idempotency, and scheduling logic live in one place.
  */
 export async function createAndEnqueueBroadcast(opts: {
+  clientId: string;
   templateId: string;
   listId: string;
   variableMap: VariableMap;
   scheduledAt?: Date | null;
   headerMediaUrl?: string | null;
 }): Promise<EnqueueResult> {
-  const template = await prisma.template.findUnique({ where: { id: opts.templateId } });
+  // Scope everything to the caller's tenant so a broadcast can't reach another
+  // client's template/list/contacts.
+  const template = await prisma.template.findFirst({ where: { id: opts.templateId, clientId: opts.clientId } });
   if (!template) return { ok: false, error: "template not found", code: 404 };
   if (template.status !== "APPROVED") return { ok: false, error: "template not approved by Meta", code: 422 };
 
@@ -47,9 +50,11 @@ export async function createAndEnqueueBroadcast(opts: {
     return { ok: false, error: "this template has a media header — provide a media URL", code: 422 };
   }
 
-  const optOuts = new Set((await prisma.optOut.findMany({ select: { phone: true } })).map((o) => o.phone));
+  const optOuts = new Set(
+    (await prisma.optOut.findMany({ where: { clientId: opts.clientId }, select: { phone: true } })).map((o) => o.phone),
+  );
   const members = await prisma.contactListMembership.findMany({
-    where: { listId: opts.listId },
+    where: { listId: opts.listId, list: { clientId: opts.clientId } },
     include: { contact: true },
   });
   const recipients = members.map((m) => m.contact).filter((c) => !c.optedOut && !optOuts.has(c.phone));
@@ -60,6 +65,7 @@ export async function createAndEnqueueBroadcast(opts: {
 
   const broadcast = await prisma.broadcast.create({
     data: {
+      clientId: opts.clientId,
       templateId: opts.templateId,
       listId: opts.listId,
       status: scheduledAt ? "SCHEDULED" : "SENDING",
@@ -79,6 +85,7 @@ export async function createAndEnqueueBroadcast(opts: {
       "send",
       {
         broadcastId: broadcast.id,
+        clientId: opts.clientId,
         recipientId: rec.id,
         to: contact.phone,
         templateName: template.name,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ContactRowSchema, composeName } from "@/lib/validation";
 import { prisma } from "@/lib/db";
 import { snapshotList } from "@/lib/snapshots";
+import { getClientId } from "@/lib/users";
 
 export const runtime = "nodejs";
 
@@ -78,11 +79,12 @@ export async function POST(req: NextRequest) {
   }
 
   // Upsert contacts (dedupe by phone), optionally attach to list.
+  const clientId = await getClientId(req);
   let inserted = 0;
   for (const row of accepted) {
     const contact = await prisma.contact.upsert({
       where: { phone: row.phone },
-      create: { phone: row.phone, name: row.name, attributes: row.attributes },
+      create: { clientId, phone: row.phone, name: row.name, attributes: row.attributes },
       update: { name: row.name, attributes: row.attributes },
     });
     inserted++;

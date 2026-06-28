@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { CreateTemplateSchema } from "@/lib/validation";
 import { createTemplate, countTemplateVars, WhatsAppError } from "@/lib/whatsapp";
 import { getWaConfig } from "@/lib/waConfig";
+import { getClientId } from "@/lib/users";
 
 export const runtime = "nodejs";
 
@@ -12,10 +13,11 @@ export const runtime = "nodejs";
  * GET /api/templates?sync=1 — pull approved templates from Meta and cache them.
  */
 export async function GET(req: NextRequest) {
+  const clientId = await getClientId(req);
   if (req.nextUrl.searchParams.get("sync") === "1") {
-    await syncFromMeta();
+    await syncFromMeta(clientId);
   }
-  const templates = await prisma.template.findMany({ orderBy: { name: "asc" } });
+  const templates = await prisma.template.findMany({ where: { clientId }, orderBy: { name: "asc" } });
   return NextResponse.json({ templates });
 }
 
@@ -29,13 +31,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid template" }, { status: 400 });
   }
   const input = parsed.data;
+  const clientId = await getClientId(req);
 
   try {
-    const result = await createTemplate(input);
+    const result = await createTemplate(input, clientId);
     const headerFormat = input.header?.format ?? null; // IMAGE | DOCUMENT | VIDEO
     const template = await prisma.template.upsert({
       where: { name_language: { name: input.name, language: input.language } },
       create: {
+        clientId,
         name: input.name, language: input.language, category: input.category,
         status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body), headerFormat,
       },
@@ -61,8 +65,8 @@ const MetaTemplateSchema = z.object({
   ),
 });
 
-async function syncFromMeta() {
-  const cfg = await getWaConfig();
+async function syncFromMeta(clientId: string) {
+  const cfg = await getWaConfig(clientId);
   const url = `https://graph.facebook.com/${cfg.graphApiVersion}/${cfg.businessAccountId}/message_templates?limit=200`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${cfg.accessToken}` } });
   if (!res.ok) throw new Error(`template sync failed (${res.status})`);
@@ -83,7 +87,7 @@ async function syncFromMeta() {
 
     await prisma.template.upsert({
       where: { name_language: { name: t.name, language: t.language } },
-      create: { name: t.name, language: t.language, category: t.category, status: t.status, variableCount, headerFormat },
+      create: { clientId, name: t.name, language: t.language, category: t.category, status: t.status, variableCount, headerFormat },
       update: { category: t.category, status: t.status, variableCount, headerFormat },
     });
   }

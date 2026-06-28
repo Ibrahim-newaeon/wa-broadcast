@@ -1,13 +1,15 @@
 import { prisma } from "@/lib/db";
 import Nav from "@/components/Nav";
 import CampaignsManager from "@/components/CampaignsManager";
+import { getClientIdFromCookies } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
 
 export default async function CampaignsPage() {
+  const clientId = await getClientIdFromCookies();
   const [lists, templates] = await Promise.all([
-    prisma.contactList.findMany({ orderBy: { createdAt: "desc" } }),
-    prisma.template.findMany({ where: { status: "APPROVED" }, orderBy: { name: "asc" } }),
+    prisma.contactList.findMany({ where: { clientId }, orderBy: { createdAt: "desc" } }),
+    prisma.template.findMany({ where: { clientId, status: "APPROVED" }, orderBy: { name: "asc" } }),
   ]);
 
   return (
