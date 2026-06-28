@@ -14,10 +14,19 @@ export interface WaConfig {
   graphApiVersion: string;
 }
 
-const CONFIG_ID = "default";
+// Bootstrap tenant that owns all pre-existing data until multi-client onboarding.
+export const DEFAULT_CLIENT_ID = "default";
 
-export async function getWaConfig(): Promise<WaConfig> {
-  const row = await prisma.whatsAppConfig.findUnique({ where: { id: CONFIG_ID } }).catch(() => null);
+/** Map an inbound webhook's phone_number_id to the client that owns it. */
+export async function getClientIdByPhoneNumberId(phoneNumberId: string): Promise<string | null> {
+  const row = await prisma.whatsAppConfig
+    .findFirst({ where: { phoneNumberId }, select: { clientId: true } })
+    .catch(() => null);
+  return row?.clientId ?? null;
+}
+
+export async function getWaConfig(clientId: string = DEFAULT_CLIENT_ID): Promise<WaConfig> {
+  const row = await prisma.whatsAppConfig.findUnique({ where: { clientId } }).catch(() => null);
   return {
     phoneNumberId: row?.phoneNumberId || env.WA_PHONE_NUMBER_ID,
     businessAccountId: row?.businessAccountId || env.WA_BUSINESS_ACCOUNT_ID,
@@ -30,21 +39,24 @@ export async function getWaConfig(): Promise<WaConfig> {
 }
 
 /** Save (upsert) connection settings. Undefined/empty fields are left unchanged. */
-export async function saveWaConfig(patch: Partial<Record<keyof WaConfig, string | undefined>>): Promise<void> {
+export async function saveWaConfig(
+  patch: Partial<Record<keyof WaConfig, string | undefined>>,
+  clientId: string = DEFAULT_CLIENT_ID,
+): Promise<void> {
   // Only persist provided non-empty values (so secrets aren't wiped by blanks).
   const data: Record<string, string> = {};
   for (const [k, v] of Object.entries(patch)) {
     if (typeof v === "string" && v.trim()) data[k] = v.trim();
   }
   await prisma.whatsAppConfig.upsert({
-    where: { id: CONFIG_ID },
-    create: { id: CONFIG_ID, ...data },
+    where: { clientId },
+    create: { clientId, ...data },
     update: data,
   });
 }
 
 /** What the no-code UI shows: non-secret values + whether each secret is set. */
-export async function getWaConfigStatus(): Promise<{
+export async function getWaConfigStatus(clientId: string = DEFAULT_CLIENT_ID): Promise<{
   phoneNumberId: string;
   businessAccountId: string;
   appId: string;
@@ -54,8 +66,8 @@ export async function getWaConfigStatus(): Promise<{
   hasAppSecret: boolean;
   savedAt: string | null;
 }> {
-  const row = await prisma.whatsAppConfig.findUnique({ where: { id: CONFIG_ID } }).catch(() => null);
-  const cfg = await getWaConfig();
+  const row = await prisma.whatsAppConfig.findUnique({ where: { clientId } }).catch(() => null);
+  const cfg = await getWaConfig(clientId);
   return {
     phoneNumberId: row?.phoneNumberId ?? "",
     businessAccountId: row?.businessAccountId ?? "",
