@@ -174,30 +174,39 @@ npm run worker:dev <span class="cm"># worker (second terminal)</span></pre></div
 
     <!-- 3 -->
     <section id="whatsapp">
-      <h2><span class="step-num">3</span> Connect WhatsApp</h2>
-      <p>From the Meta App dashboard you need four values in your <code>.env</code>:</p>
+      <h2><span class="step-num">3</span> Connect WhatsApp (no code)</h2>
+      <p>Go to <b>Settings → Connect WhatsApp</b> and paste your Meta values straight into the form — no <code>.env</code> editing needed (saved values override env and are stored in the database):</p>
       <table>
-        <tr><th>Variable</th><th>Where</th></tr>
-        <tr><td><code>WA_PHONE_NUMBER_ID</code></td><td>WhatsApp → API setup</td></tr>
-        <tr><td><code>WA_BUSINESS_ACCOUNT_ID</code></td><td>WhatsApp → API setup</td></tr>
-        <tr><td><code>WA_ACCESS_TOKEN</code></td><td>System-user permanent token</td></tr>
-        <tr><td><code>META_APP_SECRET</code></td><td>App → Settings → Basic</td></tr>
+        <tr><th>Field</th><th>Where in Meta</th></tr>
+        <tr><td>Phone number ID</td><td>WhatsApp → API setup</td></tr>
+        <tr><td>Business account ID</td><td>WhatsApp → API setup</td></tr>
+        <tr><td>App ID <span class="muted">(for template media uploads)</span></td><td>App → Settings → Basic</td></tr>
+        <tr><td>Access token</td><td>System-user permanent token</td></tr>
+        <tr><td>App secret</td><td>App → Settings → Basic</td></tr>
       </table>
+      <p>Hit <b>Test connection</b> to confirm the credentials reach Meta. Secrets are write-only — they show as <span class="pill">· saved</span> once stored.</p>
       <h3>Webhook</h3>
-      <p>In <b>WhatsApp → Configuration</b>, set the callback URL and verify token, then subscribe to <code>messages</code>:</p>
+      <p>The page shows your <b>callback URL</b> ready to copy. In <b>WhatsApp → Configuration</b>, paste it with your verify token and subscribe to <code>messages</code>:</p>
       <div class="code"><button class="copy">Copy</button><pre>Callback URL:  https://YOUR_DOMAIN/api/webhooks/whatsapp
-Verify token:  <span class="cm">(value of WA_WEBHOOK_VERIFY_TOKEN)</span></pre></div>
-      <div class="callout warn">Testing locally? Tunnel with <code>ngrok http 3000</code> and use the HTTPS URL. Every webhook is HMAC-verified against <code>META_APP_SECRET</code>.</div>
-      <div class="check"><input type="checkbox" id="c-wa"><label for="c-wa">Webhook verified (green check in Meta) and subscribed to <code>messages</code></label></div>
+Verify token:  <span class="cm">(the webhook verify token from the form)</span></pre></div>
+      <div class="callout warn">Testing locally? Tunnel with <code>ngrok http 3000</code> and use the HTTPS URL. Every webhook is HMAC-verified against your app secret.</div>
+      <div class="check"><input type="checkbox" id="c-wa"><label for="c-wa">Connection tested OK, webhook verified &amp; subscribed to <code>messages</code></label></div>
     </section>
 
     <!-- 4 -->
     <section id="templates">
-      <h2><span class="step-num">4</span> Sync templates</h2>
-      <p>You can only broadcast templates Meta has <b>approved</b>. Pull them into the console:</p>
+      <h2><span class="step-num">4</span> Create &amp; sync templates</h2>
+      <p>You can only broadcast templates Meta has <b>approved</b>. Build one right in the app on <b>Templates → Create</b>, then submit it to Meta for review:</p>
+      <ul>
+        <li><b>Header attachment</b> (optional): Image, Document/PDF, or Video. Pick a sample file — it's uploaded to Meta's resumable-upload API and the returned <i>handle</i> is attached for review.</li>
+        <li><b>Body</b> with <code>{{1}}</code>, <code>{{2}}</code> variables (one example value required per variable), plus an optional <b>footer</b>.</li>
+        <li><b>Buttons</b> (up to 3): <b>Quick reply</b>, <b>URL</b>, or <b>Call</b> (phone number).</li>
+      </ul>
+      <p>Already have templates in Meta? Pull them in instead:</p>
       <div class="code"><button class="copy">Copy</button><pre>GET /api/templates?sync=1</pre></div>
-      <p>Approved templates then appear in the broadcast and campaign pickers. Each <code>{{1}}</code>, <code>{{2}}</code> placeholder becomes a variable you map per-contact.</p>
-      <div class="check"><input type="checkbox" id="c-tpl"><label for="c-tpl">At least one approved template is visible in the picker</label></div>
+      <p>Approved templates appear in the broadcast and campaign pickers; each placeholder becomes a variable you map per-contact.</p>
+      <div class="callout">Media headers need an <b>App ID</b> set in <b>Settings → Connect WhatsApp</b> (step 3) so the sample can be uploaded.</div>
+      <div class="check"><input type="checkbox" id="c-tpl"><label for="c-tpl">A template is created/submitted and at least one approved template is in the picker</label></div>
     </section>
 
     <!-- 5 -->
@@ -208,9 +217,10 @@ Verify token:  <span class="cm">(value of WA_WEBHOOK_VERIFY_TOKEN)</span></pre><
 +966 50 000 0001,Ahmed,Riyadh
 965 5000 0003,Fahad,Kuwait City</pre></div>
       <ul>
-        <li>Phones are normalized to E.164 digits; bad rows are rejected and counted.</li>
-        <li>Optionally attach the upload to a <b>list</b> — broadcasts target lists.</li>
-        <li>Manage everyone on the Contacts page: search, opt out / re-subscribe, delete.</li>
+        <li>Phones are normalized to E.164 digits; bad rows are rejected and counted. Grab the <b>CSV template</b> button if you're not sure of the format.</li>
+        <li>Prefer to add one at a time? Use <b>Add contact</b> (first/last name + country code + number).</li>
+        <li>Manage everyone on the Contacts page: search, <b>inline edit</b>, opt out / re-subscribe, and <b>multi-select bulk delete</b>.</li>
+        <li>Optionally attach the upload to a <b>list</b> — broadcasts target lists. Every time a list changes, a <b>snapshot backup</b> is saved so you can <b>restore</b> a previous version with one click.</li>
       </ul>
       <div class="check"><input type="checkbox" id="c-csv"><label for="c-csv">Contacts imported and added to a list</label></div>
     </section>
@@ -229,14 +239,16 @@ Verify token:  <span class="cm">(value of WA_WEBHOOK_VERIFY_TOKEN)</span></pre><
 
     <!-- 7 -->
     <section id="monitor">
-      <h2><span class="step-num">7</span> Monitor &amp; retry</h2>
+      <h2><span class="step-num">7</span> Monitor, analytics &amp; retry</h2>
       <p>Click a broadcast to open its detail page. While it's in flight you'll see a <span class="pill">● live</span> progress bar that polls every few seconds.</p>
       <ul>
+        <li><b>Analytics funnel</b>: Sent → Delivered → Read → Clicked, with delivery and read rates at a glance.</li>
+        <li><b>Button events</b>: taps on your template buttons are tracked (total + unique, broken down per button) so you can measure response.</li>
         <li>Filter recipients by status (PENDING / SENT / DELIVERED / READ / FAILED) and load more.</li>
         <li>If any failed, hit <b>Retry N failed</b> — it re-queues just those with the saved variables.</li>
         <li>Inbound <code>STOP</code> auto-opts-out a contact from all future sends.</li>
       </ul>
-      <div class="check"><input type="checkbox" id="c-mon"><label for="c-mon">Watched a broadcast reach DELIVERED/READ</label></div>
+      <div class="check"><input type="checkbox" id="c-mon"><label for="c-mon">Watched a broadcast reach DELIVERED/READ and checked the analytics</label></div>
     </section>
 
     <!-- 8 -->

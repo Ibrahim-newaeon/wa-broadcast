@@ -32,14 +32,17 @@ npm run dev          # web on :3000
 npm run worker:dev   # worker (separate terminal)
 ```
 
-## Connect the webhook
+## Connect WhatsApp + webhook
+Easiest: **Settings → Connect WhatsApp** — paste the Phone number ID, Business account ID, **App ID** (needed for template media uploads), access token, and app secret (DB values override env), then **Test connection**. The page also shows the callback URL to copy.
+
 In Meta App Dashboard → WhatsApp → Configuration:
 - **Callback URL:** `https://YOUR_DOMAIN/api/webhooks/whatsapp`
-- **Verify token:** value of `WA_WEBHOOK_VERIFY_TOKEN`
-- Subscribe to **messages** events.
-Locally, tunnel with `ngrok http 3000` and use the https URL.
+- **Verify token:** your webhook verify token
+- Subscribe to **messages** events (delivery/read receipts + inbound button taps).
+Locally, tunnel with `ngrok http 3000` and use the https URL. Every webhook is HMAC-verified against the app secret.
 
 ## Usage flow
+0. **Create a template (optional):** on **/templates**, build one with an optional media header (image/PDF/video — the sample is uploaded to Meta via the resumable-upload API), body variables, footer, and quick-reply / URL / call buttons, then submit to Meta for approval. Endpoints: `POST /api/templates` and `POST /api/templates/media` (returns a header handle).
 1. **Sync templates:** `GET /api/templates?sync=1` (pulls approved templates from Meta).
 2. **Upload contacts:** `POST /api/contacts/upload` (multipart: `file`, optional `listId`). See `sample-contacts.csv`.
 3. **Create broadcast:** `POST /api/broadcasts`
@@ -68,11 +71,13 @@ Single admin from env (no user table). Password is a bcrypt hash; JWTs signed wi
 Seamless nav: when access expires, `/login` silently calls `/api/auth/refresh` on mount and forwards — the form only appears if the session was actually revoked.
 
 ## Pages
-- **/** — dashboard: stats, list/upload/broadcast forms, recent broadcasts.
-- **/broadcasts/[id]** — live progress, status filters, pagination, retry-failed.
-- **/contacts** — search, opt out / re-subscribe, delete.
+- **/** — bilingual (EN/AR) marketing landing with light/dark toggle → log in.
+- **/dashboard** — stats, list/upload/broadcast forms, recent broadcasts.
+- **/broadcasts/[id]** — live progress + **analytics funnel** (Sent → Delivered → Read → Clicked, with rates) and **button-event tracking** (taps per button), status filters, pagination, retry-failed.
+- **/contacts** — import (CSV, with a downloadable template) or **add one** (name + country code), **inline edit**, **multi-select bulk delete**, opt out / re-subscribe. Lists keep **snapshot backups** with one-click **restore**.
+- **/templates** — **create templates** (media header — image / PDF·document / video, uploaded to Meta's resumable-upload API for a handle; body + `{{variables}}`; footer; up to 3 buttons — quick-reply / URL / **call**) and submit to Meta; sync approved ones.
 - **/campaigns** — recurring/drip campaigns (cron, UTC) with pause/resume.
-- **/settings** — team members (ADMIN-only invite).
+- **/settings** — **Connect WhatsApp** (no-code Meta credentials + App ID + webhook URL + test connection) and team members (ADMIN-only invite).
 
 ## Theme / design system
 Brand: **NazzilVideo** (dark, teal→green, Inter/Cairo). Live stylesheet: `src/app/globals.css`; tokens/docs in `theme/`. Status colors map to `.badge--<STATUS>`.
@@ -83,8 +88,11 @@ DB-backed users (`User` table, migration `0003`). First login bootstraps the env
 ## Recurring campaigns
 `RecurringCampaign` (migration `0004`) + a BullMQ job-scheduler queue (`wa-recurring`). The worker re-syncs active schedules on boot and, on each cron tick, creates a fresh broadcast via the shared `createAndEnqueueBroadcast` helper. Schedules run in **UTC**.
 
+## Deploy (Railway)
+See **RAILWAY.md**. The 4 pieces are Postgres, Redis, a **web** service, and a **worker** (web + worker run from the same image with different start commands). Gotcha: Railway runs the start command **without a shell**, so chained commands must be wrapped — `sh -c "npx prisma migrate deploy && npm run start"`. The app reads Railway's injected `$PORT`.
+
 ## Interactive tutorial
-Standalone, self-contained `public/tutorial.html` — open directly or at `/tutorial.html`. Stepper, tabs, copy buttons, and a localStorage-persisted checklist.
+Standalone, self-contained `public/tutorial.html` — open directly or at `/tutorial.html`. Stepper, tabs, copy buttons, theme toggle, and a localStorage-persisted checklist. (English only for now.)
 
 ## Retry failed recipients
 Open a broadcast → if any recipients are `FAILED`, a **Retry N failed** button re-queues just those (recomputed from the saved `variableMap`, opt-outs still excluded). New BullMQ job ids avoid dedupe against the original sends.
