@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>واتساب هَب — مواصفات الإصدار الثاني · NazzilVideo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0f0e; --bg-2:#111817; --card:#121a18; --card-2:#0e1413;
+    --line:#1f2c29; --text:#e7efed; --muted:#8ba39d; --faint:#5f7771;
+    --teal:#16c79a; --green:#34d399; --teal-dim:#0e7c66;
+    --accent:#22d3a8; --warn:#fbbf24; --danger:#f87171;
+    --radius:14px; --maxw:980px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:radial-gradient(1200px 600px at 50% -10%, #10211c 0%, var(--bg) 60%) fixed;
+    color:var(--text); font-family:"Cairo","Inter",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+    line-height:1.8; font-size:16px;
+  }
+  a{color:var(--teal); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 20px}
+
+  header.hero{
+    padding:64px 0 36px; border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(22,199,154,.06), transparent);
+  }
+  .brand{display:flex; align-items:center; gap:12px; font-weight:800; margin-bottom:26px}
+  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--teal),var(--green));
+    display:grid;place-items:center;color:#04130f;font-weight:900}
+  .brand .b1{color:var(--text)} .brand .b2{background:linear-gradient(90deg,var(--teal),var(--green));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  h1{font-size:clamp(30px,5vw,46px); line-height:1.25; margin:0 0 14px;
+    background:linear-gradient(90deg,#eafff8,#9ff0d8); -webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted); font-size:18px; max-width:70ch; margin:0 0 22px}
+  .pills{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px}
+  .pill{font-size:12.5px; color:var(--muted); border:1px solid var(--line); background:var(--card-2);
+    padding:5px 11px; border-radius:999px}
+  .pill b{color:var(--green); font-weight:600}
+
+  nav.toc{position:sticky; top:0; z-index:5; background:rgba(11,15,14,.86); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); padding:12px 0}
+  nav.toc .wrap{display:flex; flex-wrap:wrap; gap:6px 14px}
+  nav.toc a{color:var(--muted); font-size:13.5px}
+  nav.toc a:hover{color:var(--teal); text-decoration:none}
+
+  main{padding:36px 0 80px}
+  section{margin:0 0 14px; scroll-margin-top:64px}
+  h2{font-size:26px; margin:46px 0 6px; padding-top:10px}
+  h2 .num{color:var(--teal); font-weight:800; margin-inline-start:8px}
+  h3{font-size:18.5px; margin:26px 0 6px; color:#eafff8}
+  h4{font-size:15px; margin:18px 0 4px; color:var(--green); letter-spacing:.4px}
+  p{margin:8px 0}
+  .lead{color:var(--muted)}
+  hr{border:none; border-top:1px solid var(--line); margin:34px 0}
+
+  .card{background:linear-gradient(180deg,var(--card),var(--card-2)); border:1px solid var(--line);
+    border-radius:var(--radius); padding:18px 20px; margin:14px 0}
+  .grid{display:grid; gap:14px}
+  @media(min-width:760px){.grid.two{grid-template-columns:1fr 1fr}}
+
+  .feat{border-inline-start:3px solid var(--teal); padding-inline-start:16px; margin:22px 0}
+  .feat h3{margin-top:0}
+  .star{color:var(--green)}
+  .meta-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+  .tag{font-size:12px; padding:3px 10px; border-radius:999px; border:1px solid var(--line); background:var(--card-2); color:var(--muted)}
+  .tag.eff-S{color:#7ee7c7;border-color:#1c4a3e}
+  .tag.eff-M{color:var(--warn);border-color:#4a3c18}
+  .tag.eff-L{color:#fca5a5;border-color:#4a2424}
+
+  ul,ol{margin:8px 0; padding-inline-start:22px}
+  li{margin:4px 0}
+  code{background:#0c1413; border:1px solid var(--line); border-radius:6px; padding:1px 6px; font-size:13.5px;
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; color:#bdeede;
+    direction:ltr; unicode-bidi:embed; display:inline-block}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14.5px; display:block; overflow-x:auto}
+  th,td{border:1px solid var(--line); padding:9px 12px; text-align:start; vertical-align:top}
+  th{background:var(--card-2); color:var(--green); font-weight:600; white-space:nowrap}
+  tr:nth-child(even) td{background:rgba(255,255,255,.012)}
+
+  .badge{display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px}
+  .badge.ok{background:rgba(52,211,153,.14); color:var(--green)}
+  .badge.wip{background:rgba(251,191,36,.14); color:var(--warn)}
+  .note{color:var(--faint); font-size:13.5px}
+  .callout{border:1px solid var(--teal-dim); background:rgba(22,199,154,.06); border-radius:var(--radius); padding:14px 18px; margin:16px 0}
+  .switch{font-size:13px}
+  footer{border-top:1px solid var(--line); padding:26px 0; color:var(--faint); font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brand"><span class="logo">▶</span><span><span class="b1">whatsapp</span><span class="b2">hub</span></span></div>
+    <h1>واتساب هَب — مواصفات الإصدار الثاني</h1>
+    <p class="sub">منصّة مراسلة متعدّدة العملاء (multi-tenant) ذاتية الاستضافة مبنية على واجهة Meta Cloud API. هذا المستند هو المرجع الكامل والمفصّل لكلّ ما يقوم به النظام اليوم (الإصدار الأول) إضافةً إلى كلّ ما هو مخطَّط للمرحلة الثانية (الإصدار الثاني) — في تحوّل من <b>أداة بثٍّ جماعي</b> إلى <b>منصّة تفاعل محادثاتي متكاملة</b>.</p>
+    <div class="pills">
+      <span class="pill">العلامة: <b>NazzilVideo</b></span>
+      <span class="pill">آخر تحديث <b>2026-06-29</b></span>
+      <span class="pill">الإصدار الأول <b>يعمل ومستقر</b></span>
+      <span class="pill">Next.js 15 · Prisma · BullMQ · Redis</span>
+    </div>
+    <p class="switch" style="margin-top:18px">🌐 <a href="/whatsapphub-v2.html">English version</a></p>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="wrap">
+    <a href="#arch">البنية التقنية</a>
+    <a href="#v1">الجزء الأول · ميزات الإصدار الأول</a>
+    <a href="#v2">الجزء الثاني · ميزات الإصدار الثاني</a>
+    <a href="#data">نموذج البيانات</a>
+    <a href="#roadmap">خارطة الطريق</a>
+    <a href="#nfr">المتطلبات غير الوظيفية</a>
+    <a href="#limits">القيود</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- ARCHITECTURE -->
+  <section id="arch">
+    <h2><span class="num">1.</span>البنية التقنية والمكوّنات</h2>
+    <table>
+      <tr><th>الطبقة</th><th>التقنية</th></tr>
+      <tr><td>الويب / التطبيق</td><td>Next.js 15 (App Router)، مكوّنات React على الخادم</td></tr>
+      <tr><td>اللغة</td><td>TypeScript الصارمة (<code>noUncheckedIndexedAccess</code>)</td></tr>
+      <tr><td>قاعدة البيانات</td><td>Prisma + PostgreSQL</td></tr>
+      <tr><td>الطوابير / المهام</td><td>BullMQ + Redis (طابور الإرسال + مجدول المهام المتكرّرة)</td></tr>
+      <tr><td>المصادقة</td><td>jose (JWT) + bcryptjs — رمز الوصول يُتحقَّق منه عند الحافة، ورمز التجديد محفوظ في Redis</td></tr>
+      <tr><td>التحقّق</td><td>Zod (لكلّ طلب API / صفّ CSV / حمولة webhook)</td></tr>
+      <tr><td>الاختبارات</td><td>Vitest (وحدات)، Playwright (طرف لطرف)</td></tr>
+      <tr><td>النشر</td><td>Docker / Railway — عمليتان من صورة واحدة: <b>web</b> و <b>worker</b></td></tr>
+      <tr><td>خارجي</td><td>Meta WhatsApp Cloud API (Graph API)</td></tr>
+    </table>
+    <p><b>نموذج العمليات:</b> تخدم عملية <code>web</code> الواجهة وواجهة API وتضيف الإرسالات إلى الطابور؛ بينما تستهلك عملية <code>worker</code> طابور الإرسال المحدود بالمعدّل، وتشغّل مجدول الحملات المتكرّرة، وتُجري المزامنة عند الإقلاع.</p>
+    <p><b>حدود الحافة:</b> يتحقّق <code>middleware.ts</code> من رمز الوصول فقط (دون Redis أو قاعدة بيانات عند الحافة). يجري تدوير رمز التجديد والتحقّق من إبطاله في بيئة Node فقط.</p>
+  </section>
+
+  <hr/>
+
+  <!-- PART I -->
+  <section id="v1">
+    <h2><span class="num">أولاً.</span>الإصدار الأول — الميزات الحالية <span class="badge ok">مبنية وتعمل</span></h2>
+
+    <div class="card">
+      <h3>1.1 · المصادقة والجلسات</h3>
+      <ul>
+        <li>تسجيل دخول بالبريد وكلمة المرور؛ كلمات المرور مُشفّرة بـ bcrypt (تكلفة 12).</li>
+        <li><b>نموذج الرمزين:</b> رمز وصول قصير العمر عديم الحالة (يُتحقَّق منه عند الحافة) + رمز تجديد ذو حالة (jti + إصدار في Redis)، يُدوَّر مع كلّ تجديد، ويُتحقَّق من إبطاله فقط في <code>/api/auth/refresh</code>. يحمل الرمز الدور ومعرّف العميل.</li>
+        <li>تسجيل خروج + <b>تسجيل خروج من كلّ الأجهزة</b> (يرفع إصدار الرمز لإبطال كلّ رموز التجديد).</li>
+        <li>مشرف أوّلي عبر سكربت التهيئة؛ بعدها تعتمد المصادقة كلّياً على قاعدة البيانات.</li>
+        <li>تحديد معدّل لتسجيل الدخول (نافذة ثابتة في Redis، يفشل مفتوحاً)؛ يقوم غلاف العميل بتجديد صامت لمرّة واحدة عند 401.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>1.2 · تعدّد العملاء <span class="note">(المرحلة الثالثة — مكتملة)</span></h3>
+      <ul>
+        <li>نموذج <code>Client</code> + حقل <code>clientId</code> على كلّ كيان؛ كلّ البيانات والمسارات معزولة لكلّ عميل.</li>
+        <li>محلّل عملاء نقيّ: يتجاوز كوكي العميل النشط (<code>acid</code>) لدى المشرف العام معرّفه الخاصّ (<code>cid</code>)؛ أمّا المستخدمون العاديون فمثبّتون على عميلهم.</li>
+        <li><b>مبدّل العملاء</b> للمشرف العام + إدارة العملاء (إنشاء / تبديل / <b>حذف متسلسل</b>).</li>
+        <li>تفرّد لكلّ عميل (الهاتف، اسم القالب + اللغة)، وإعداد واتساب لكلّ عميل، والتحقّق من توقيع الـ webhook لكلّ عميل (يُوجَّه عبر معرّف WABA).</li>
+        <li><b>إنشاء حساب دخول للمشرف عند إنشاء العميل</b> <span class="note">(2026-06-29)</span> — بريد مشرف اختياري + كلمة مرور (فارغة ← تُولَّد كلمة قويّة من 16 خانة)، يُنشئ أوّل مستخدم <b>ADMIN</b> للعميل ويعرض البيانات مرّة واحدة؛ يُتحقَّق من تفرّد البريد قبل إنشاء العميل.</li>
+      </ul>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h3>1.3 · جهات الاتصال</h3>
+        <ul>
+          <li>استيراد CSV (مُتحقَّق منه بـ Zod، الأرقام مُطبَّعة) مع <b>نسخة احتياطية تلقائية قبل الاستيراد</b>.</li>
+          <li>إضافة فردية، تعديل مباشر، حذف جماعي.</li>
+          <li>سمات مخصّصة (JSON) قابلة للاستخدام كمتغيّرات في القوالب.</li>
+          <li>الحذف مقيَّد بـ <code>RESTRICT</code> عند وجود سجلّ بثّ سابق.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>1.4 · القوائم</h3>
+        <ul>
+          <li>قوائم + جدول عضوية؛ <b>لقطات قابلة للاستعادة</b> (يدوية أو قبل الاستيراد) مع استعادة بنقرة واحدة.</li>
+          <li><b>أسماء قوائم فريدة لكلّ عميل</b> <span class="note">(2026-06-29)</span> — تحقّق غير حسّاس لحالة الأحرف يُعيد 409 + فهرس فريد في قاعدة البيانات (الترحيل 0015 مع إزالة تكرار وقائية).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>1.5 · القوالب</h3>
+      <ul>
+        <li>مُنشئ بدون كود ← يُرسَل إلى Meta للموافقة؛ يُخزَّن محلياً بالحالة المُعادة. <b>المزامنة من Meta</b> تجلب الحالات (وتُظهر الآن خطأ Meta الحقيقي).</li>
+        <li>متغيّرات <code>{{1}}</code>…؛ <b>ترويسة وسائط (P0)</b> صورة/مستند/فيديو عبر الرفع المتواصل؛ <b>webhook حالة القالب (P1)</b> يزامن الموافقة/الرفض تلقائياً.</li>
+        <li>القوالب الغنية (المرحلة الخامسة): <span class="badge ok">منجز</span> كوبون نسخ-الكود · <span class="badge ok">منجز</span> كاروسيل (2–10 بطاقات) · <span class="badge wip">قادم</span> عرض محدّد المدّة، مصادقة/OTP، كتالوج، Flows.</li>
+      </ul>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h3>1.6 · عمليات البثّ</h3>
+        <ul>
+          <li>إرسال فوري أو مجدول؛ الجمهور = قائمة (مع استثناء المنسحبين).</li>
+          <li>ربط متغيّرات لكلّ مستلِم؛ قمع تسليم حيّ (في الطابور ← مُرسَل ← مُسلَّم ← مقروء ← فاشل) + تتبّع نقرات الأزرار.</li>
+          <li><b>إعادة محاولة الفاشل</b> تعيد إضافة الفاشلين فقط؛ عامل محدود المعدّل وفق فئة Meta.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>1.7 · الحملات المتكرّرة / بالتنقيط</h3>
+        <ul>
+          <li><code>RecurringCampaign</code> + مجدول cron عبر BullMQ (بتوقيت UTC).</li>
+          <li>كلّ نبضة تولّد بثّاً جديداً من قالب + قائمة، مع احترام المنسحبين.</li>
+          <li>إعدادات جاهزة + cron خام بخمسة حقول؛ مطابقة عند الإقلاع.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>1.8 · صندوق وارد ثنائي الاتجاه <span class="note">(المرحلة الرابعة — مكتملة)</span></h3>
+      <ul>
+        <li>نموذجا <code>Conversation</code>/<code>Message</code>؛ التقاط الوارد لِنصّ، صورة، مستند، صوت، فيديو، ملصق، تفاعلي، تفاعل (reaction)، موقع — <b>عدم تكرار عبر <code>wamid</code></b>.</li>
+        <li>تتبّع نافذة الخدمة لمدّة 24 ساعة؛ صادر نصّي + مرفقات داخل النافذة.</li>
+        <li><b>عرض الوسائط</b> عبر وسيط آمن للرمز (<code>/api/media/:id</code>)؛ إيصالات قراءة (أفضل جهد)؛ واجهة حيّة بجزأين <code>/inbox</code>.</li>
+      </ul>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h3>1.9 · الانسحاب والامتثال</h3>
+        <ul>
+          <li><b>STOP</b> ← <code>OptOut</code> (فريد لكلّ عميل+هاتف)؛ يُستثنى من كلّ البثّ المستقبلي.</li>
+          <li>الموافقة على الاشتراك مأخوذة من CSV (غير مفروضة بنيوياً بعد ← §2.11).</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>1.10 · إعداد واتساب بدون كود</h3>
+        <ul>
+          <li>لكلّ عميل: معرّف رقم الهاتف، <b>معرّف WABA</b>، معرّف التطبيق، الرمز، سرّ التطبيق، رمز التحقّق، إصدار API.</li>
+          <li>اختبار الاتصال؛ رابط webhook + رمز التحقّق؛ الإعدادات المحفوظة تتجاوز البيئة دون إعادة نشر.</li>
+          <li>وُضِّحت تسميات الحقول لتفادي الخلط بين معرّف WABA ومعرّف محفظة الأعمال.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>1.11 · المنصّة والتشغيل</h3>
+      <ul>
+        <li>نقطة فحص صحّة؛ ترويسات أمان؛ صورة Docker متعدّدة المراحل بمستخدم غير جذري مع فحص صحّة.</li>
+        <li>ترحيلات SQL مكتوبة يدوياً <code>0001 → 0015</code> تُطبَّق عند الإقلاع؛ <code>verify.sh</code> دون اتصال؛ اختبار حِمل webhook بـ k6؛ شرح تفاعلي ثنائي اللغة على <code>/tutorial.html</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- PART II -->
+  <section id="v2">
+    <h2><span class="num">ثانياً.</span>الإصدار الثاني — ميزات المرحلة الثانية</h2>
+    <p class="lead">كلّ ميزة تذكر: <b>ما هي · كيف تعمل · نموذج البيانات · الاعتماديات · الجهد · معيار القبول</b>. الجهد مقدّر وفق المكدّس الحالي.</p>
+
+    <div class="feat">
+      <h3><span class="star">★</span> 2.1 · صندوق وارد متعدّد القنوات <span class="note">(واتساب + رسائل إنستغرام + ماسنجر)</span></h3>
+      <p><b>ما هي:</b> توسعة الصندوق ثنائي الاتجاه إلى ما وراء واتساب ليشمل كلّ أسطح مراسلة Meta في عرض موحَّد للوكلاء.</p>
+      <p><b>كيف:</b> إضافة قيمة <code>channel</code> إلى <code>Conversation</code>/<code>Message</code>؛ تعميم معالج الـ webhook (التوجيه حسب <code>object</code> + الأصل المتّصل) ومحوِّل إرسال رفيع لكلّ قناة فوق <code>whatsapp.ts</code>؛ مرشّح قناة + شارة في <code>/inbox</code>.</p>
+      <p><b>البيانات:</b> <code>Conversation.channel</code>، <code>Message.channel</code>، <code>ChannelConnection</code>. <b>الاعتماديات:</b> أذونات مراسلة إنستغرام + ماسنجر.</p>
+      <p><b>القبول:</b> ظهور رسالة إنستغرام ورسالة ماسنجر بجانب واتساب، قابلة للردّ، مع احترام نافذة كلّ قناة.</p>
+      <div class="meta-row"><span class="tag eff-L">الجهد: كبير</span><span class="tag">الملاءمة: عالية</span><span class="tag">طلبك الرئيسي</span></div>
+    </div>
+
+    <div class="feat">
+      <h3><span class="star">★</span> 2.2 · تسجيل Meta المدمج <span class="note">(ربط واتساب بنقرة واحدة)</span></h3>
+      <p><b>ما هي:</b> استبدال الإدخال اليدوي لمعرّف الهاتف/WABA/الرمز بتدفّق تسجيل Meta المدمج عبر OAuth — زرّ «اربط واتساب».</p>
+      <p><b>كيف:</b> فتح نافذة التسجيل المدمج، تبادل الرمز على الخادم للحصول على رمز مستخدم-نظام طويل العمر، اكتشاف معرّفات WABA والهاتف تلقائياً، وحفظها في إعداد العميل.</p>
+      <p><b>لماذا:</b> يزيل مباشرةً أكبر عائق في الإعداد (الخلط بين معرّف WABA ومحفظة الأعمال + نطاقات الرمز). يتيح إعداداً ذاتياً حقيقياً.</p>
+      <p><b>البيانات:</b> <code>WhatsAppConfig.wabaAutoConnected/tokenExpiresAt</code>. <b>الاعتماديات:</b> إعداد مزوّد تقني + مراجعة التطبيق.</p>
+      <div class="meta-row"><span class="tag eff-M">الجهد: متوسّط</span><span class="tag">الملاءمة: عالية</span><span class="tag">يُنصح به أولاً</span></div>
+    </div>
+
+    <div class="feat">
+      <h3><span class="star">★</span> 2.3 · تعاون الفريق في الصندوق</h3>
+      <p><b>ما هي:</b> تحويل الصندوق إلى مكتب دعم مشترك حقيقي.</p>
+      <p><b>كيف:</b> حالة المحادثة (<code>OPEN/PENDING/CLOSED</code>)، إسناد لوكيل + مرشّحات، ملاحظات داخلية + إشارات @، ردود جاهزة، مؤقّتات SLA.</p>
+      <p><b>البيانات:</b> <code>Conversation.status/assigneeId</code>، <code>InternalNote</code>، <code>CannedReply</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">الجهد: متوسّط</span><span class="tag">الملاءمة: عالية</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.4 · مساعد الذكاء الاصطناعي <span class="note">(مدعوم بـ Claude)</span></h3>
+      <p><b>ما هي:</b> طبقة ذكاء فوق المحادثات والمحتوى — ردود مقترَحة، تلخيص المحادثة، ترجمة عربي↔إنجليزي، وسم النيّة/المشاعر، إجابة تلقائية للأسئلة الشائعة من قاعدة معرفة لكلّ عميل، وصياغة نصوص البثّ.</p>
+      <p><b>كيف:</b> نداءات على الخادم لأحدث طُرز Claude عبر Anthropic SDK؛ قاعدة معرفة لكلّ عميل تُسترجَع (RAG)؛ الوكيل في الحلقة افتراضياً مع وضع ردّ آلي اختياري.</p>
+      <p><b>البيانات:</b> <code>KnowledgeDoc</code>، <code>Message.aiTags</code>، <code>Conversation.aiSummary</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">الجهد: متوسّط</span><span class="tag">ثنائي اللغة عربي/إنجليزي</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.5 · الأتمتة والردود التلقائية و Flows</h3>
+      <p><b>ما هي:</b> صدّ وجذب عملاء على مدار الساعة — رسائل ساعات العمل والغياب، ردود تلقائية بالكلمات المفتاحية، مُنشئ تدفّقات بسيط بدون كود، <b>WhatsApp Flows</b> الأصلية (نماذج داخل المحادثة)، وإعادة فتح النافذة عبر قالب.</p>
+      <p><b>كيف:</b> محرّك قواعد في العامل على الأحداث الواردة؛ تُرسَل الـ Flows إلى Meta كالقوالب.</p>
+      <p><b>البيانات:</b> <code>AutomationRule</code>، <code>Flow</code>.</p>
+      <div class="meta-row"><span class="tag eff-L">الجهد: كبير</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.6 · ملفّ جهة الاتصال 360 / CRM مصغّر</h3>
+      <p><b>ما هي:</b> ملفّ موحَّد لجهة الاتصال — خطّ زمني عبر القنوات (محادثات + بثّ)، وسوم، محرّر سمات مخصّصة، ملاحظات، حالة الموافقة والنافذة.</p>
+      <p><b>البيانات:</b> <code>Contact.tags</code>، <code>ContactNote</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">الجهد: متوسّط</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.7 · التقسيم الديناميكي واختبار A/B وتوقيت الإرسال</h3>
+      <p><b>ما هي:</b> شرائح ديناميكية (عضوية تلقائية حسب قواعد)، اختبار A/B للبثّ (تقسيم + مقارنة)، تحكّم بمعدّل التوقيت ولاحقاً تحسين حسب المنطقة الزمنية لكلّ جهة.</p>
+      <p><b>البيانات:</b> <code>Segment</code>، <code>Broadcast.variantOf</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">الجهد: متوسّط</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.8 · النموّ وجذب العملاء المحتملين</h3>
+      <p><b>ما هي:</b> رابط <code>wa.me</code> + مولّد رمز QR (مُعبّأ ومُتتبَّع)، أداة دردشة قابلة للتضمين في الموقع، وعزو إعلانات النقر-إلى-واتساب.</p>
+      <p><b>البيانات:</b> <code>Contact.source</code>، <code>Conversation.referral</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">الجهد: متوسّط</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.9 · التحليلات وتتبّع الروابط وقابلية التسليم</h3>
+      <p><b>ما هي:</b> تتبّع نقرات الروابط لكلّ مستلِم (مختصِر روابط)، تقارير تحويل/عائد، تقارير قابلة للتصدير، لوحة جودة الرقم وحدود المراسلة مع إيقاف تلقائي عند هبوط الجودة، وأداء القوالب.</p>
+      <p><b>البيانات:</b> <code>ShortLink</code>، <code>LinkClick</code>، <code>QualitySnapshot</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">الجهد: متوسّط</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.10 · التجارة</h3>
+      <p><b>ما هي:</b> رسائل كتالوج/منتج/متعدّد المنتجات في واتساب، إشعارات الطلب والشحن، تدفّقات السلّة المهجورة، روابط الدفع.</p>
+      <p><b>البيانات:</b> <code>Catalog</code>، <code>Product</code>، <code>Order</code>. <b>الاعتماديات:</b> كتالوج Meta Commerce + مزوّد دفع.</p>
+      <div class="meta-row"><span class="tag eff-L">الجهد: كبير</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.11 · الحوكمة: الأذونات وسجلّ التدقيق والموافقة</h3>
+      <p><b>ما هي:</b> أذونات لكلّ إجراء (تتجاوز المصادقة فقط اليوم)، سجلّ تدقيق بعزو الفاعل على البثّ/الحذف/الإعداد، موافقة مزدوجة، سجلّ موافقة + تصدير/حذف بيانات وفق GDPR.</p>
+      <p><b>البيانات:</b> <code>AuditEvent</code>، <code>ConsentRecord</code>، <code>Role/Permission</code> أغنى.</p>
+      <div class="meta-row"><span class="tag eff-M">الجهد: متوسّط</span><span class="tag">يسدّ ثغرات الإصدار الأول</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.12 · الفوترة والخدمة الذاتية <span class="note">(مسار SaaS)</span></h3>
+      <p><b>ما هي:</b> قياس استهلاك (قائم على المحادثات، يحاكي تسعير Meta)، خطط/حصص، فوترة Stripe، ترقية داخل التطبيق، لوحة استهلاك لكلّ عميل. يتكامل مع التسجيل المدمج لإعداد ذاتي كامل.</p>
+      <p><b>البيانات:</b> <code>Subscription</code>، <code>UsageRecord</code>، <code>Plan</code>. <b>الاعتماديات:</b> Stripe.</p>
+      <div class="meta-row"><span class="tag eff-L">الجهد: كبير</span></div>
+    </div>
+
+    <div class="feat">
+      <h3>2.13 · التكاملات وواجهة API العامّة</h3>
+      <p><b>ما هي:</b> webhooks صادرة (أحداث الرسائل/البثّ)، تطبيق Zapier/Make، واجهة REST عامّة موثّقة بمفاتيح لكلّ عميل، ومزامنة CRM/جداول.</p>
+      <p><b>البيانات:</b> <code>ApiKey</code>، <code>OutboundWebhook</code>.</p>
+      <div class="meta-row"><span class="tag eff-M">الجهد: متوسّط</span></div>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- DATA MODEL -->
+  <section id="data">
+    <h2><span class="num">ثالثاً.</span>نموذج البيانات</h2>
+    <h4>الحالي (الإصدار الأول)</h4>
+    <p><code>Client</code> · <code>Contact</code> · <code>ContactList</code> (+ <code>ContactListMembership</code>، <code>ContactListSnapshot</code>) · <code>Template</code> · <code>Broadcast</code> · <code>BroadcastRecipient</code> · <code>MessageEvent</code> · <code>OptOut</code> · <code>User</code> · <code>RecurringCampaign</code> · <code>WhatsAppConfig</code> · <code>Conversation</code> · <code>Message</code>.</p>
+    <h4>إضافات الإصدار الثاني</h4>
+    <table>
+      <tr><th>الميزة</th><th>نماذج جديدة / معدّلة</th></tr>
+      <tr><td>صندوق متعدّد القنوات</td><td><code>Conversation.channel</code>، <code>Message.channel</code>، <code>ChannelConnection</code></td></tr>
+      <tr><td>التسجيل المدمج</td><td><code>WhatsAppConfig.wabaAutoConnected/tokenExpiresAt</code></td></tr>
+      <tr><td>تعاون الفريق</td><td><code>Conversation.status/assigneeId</code>، <code>InternalNote</code>، <code>CannedReply</code></td></tr>
+      <tr><td>مساعد الذكاء</td><td><code>KnowledgeDoc</code>، <code>Message.aiTags</code>، <code>Conversation.aiSummary</code></td></tr>
+      <tr><td>الأتمتة / Flows</td><td><code>AutomationRule</code>، <code>Flow</code></td></tr>
+      <tr><td>جهة الاتصال 360</td><td><code>Contact.tags</code>، <code>ContactNote</code></td></tr>
+      <tr><td>التقسيم / A-B</td><td><code>Segment</code>، <code>Broadcast.variantOf</code></td></tr>
+      <tr><td>النموّ</td><td><code>Contact.source</code>، <code>Conversation.referral</code></td></tr>
+      <tr><td>التحليلات / الروابط</td><td><code>ShortLink</code>، <code>LinkClick</code>، <code>QualitySnapshot</code></td></tr>
+      <tr><td>التجارة</td><td><code>Catalog</code>، <code>Product</code>، <code>Order</code></td></tr>
+      <tr><td>الحوكمة</td><td><code>AuditEvent</code>، <code>ConsentRecord</code>، <code>Role/Permission</code></td></tr>
+      <tr><td>الفوترة</td><td><code>Subscription</code>، <code>UsageRecord</code>، <code>Plan</code></td></tr>
+      <tr><td>التكاملات</td><td><code>ApiKey</code>، <code>OutboundWebhook</code></td></tr>
+    </table>
+    <p class="note">كلّ الجداول الجديدة تحمل <code>clientId</code> وتتبع أعراف العزل لكلّ عميل والحذف المتسلسل.</p>
+  </section>
+
+  <hr/>
+
+  <!-- ROADMAP -->
+  <section id="roadmap">
+    <h2><span class="num">رابعاً.</span>خارطة الطريق والتسلسل</h2>
+    <ol>
+      <li><b>التسجيل المدمج (§2.2)</b> — صغير، يزيل أكبر عائق في الإعداد، ويفتح الخدمة الذاتية.</li>
+      <li><b>الصندوق متعدّد القنوات (§2.1)</b> — القدرة الرائدة للمرحلة الثانية.</li>
+      <li><b>تعاون الفريق (§2.3)</b> — مبني فوق الصندوق الموحَّد.</li>
+      <li><b>مساعد الذكاء (§2.4)</b> + <b>الأتمتة/Flows (§2.5)</b> — قيمة متراكمة بعد توحيد القنوات.</li>
+      <li><b>التحقيق المالي:</b> الحوكمة (§2.11) + الفوترة (§2.12) لِـ SaaS، <i>أو</i> التجارة (§2.10) للتجزئة.</li>
+    </ol>
+    <table>
+      <tr><th>المعلم</th><th>الميزات</th><th>الحجم</th></tr>
+      <tr><td>م1 — إعداد بلا احتكاك</td><td>التسجيل المدمج</td><td>متوسّط</td></tr>
+      <tr><td>م2 — محادثات موحَّدة</td><td>الصندوق متعدّد القنوات + تعاون الفريق</td><td>كبير + متوسّط</td></tr>
+      <tr><td>م3 — الذكاء</td><td>مساعد الذكاء + الأتمتة/Flows</td><td>متوسّط + كبير</td></tr>
+      <tr><td>م4 — الاستهداف والإثبات</td><td>التقسيم/A-B + التحليلات + جهة الاتصال 360</td><td>متوسّط لكلّ</td></tr>
+      <tr><td>م5 — التحقيق المالي / التجارة</td><td>الحوكمة + الفوترة <i>أو</i> التجارة</td><td>كبير</td></tr>
+    </table>
+  </section>
+
+  <hr/>
+
+  <!-- NFR -->
+  <section id="nfr">
+    <h2><span class="num">خامساً.</span>المتطلبات غير الوظيفية</h2>
+    <ul>
+      <li><b>الأمان:</b> إبقاء <code>middleware.ts</code> آمناً للحافة؛ التحقّق بـ Zod من كلّ الحمولات/الـ webhooks الجديدة؛ توسعة التحقّق من التوقيع لكلّ عميل إلى كلّ قناة؛ الأسرار في إعداد كلّ عميل دون إيداعها في المستودع.</li>
+      <li><b>تعدّد العملاء:</b> كلّ كيان جديد يحمل <code>clientId</code>؛ العزل دائماً عبر محلّل العملاء؛ احترام تجاوز العميل النشط للمشرف العام.</li>
+      <li><b>قابلية التسليم:</b> إبقاء <code>WA_MPS × workers ≤ فئة Meta</code>؛ مراقبة الجودة لتفادي التقييد/الحظر.</li>
+      <li><b>الامتثال:</b> موافقة مزدوجة + سجلّات موافقة قبل توسيع الصادر؛ احترام الانسحاب عبر كلّ القنوات.</li>
+      <li><b>بوّابة الإنجاز (ثابتة):</b> <code>typecheck</code> · <code>test</code> · <code>build</code> كلّها خضراء؛ اختبارات موجبة + سالبة للمنطق الجديد؛ اختبارات طرف-لطرف للمسارات الجديدة. تستمرّ الترحيلات من <code>0016</code>.</li>
+    </ul>
+  </section>
+
+  <hr/>
+
+  <!-- LIMITS -->
+  <section id="limits">
+    <h2><span class="num">سادساً.</span>القيود المعروفة والبنود المفتوحة</h2>
+    <ul>
+      <li>التفويض مقتصر غالباً على المصادقة؛ فقط <code>/api/users</code> محميّ بالأدوار ← <b>§2.11 الأذونات</b>.</li>
+      <li>لا عزو فاعل / سجلّ تدقيق على البثّ أو الحذف ← <b>§2.11 التدقيق</b>.</li>
+      <li>الموافقة على الاشتراك مأخوذة من CSV وغير مفروضة بنيوياً ← <b>§2.11 الموافقة</b>.</li>
+      <li>حذف جهة الاتصال بلا أثر عند وجود سجلّ بثّ (FK <code>RESTRICT</code>).</li>
+      <li>إبطال رمز الوصول يتأخّر ≤15 دقيقة بالتصميم؛ تحديد معدّل الدخول يفشل مفتوحاً.</li>
+      <li>تحديد المعدّل لكلّ عامل: عدّة عمّال قد يتجاوزون فئة Meta — أبقِ <code>WA_MPS × workers ≤ الفئة</code>.</li>
+      <li><b>التحقّق الحيّ:</b> الاتصال + إرسال/مزامنة القوالب مُتحقَّق منها؛ دورة بثّ كاملة + صندوق وارد على رقم حقيقي هي الخطوة التالية مباشرةً (<code>VERIFY.md</code>).</li>
+    </ul>
+    <div class="callout">يبقى ما تبقّى من المرحلة الخامسة (القوالب الغنية) قائماً: عرض محدّد المدّة ← مصادقة/OTP ← كتالوج ← Flows (الكتالوج و Flows مدمجان الآن في §2.10 / §2.5 من الإصدار الثاني).</div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">واتساب هَب — مواصفات الإصدار الثاني · NazzilVideo · نسخة مرافقة لـ <code>whatsapphub-V2.md</code> · صدرت 2026-06-29</div>
+</footer>
+
+</body>
+</html>
