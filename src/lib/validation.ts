@@ -123,6 +123,10 @@ export const CreateRecurringSchema = z.object({
 });
 export type CreateBroadcastInput = z.infer<typeof CreateBroadcastSchema>;
 
+export const SendMessageSchema = z.object({
+  text: z.string().trim().min(1, "Message can't be empty").max(4096),
+});
+
 export const CreateClientSchema = z.object({
   name: z.string().trim().min(1, "Client name is required").max(120),
   slug: z.string().trim().regex(/^[a-z0-9-]{2,40}$/, "Slug: 2–40 lowercase letters, numbers, or hyphens").optional(),
@@ -159,6 +163,7 @@ export const WebhookSchema = z.object({
               .array(
                 z.object({
                   from: z.string(),
+                  id: z.string().optional(), // wamid of the inbound message
                   type: z.string(),
                   text: z.object({ body: z.string() }).optional(),
                   // Reply context: id = wamid of the message being replied to
@@ -174,6 +179,14 @@ export const WebhookSchema = z.object({
                       list_reply: z.object({ id: z.string().optional(), title: z.string().optional() }).optional(),
                     })
                     .optional(),
+                  // Inbound media (we store the id + type; download is a follow-up).
+                  image: z.object({ id: z.string().optional(), mime_type: z.string().optional(), caption: z.string().optional() }).optional(),
+                  document: z.object({ id: z.string().optional(), mime_type: z.string().optional(), filename: z.string().optional(), caption: z.string().optional() }).optional(),
+                  audio: z.object({ id: z.string().optional(), mime_type: z.string().optional() }).optional(),
+                  video: z.object({ id: z.string().optional(), mime_type: z.string().optional(), caption: z.string().optional() }).optional(),
+                  sticker: z.object({ id: z.string().optional(), mime_type: z.string().optional() }).optional(),
+                  reaction: z.object({ emoji: z.string().optional(), message_id: z.string().optional() }).optional(),
+                  location: z.object({ latitude: z.number().optional(), longitude: z.number().optional(), name: z.string().optional(), address: z.string().optional() }).optional(),
                 }),
               )
               .optional(),

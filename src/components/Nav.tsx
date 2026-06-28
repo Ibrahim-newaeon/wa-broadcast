@@ -12,6 +12,7 @@ export default function Nav() {
       </Link>
       <div className="nav__links">
         <Link href="/dashboard">Dashboard</Link>
+        <Link href="/inbox">Inbox</Link>
         <Link href="/contacts">Contacts</Link>
         <Link href="/lists">Lists</Link>
         <Link href="/templates">Templates</Link>

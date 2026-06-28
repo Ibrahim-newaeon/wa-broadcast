@@ -99,6 +99,48 @@ export async function sendTemplate(args: {
   return wamid;
 }
 
+/** Send a free-form text message (only allowed within the 24h service window).
+ *  Returns the wamid. Throws WhatsAppError (e.g. 131047 when the window closed). */
+export async function sendText(args: { to: string; body: string; clientId?: string }): Promise<string> {
+  const cfg = await getWaConfig(args.clientId);
+  const res = await fetch(`https://graph.facebook.com/${cfg.graphApiVersion}/${cfg.phoneNumberId}/messages`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${cfg.accessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: args.to,
+      type: "text",
+      text: { body: args.body },
+    }),
+  });
+  const json = (await res.json().catch(() => ({}))) as {
+    messages?: { id: string }[];
+    error?: { message?: string };
+  };
+  if (!res.ok) {
+    const retryable = res.status === 429 || res.status >= 500;
+    throw new WhatsAppError(json.error?.message ?? `WA send failed (${res.status})`, res.status, retryable);
+  }
+  const wamid = json.messages?.[0]?.id;
+  if (!wamid) throw new WhatsAppError("No wamid in response", 500, true);
+  return wamid;
+}
+
+/** Send a read receipt for an inbound message. Best-effort (never throws). */
+export async function sendReadReceipt(wamid: string, clientId?: string): Promise<void> {
+  try {
+    const cfg = await getWaConfig(clientId);
+    await fetch(`https://graph.facebook.com/${cfg.graphApiVersion}/${cfg.phoneNumberId}/messages`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${cfg.accessToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ messaging_product: "whatsapp", status: "read", message_id: wamid }),
+    });
+  } catch {
+    /* read receipts are non-critical */
+  }
+}
+
 // ── Template creation (submit for Meta approval) ─────────────────────
 export interface TemplateButtonInput {
   type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER";

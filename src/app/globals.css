@@ -143,6 +143,33 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
 .note { font-size:12px; color:var(--muted); }
 .error-text { color:var(--danger); font-size:13px; }
 
+/* inbox (two-way messaging) */
+.inbox { display:grid; grid-template-columns:300px 1fr; gap:16px; height:calc(100vh - 230px); min-height:420px; }
+@media(max-width:760px){ .inbox{ grid-template-columns:1fr; height:auto; } }
+.inbox__list { border:1px solid var(--line); border-radius:var(--r,14px); overflow:auto; background:var(--card); }
+.convo { display:block; width:100%; text-align:start; background:none; border:0; border-bottom:1px solid var(--line);
+  padding:12px 14px; cursor:pointer; color:var(--ink); }
+.convo:hover { background:var(--card2); }
+.convo--active { background:var(--teal-soft); }
+.convo__top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.convo__name { font-weight:600; font-size:14px; }
+.convo__badge { background:var(--green); color:var(--btn-text,#06231f); border-radius:999px; font-size:11px;
+  font-weight:700; min-width:20px; height:20px; padding:0 6px; display:inline-grid; place-items:center; }
+.convo__preview { color:var(--muted); font-size:12.5px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.inbox__thread { display:flex; flex-direction:column; border:1px solid var(--line); border-radius:var(--r,14px); background:var(--card); overflow:hidden; }
+.inbox__empty { display:grid; place-items:center; height:100%; min-height:240px; }
+.thread__head { padding:12px 16px; border-bottom:1px solid var(--line); }
+.thread__body { flex:1; overflow:auto; padding:16px; display:flex; flex-direction:column; gap:8px; }
+.bubble { max-width:72%; padding:8px 12px; border-radius:14px; font-size:14px; }
+.bubble--in { align-self:flex-start; background:var(--card2); border:1px solid var(--line); border-bottom-left-radius:4px; }
+.bubble--out { align-self:flex-end; background:var(--teal-soft); border:1px solid var(--line2); border-bottom-right-radius:4px; }
+.bubble__text { white-space:pre-wrap; word-break:break-word; }
+.bubble__meta { font-size:11px; color:var(--muted); margin-top:3px; text-align:end; }
+.thread__reply { border-top:1px solid var(--line); padding:12px; }
+.thread__closed { font-size:12.5px; color:var(--muted); background:rgba(251,122,30,.1); border-radius:var(--r-sm,10px); padding:8px 12px; margin-bottom:10px; }
+.thread__inputrow { display:flex; gap:10px; }
+.thread__inputrow .input { flex:1; }
+
 /* ============================================================
    Public marketing surface — landing + login (bold, product-led)
    Distinctive display face (Bricolage Grotesque) + body system font.

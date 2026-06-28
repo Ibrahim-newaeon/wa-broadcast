@@ -6,6 +6,7 @@ import {
 } from "@/lib/waConfig";
 import { WebhookSchema } from "@/lib/validation";
 import { verifyWebhookSignature } from "@/lib/webhookSig";
+import { recordInboundMessage } from "@/lib/conversations";
 import { prisma } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -99,6 +100,11 @@ export async function POST(req: NextRequest) {
         await prisma.messageEvent.create({
           data: { recipientId: recipient?.id, wamid: s.id, type: `status:${s.status}`, payload: s },
         });
+        // Mirror the status onto an outbound inbox message, if this wamid is one.
+        await prisma.message.updateMany({
+          where: { wamid: s.id },
+          data: { status: STATUS_MAP[s.status], error: s.errors?.[0]?.title ?? undefined },
+        });
       }
 
       // Inbound messages → button-click tracking + opt-out keyword handling
@@ -127,6 +133,9 @@ export async function POST(req: NextRequest) {
         } else {
           await prisma.messageEvent.create({ data: { wamid: null, type: "inbound", payload: m } });
         }
+
+        // Thread the message into the two-way inbox for this client.
+        await recordInboundMessage(clientId, m);
 
         const text = m.text?.body?.trim().toUpperCase() ?? "";
         if (optOutKeywords.includes(text)) {

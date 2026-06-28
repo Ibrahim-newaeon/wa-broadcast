@@ -32,6 +32,8 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
     prisma.messageEvent.deleteMany({ where: { recipient: { broadcast: { clientId: id } } } }),
     prisma.broadcastRecipient.deleteMany({ where: { broadcast: { clientId: id } } }),
     prisma.broadcast.deleteMany({ where: { clientId: id } }),
+    prisma.message.deleteMany({ where: { clientId: id } }),
+    prisma.conversation.deleteMany({ where: { clientId: id } }),
     prisma.contact.deleteMany({ where: { clientId: id } }),
     prisma.contactList.deleteMany({ where: { clientId: id } }),
     prisma.template.deleteMany({ where: { clientId: id } }),

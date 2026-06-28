@@ -34,6 +34,7 @@ model Contact {
 
   memberships ContactListMembership[]
   recipients  BroadcastRecipient[]
+  conversations Conversation[]
 
   @@unique([clientId, phone])
   @@index([optedOut])
@@ -208,6 +209,46 @@ model WhatsAppConfig {
   webhookVerifyToken String?
   graphApiVersion    String?
   updatedAt          DateTime @updatedAt
+}
+
+// A two-way conversation thread with one phone number (per client). The 24h
+// customer-service window is derived from lastInboundAt.
+model Conversation {
+  id            String    @id @default(cuid())
+  clientId      String
+  phone         String
+  contact       Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  contactId     String?
+  lastInboundAt DateTime? // last message FROM the customer → drives the 24h window
+  lastMessageAt DateTime  @default(now())
+  lastPreview   String?
+  unread        Int       @default(0)
+  createdAt     DateTime  @default(now())
+
+  messages Message[]
+
+  @@unique([clientId, phone])
+  @@index([clientId, lastMessageAt])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  clientId       String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  direction      String   // IN | OUT
+  type           String   @default("text") // text|image|document|audio|video|sticker|interactive|reaction|location|template
+  text           String?
+  mediaId        String?
+  mediaMime      String?
+  mediaFilename  String?
+  wamid          String?  @unique
+  status         String?  // OUT only: SENT|DELIVERED|READ|FAILED
+  error          String?
+  createdAt      DateTime @default(now())
+
+  @@index([conversationId, createdAt])
+  @@index([wamid])
 }
 
 model OptOut {
