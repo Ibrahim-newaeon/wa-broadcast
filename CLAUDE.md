@@ -3,9 +3,9 @@
 Context for Claude Code working in this repo. Read this first.
 
 ## What this is
-A self-hosted **WhatsApp broadcast system** on Meta's **Cloud API**. Upload contacts → send approved template messages to lists → track delivery in real time → honor opt-outs. WATI/Infobip-style core. Brand: **NazzilVideo** (dark, teal→green, Inter/Cairo).
+A self-hosted, **multi-tenant** **WhatsApp messaging platform** on Meta's **Cloud API**. Upload contacts → send approved template messages to lists → track delivery in real time → honor opt-outs → reply two-way in a live inbox. WATI/Infobip-style core. Brand: **NazzilVideo** (dark, teal→green, Inter/Cairo).
 
-> Status: built but **never compiled or run in this environment**. Your first job is to make it pass `typecheck` + tests. Treat any error as expected mechanical cleanup, not a redesign.
+> Status: **built, deployed (Railway), and green** (typecheck · unit tests · build · e2e). Live Meta connection verified. This is **V1**. The Phase-2 roadmap + full feature spec live in **[`whatsapphub-V2.md`](./whatsapphub-V2.md)** (HTML at `public/whatsapphub-v2.html`, Arabic `…-ar.html`); V2 is being built as a separate fork (`../whatsapphub`). See also `HANDOFF.md` for the current status memo.
 
 ## Stack
 Next.js 15 (App Router) · TypeScript strict (`noUncheckedIndexedAccess`) · Prisma + Postgres · BullMQ + Redis · jose + bcryptjs (auth) · Zod (validation) · Vitest (unit) · Playwright (e2e) · Docker Compose. Two processes from one image: **web** (Next) and **worker** (BullMQ consumer + recurring scheduler).
