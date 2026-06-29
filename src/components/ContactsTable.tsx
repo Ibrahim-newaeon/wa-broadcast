@@ -115,10 +115,10 @@ export default function ContactsTable() {
   }
 
   return (
-    <div>
-      <div className="row" style={{ marginBottom: 14 }}>
+    <div className="ct">
+      <div className="ct-toolbar">
         <input
-          data-test-id="contacts-search" className="input" style={{ maxWidth: 320 }}
+          data-test-id="contacts-search" className="input input--sm" style={{ maxWidth: 320 }}
           placeholder="Search phone or name…" value={query} onChange={(e) => setQuery(e.target.value)}
         />
         {(["all", "false", "true"] as const).map((f) => (
@@ -132,10 +132,10 @@ export default function ContactsTable() {
             Delete selected ({selected.size})
           </button>
         )}
-        <span className="note">{total} contact(s)</span>
+        <span className="note">{total.toLocaleString()} {total === 1 ? "contact" : "contacts"}</span>
       </div>
 
-      <table data-test-id="contacts-table" className="table">
+      <table data-test-id="contacts-table" className="table dash-table">
         <thead>
           <tr>
             <th style={{ width: 32 }}>
@@ -167,8 +167,8 @@ export default function ContactsTable() {
                   {editing && editErr && <div className="error-text">{editErr}</div>}
                 </td>
                 <td>
-                  <span className={`badge badge--${c.optedOut ? "FAILED" : "READ"}`}>
-                    {c.optedOut ? "OPTED OUT" : "ACTIVE"}
+                  <span className={`badge badge--${c.optedOut ? "OPTEDOUT" : "ACTIVE"}`}>
+                    {c.optedOut ? "Opted out" : "Active"}
                   </span>
                 </td>
                 <td style={{ textAlign: "end" }}>
@@ -191,15 +191,26 @@ export default function ContactsTable() {
             );
           })}
           {contacts.length === 0 && !busy && (
-            <tr><td colSpan={5} className="muted" style={{ padding: 16 }}>No contacts found.</td></tr>
+            <tr>
+              <td colSpan={5}>
+                <div className="dash-empty">
+                  <strong>{query.trim() || optFilter !== "all" ? "No matches" : "No contacts yet"}</strong>
+                  {query.trim() || optFilter !== "all"
+                    ? "Try a different search, or clear the filter."
+                    : "Add a number above, or import a CSV to build your first list."}
+                </div>
+              </td>
+            </tr>
           )}
         </tbody>
       </table>
 
       {contacts.length < total && (
-        <button className="btn btn--ghost btn--sm" style={{ marginTop: 12 }} onClick={() => load("append")}>
-          Load more ({contacts.length}/{total})
-        </button>
+        <div className="ct-more">
+          <button className="btn btn--ghost btn--sm" onClick={() => load("append")}>
+            Load more ({contacts.length.toLocaleString()}/{total.toLocaleString()})
+          </button>
+        </div>
       )}
     </div>
   );

@@ -438,3 +438,50 @@ html[lang="ar"] .dk-h1 { letter-spacing:normal; line-height:1.15; }
   max-width:52ch; margin-inline:auto; line-height:1.6; }
 .dash-empty strong { display:block; color:var(--ink); font-size:16px; font-weight:700; margin-bottom:6px; }
 .dash-empty--inset { padding:30px 16px; }
+
+/* ============================================================
+   Campaign detail — send progress + timeline header.
+   Reuses .funnel/.analytics/.dash-ledger from above.
+   ============================================================ */
+.bd-back { display:inline-flex; align-items:center; gap:7px; color:var(--muted);
+  font-size:13.5px; font-weight:600; margin-bottom:14px; }
+.bd-back:hover { color:var(--teal); }
+.bd-head { margin-bottom:8px; }
+.bd-title { display:flex; align-items:baseline; flex-wrap:wrap; gap:10px 12px; margin:.08em 0 0; }
+.bd-title__to { color:var(--line2); font-weight:400; }
+.bd-title__list { color:var(--muted); font-weight:700; font-size:.55em; letter-spacing:0; }
+.bd-timeline { display:flex; flex-wrap:wrap; align-items:center; gap:8px; color:var(--muted);
+  font-size:13.5px; margin-top:12px; font-variant-numeric:tabular-nums; }
+.bd-timeline__sep { color:var(--line2); }
+
+.bd-progress { margin:20px 0 22px; }
+.bd-progress__row { display:flex; align-items:center; gap:12px; margin-bottom:11px; }
+.bd-progress__live { display:inline-flex; align-items:center; gap:7px; color:var(--green);
+  font-weight:700; font-size:13px; }
+.bd-progress__pct { margin-inline-start:auto; font-size:30px; font-weight:800;
+  line-height:1; font-variant-numeric:tabular-nums; }
+.bd-progress .progress { height:16px; }
+.dash-ledger__num--danger { color:var(--danger); }
+
+/* ============================================================
+   Contacts — table chrome (card padding moved to the table itself).
+   ============================================================ */
+.ct-toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+  padding:16px 20px; border-bottom:1px solid var(--line); }
+.ct-more { padding:14px 20px; border-top:1px solid var(--line); }
+.badge--ACTIVE { color:var(--st-read); }
+.badge--OPTEDOUT { color:var(--orange); }
+
+/* ============================================================
+   Inbox — conversation list timestamps + 24h window status.
+   Builds on the existing .inbox/.convo/.bubble/.thread primitives.
+   ============================================================ */
+.convo__when { color:var(--muted); font-size:12px; font-variant-numeric:tabular-nums; flex:none; }
+.convo__bottom { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:4px; }
+.convo__bottom .convo__preview { margin-top:0; flex:1; }
+.thread__head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.thread__window { display:inline-flex; align-items:center; gap:7px; flex:none;
+  font-size:12px; font-weight:700; padding:5px 11px; border-radius:var(--r-pill);
+  border:1px solid currentColor; white-space:nowrap; }
+.thread__window--open { color:var(--green); }
+.thread__window--closed { color:var(--st-scheduled); }

@@ -16,19 +16,37 @@ export default async function BroadcastDetail({ params }: { params: Promise<{ id
   });
   if (!b) notFound();
 
+  const timeline: string[] = [];
+  if (b.scheduledAt) timeline.push(`Scheduled ${fmt(b.scheduledAt)}`);
+  if (b.startedAt) timeline.push(`Started ${fmt(b.startedAt)}`);
+  timeline.push(b.completedAt ? `Completed ${fmt(b.completedAt)}` : "In progress");
+
   return (
     <>
       <Nav />
       <main className="app">
-        <Link href="/dashboard" className="muted" style={{ fontSize: 13 }}>← Back to dashboard</Link>
-        <h1>
-          {b.template.name} <span className="muted" style={{ fontSize: 16, fontWeight: 400 }}>→ {b.list.name}</span>
-        </h1>
-        <p className="note">
-          {b.scheduledAt ? `Scheduled for ${b.scheduledAt.toLocaleString()} · ` : ""}
-          {b.startedAt ? `Started ${b.startedAt.toLocaleString()} · ` : ""}
-          {b.completedAt ? `Completed ${b.completedAt.toLocaleString()}` : "in progress"}
-        </p>
+        <Link href="/dashboard" className="bd-back reveal">
+          <span aria-hidden>←</span> Dashboard
+        </Link>
+
+        <header className="bd-head reveal">
+          <p className="eyebrow">Campaign · {b.template.language.toUpperCase()}</p>
+          <h1 className="bd-title">
+            {b.template.name}
+            <span className="bd-title__to" aria-hidden>
+              →
+            </span>
+            <span className="bd-title__list">{b.list.name}</span>
+          </h1>
+          <p className="bd-timeline">
+            {timeline.map((t, i) => (
+              <span key={t}>
+                {i > 0 && <span className="bd-timeline__sep" aria-hidden>·</span>}
+                {t}
+              </span>
+            ))}
+          </p>
+        </header>
 
         <LiveProgress
           broadcastId={b.id}
@@ -38,4 +56,8 @@ export default async function BroadcastDetail({ params }: { params: Promise<{ id
       </main>
     </>
   );
+}
+
+function fmt(d: Date): string {
+  return d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }

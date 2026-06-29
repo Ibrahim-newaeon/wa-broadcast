@@ -86,16 +86,40 @@ export default function LiveProgress({
 
   return (
     <div data-test-id="live-progress">
-      <div className="stats">
-        <Stat label="Status" value={<span className={`badge badge--${b.status}`}>{b.status}</span>} />
-        <Stat label="Total" value={b.totalCount} />
-        <Stat label="Sent" value={b.sentCount} />
-        <Stat label="Failed" value={b.failedCount} />
-        {live && <span className="live-dot" style={{ alignSelf: "center" }}>● live</span>}
+      {/* ── Send progress (hero) ── */}
+      <div className="bd-progress">
+        <div className="bd-progress__row">
+          <span className={`badge badge--${b.status}`}>{b.status}</span>
+          {live && (
+            <span className="bd-progress__live">
+              <span className="pulse-dot" aria-hidden /> Live
+            </span>
+          )}
+          <span className="bd-progress__pct">{pct}%</span>
+        </div>
+        <div className="progress"><div className="progress__bar" style={{ width: `${pct}%` }} /></div>
+        <div className="note" style={{ marginTop: 8 }}>
+          {done.toLocaleString()} of {b.totalCount.toLocaleString()} processed
+        </div>
       </div>
 
-      <div className="progress"><div className="progress__bar" style={{ width: `${pct}%` }} /></div>
-      <div className="note" style={{ margin: "6px 0 20px" }}>{pct}% processed ({done}/{b.totalCount})</div>
+      {/* ── Compact ledger ── */}
+      <div className="dash-ledger" style={{ marginBottom: 22 }}>
+        <div className="dash-ledger__item">
+          <div className="dash-ledger__num">{b.totalCount.toLocaleString()}</div>
+          <div className="dash-ledger__label">Recipients</div>
+        </div>
+        <div className="dash-ledger__item">
+          <div className="dash-ledger__num">{b.sentCount.toLocaleString()}</div>
+          <div className="dash-ledger__label">Sent</div>
+        </div>
+        <div className="dash-ledger__item">
+          <div className={`dash-ledger__num${b.failedCount > 0 ? " dash-ledger__num--danger" : ""}`}>
+            {b.failedCount.toLocaleString()}
+          </div>
+          <div className="dash-ledger__label">Failed</div>
+        </div>
+      </div>
 
       {/* ── Delivery funnel + button events ── */}
       <h2 style={{ fontSize: 18, margin: "0 0 10px" }}>Analytics</h2>
@@ -163,15 +187,6 @@ export default function LiveProgress({
           Load more ({recipients.length}/{filteredTotal})
         </button>
       )}
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="stat">
-      <div className="stat__num">{value}</div>
-      <div className="stat__label">{label}</div>
     </div>
   );
 }
