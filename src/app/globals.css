@@ -326,7 +326,7 @@ html[lang="ar"] .dk-h1 { letter-spacing:normal; line-height:1.15; }
 .reveal.d1 { animation-delay:.06s; } .reveal.d2 { animation-delay:.13s; }
 .reveal.d3 { animation-delay:.2s; } .reveal.d4 { animation-delay:.27s; } .reveal.d5 { animation-delay:.34s; }
 @media (prefers-reduced-motion: reduce) {
-  .reveal, .lp-demo__fill, .lp-demo__live i { animation:none !important; }
+  .reveal, .lp-demo__fill, .lp-demo__live i, .pulse-dot { animation:none !important; }
   .reveal { opacity:1; transform:none; }
   .lp-demo__fill { transform:scaleX(.78); }
 }
@@ -345,3 +345,96 @@ html[lang="ar"] .dk-h1 { letter-spacing:normal; line-height:1.15; }
 .clicks__row { display:flex; align-items:center; justify-content:space-between; gap:12px;
   padding:9px 0; border-top:1px solid var(--line); font-size:14px; }
 .clicks__row:first-of-type { border-top:0; }
+
+/* ============================================================
+   Dashboard — operator command center.
+   Status-first: live pulse, deliverability funnel, audience ledger.
+   Built on the existing tokens + the .analytics/.funnel primitives.
+   ============================================================ */
+.dash-head { display:flex; align-items:flex-end; justify-content:space-between;
+  gap:24px; flex-wrap:wrap; margin:6px 0 30px; }
+.dash-head h1 { margin:.12em 0 0; }
+.dash-status { display:flex; align-items:center; flex-wrap:wrap; gap:8px;
+  color:var(--muted); font-size:14.5px; margin:10px 0 0; }
+.dash-status strong { color:var(--ink); font-weight:800; font-variant-numeric:tabular-nums; }
+.dash-status__sep { color:var(--line2); }
+.dash-status__link, a.dash-status__link { color:var(--teal); font-weight:600; }
+.dash-status__link:hover { color:var(--accent-hover); }
+.dash-asof { color:var(--muted); font-size:12.5px; font-variant-numeric:tabular-nums;
+  white-space:nowrap; }
+
+/* live pulse dot — a ring that breathes out (state, not decoration) */
+.pulse-dot { width:9px; height:9px; border-radius:50%; background:var(--green);
+  flex:none; box-shadow:0 0 0 0 color-mix(in oklab, var(--green) 55%, transparent);
+  animation:livePulse 1.9s cubic-bezier(.16,1,.3,1) infinite; }
+@keyframes livePulse {
+  0%   { box-shadow:0 0 0 0 color-mix(in oklab, var(--green) 55%, transparent); }
+  70%  { box-shadow:0 0 0 7px color-mix(in oklab, var(--green) 0%, transparent); }
+  100% { box-shadow:0 0 0 0 color-mix(in oklab, var(--green) 0%, transparent); }
+}
+
+/* card header row */
+.dash-cardhead { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.dash-cardhead h3 { margin:0; }
+.dash-cardhead .note { margin-inline-start:auto; }
+
+/* derived delivery rates — restrained, sits above the funnel */
+.dash-rates { display:flex; flex-wrap:wrap; gap:28px; margin:2px 0 20px; }
+.dash-rate__val { font-size:27px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; }
+.dash-rate__val--muted { color:var(--muted); }
+.dash-rate__label { color:var(--muted); font-size:12px; margin-top:6px; }
+
+/* live "pulse" panel rows */
+.dash-pulse__row { display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:12px 0; border-top:1px solid var(--line); }
+.dash-pulse__row:first-child { border-top:0; }
+.dash-pulse__k { display:flex; align-items:center; gap:9px; color:var(--muted); font-size:14.5px; }
+.dash-pulse__v { font-weight:800; font-size:19px; font-variant-numeric:tabular-nums; color:var(--ink); }
+.dash-pulse__v--accent { color:var(--teal); }
+.dash-pulse__row a { font-weight:inherit; }
+
+/* audience ledger — one band, hairline dividers (not stat cards) */
+.dash-ledger { display:flex; flex-wrap:wrap; background:var(--card);
+  border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow);
+  overflow:hidden; margin:0 0 8px; }
+.dash-ledger__item { flex:1 1 200px; padding:20px 24px; border-inline-start:1px solid var(--line); }
+.dash-ledger__item:first-child { border-inline-start:0; }
+.dash-ledger__num { font-size:32px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; }
+.dash-ledger__label { color:var(--muted); font-size:12.5px; margin-top:8px;
+  letter-spacing:.02em; text-transform:uppercase; font-weight:600; }
+.dash-ledger__meter { height:6px; max-width:140px; margin-top:14px; overflow:hidden;
+  background:var(--bg2); border:1px solid var(--line2); border-radius:var(--r-pill); }
+.dash-ledger__meter i { display:block; height:100%; background:var(--grad-brand); }
+.dash-ledger__sub { display:block; color:var(--muted); font-size:12.5px; margin-top:10px;
+  font-variant-numeric:tabular-nums; }
+.dash-ledger__sub--link { color:var(--teal); font-weight:600; }
+.dash-ledger__sub--link:hover { color:var(--accent-hover); }
+@media (max-width:560px) {
+  .dash-ledger__item { flex-basis:100%; border-inline-start:0; border-top:1px solid var(--line); }
+  .dash-ledger__item:first-child { border-top:0; }
+}
+
+/* section headers between blocks */
+.dash-section { margin:36px 0 16px; }
+.dash-section h2 { margin:.12em 0 0; }
+
+/* recent-broadcasts table extras */
+.dash-table { font-size:14px; }
+.dash-table th:first-child, .dash-table td:first-child { padding-inline-start:20px; }
+.dash-table th:last-child, .dash-table td:last-child { padding-inline-end:20px; }
+.dash-table__tpl { font-weight:600; color:var(--ink); }
+.dash-table__tpl:hover { color:var(--teal); }
+.dash-table__when { white-space:nowrap; font-variant-numeric:tabular-nums; }
+.dash-fail { color:var(--danger); font-weight:700; font-variant-numeric:tabular-nums; }
+.dash-prog { display:flex; align-items:center; gap:10px; min-width:150px; }
+.dash-prog__track { flex:1; min-width:56px; height:7px; overflow:hidden;
+  background:var(--bg2); border:1px solid var(--line2); border-radius:var(--r-pill); }
+.dash-prog__bar { display:block; height:100%; background:var(--grad-brand); border-radius:inherit;
+  transition:width .5s cubic-bezier(.16,1,.3,1); }
+.dash-prog__num { color:var(--muted); font-size:12.5px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+/* teaching empty states */
+.dash-empty { text-align:center; padding:38px 22px; color:var(--muted); font-size:14px;
+  max-width:52ch; margin-inline:auto; line-height:1.6; }
+.dash-empty strong { display:block; color:var(--ink); font-size:16px; font-weight:700; margin-bottom:6px; }
+.dash-empty--inset { padding:30px 16px; }
