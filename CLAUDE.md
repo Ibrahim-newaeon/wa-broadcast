@@ -108,3 +108,39 @@ wa-broadcast/
 - Contact delete is a no-op if the contact has broadcast history (FK `RESTRICT`).
 - Access-token revocation lags ≤15 min by design; login rate-limit fails open.
 - Per-worker rate limiting: running N workers can exceed your Meta tier (keep `WA_MPS × workers ≤ tier`).
+
+## Design Context
+
+> Guides all design/frontend work. Full version + principles in `.impeccable.md`. Applied
+> system lives in `src/app/globals.css` (docs: `theme/THEME.md`). Brand: **NazzilVideo**.
+
+### Users
+Multi-tenant, **mixed audience**: agency operators (power users running campaigns across many
+clients, at a desk) **and** less-technical business owners sending to their own list. Serve
+both via progressive disclosure — simple defaults up front, power features one layer deeper.
+JTBD: upload contacts → send approved templates to lists → watch delivery live → honor
+opt-outs → reply in a two-way inbox.
+
+### Brand Personality
+**Polished & premium** — feels like a paid SaaS worth the price; refined, branded, delightful
+in key moments. Operators feel **confident and in control** during high-volume sends. Three
+words: **refined · trustworthy · alive.**
+
+### Aesthetic Direction
+**Evolve the established system, don't replace it.** Keep NazzilVideo DNA (dark base,
+teal→green signature gradient, orange highlight, Inter/Cairo, two-tone wordmark) but push type
+hierarchy, layout boldness, and motion further; promote improvements into `globals.css` tokens.
+Dark by default (long operator sessions); `[data-theme="light"]` stays supported; marketing/
+landing/login may go bolder than the disciplined app UI. **Anti-references:** don't look like
+WhatsApp itself or WATI/Infobip; avoid AI tells (neon cyan-on-dark, purple→blue gradients,
+gradient text, colored side-stripe borders, identical icon-card grids, hero-metric templates).
+
+### Design Principles
+1. **Evolve, don't fork** — build on `globals.css` tokens; no parallel one-off systems.
+2. **Two audiences, one surface** — progressive disclosure; adapt mobile, never amputate.
+3. **Trust through real-time clarity** — status/progress read instantly; status color is
+   meaningful, never decorative.
+4. **Premium in the details** — spacing rhythm, type contrast, focus states, one orchestrated
+   motion moment per view.
+5. **Bilingual & fast by default** — preserve EN/AR + RTL (logical properties, Cairo switch);
+   respect a tight performance budget.
