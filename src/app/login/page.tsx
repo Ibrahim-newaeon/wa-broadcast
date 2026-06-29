@@ -63,19 +63,19 @@ export default function LoginPage() {
   return (
     <main className="auth">
       <aside className="auth__aside">
-        <div className="brand">
+        <div className="brand reveal">
           <span className="mark" aria-hidden />
           <span><span className="b1">broadcast</span><span className="b2">console</span></span>
         </div>
         <div>
-          <p className="auth__pitch">Your audience, on <em>WhatsApp</em>, at scale.</p>
-          <div className="auth__points">
-            <span>Send Meta-approved templates to contact lists</span>
-            <span>Track sent · delivered · read · failed, live</span>
-            <span>Opt-outs honored automatically</span>
+          <p className="auth__pitch reveal d1">Reach every customer on <em>WhatsApp</em> — and watch each message land.</p>
+          <div className="auth__points reveal d2">
+            <span>Send Meta-approved templates to whole contact lists</span>
+            <span>Track sent, delivered, read &amp; failed in real time</span>
+            <span>Opt-outs honored automatically — every send</span>
           </div>
         </div>
-        <p className="muted" style={{ fontSize: 13 }}>NazzilVideo · WhatsApp Cloud API</p>
+        <p className="muted reveal d3" style={{ fontSize: 13 }}>NazzilVideo · WhatsApp Cloud API</p>
       </aside>
 
       <section className="auth__panel">

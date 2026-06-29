@@ -22,6 +22,18 @@ function bodyOf(m: Msg): string {
   return MEDIA_LABEL[m.type] ?? "Message";
 }
 const hhmm = (s: string) => new Date(s).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+// Short relative stamp for the conversation list ("3m", "2h", "Mon", "Apr 4").
+function shortWhen(s: string): string {
+  const d = new Date(s);
+  const min = Math.round((Date.now() - d.getTime()) / 60000);
+  if (min < 1) return "now";
+  if (min < 60) return `${min}m`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `${h}h`;
+  const days = Math.round(h / 24);
+  if (days < 7) return d.toLocaleDateString([], { weekday: "short" });
+  return d.toLocaleDateString([], { month: "short", day: "numeric" });
+}
 
 /** Render a bubble's content — media is streamed (token-safe) via /api/media/:id. */
 function MessageContent({ m }: { m: Msg }) {
@@ -144,18 +156,25 @@ export default function InboxClient() {
   return (
     <div className="inbox">
       <aside className="inbox__list">
-        {convos.length === 0 && (
-          <p className="muted" style={{ padding: 16 }}>No conversations yet — they appear here when a contact messages you back.</p>
+        {convos.length === 0 ? (
+          <div className="dash-empty">
+            <strong>No conversations yet</strong>
+            They appear here the moment a contact replies to one of your messages.
+          </div>
+        ) : (
+          convos.map((c) => (
+            <button key={c.id} type="button" className={`convo${c.id === activeId ? " convo--active" : ""}`} onClick={() => open(c.id)}>
+              <div className="convo__top">
+                <span className="convo__name">{c.name ?? c.phone}</span>
+                <span className="convo__when">{shortWhen(c.lastMessageAt)}</span>
+              </div>
+              <div className="convo__bottom">
+                <span className="convo__preview">{c.lastPreview ?? ""}</span>
+                {c.unread > 0 && <span className="convo__badge">{c.unread}</span>}
+              </div>
+            </button>
+          ))
         )}
-        {convos.map((c) => (
-          <button key={c.id} type="button" className={`convo${c.id === activeId ? " convo--active" : ""}`} onClick={() => open(c.id)}>
-            <div className="convo__top">
-              <span className="convo__name">{c.name ?? c.phone}</span>
-              {c.unread > 0 && <span className="convo__badge">{c.unread}</span>}
-            </div>
-            <div className="convo__preview">{c.lastPreview ?? ""}</div>
-          </button>
-        ))}
       </aside>
 
       <section className="inbox__thread">
@@ -164,8 +183,14 @@ export default function InboxClient() {
         ) : (
           <>
             <header className="thread__head">
-              <strong>{head?.name ?? head?.phone}</strong>
-              {head?.name && <span className="muted"> · {head?.phone}</span>}
+              <div className="thread__who">
+                <strong>{head?.name ?? head?.phone}</strong>
+                {head?.name && <span className="muted"> · {head?.phone}</span>}
+              </div>
+              <span className={`thread__window thread__window--${windowOpen ? "open" : "closed"}`}>
+                {windowOpen && <span className="pulse-dot" aria-hidden />}
+                {windowOpen ? "Window open" : "Window closed"}
+              </span>
             </header>
 
             <div className="thread__body" ref={threadRef}>

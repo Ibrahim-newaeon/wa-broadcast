@@ -17,14 +17,25 @@ export default async function ContactsPage() {
     <>
       <Nav />
       <main className="app">
-        <h1>Contacts</h1>
-        <p className="note" style={{ marginBottom: 16 }}>
-          Add a contact, search, opt out / re-subscribe, or delete. Opt-outs are excluded from every broadcast.
-        </p>
-        <section className="grid-forms" style={{ marginBottom: 16 }}>
+        <header className="dash-head reveal">
+          <div>
+            <p className="eyebrow">Audience</p>
+            <h1>Contacts</h1>
+            <p className="dash-status">
+              Opted-out numbers are excluded from every broadcast, automatically.
+            </p>
+          </div>
+        </header>
+
+        <section className="dash-section reveal d1" style={{ marginTop: 4 }}>
+          <p className="eyebrow">Add a contact</p>
+          <h2>One number, or import a CSV</h2>
+        </section>
+        <section className="grid-forms reveal d1" style={{ marginBottom: 20 }}>
           <AddContactForm lists={lists} />
         </section>
-        <div className="card">
+
+        <div className="card reveal d2" style={{ padding: 0, overflow: "hidden" }}>
           <ContactsTable />
         </div>
       </main>

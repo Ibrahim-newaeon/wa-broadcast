@@ -8,10 +8,15 @@ export default function InboxPage() {
     <>
       <Nav />
       <main className="app">
-        <h1>Inbox</h1>
-        <p className="note" style={{ marginBottom: 16 }}>
-          Two-way conversations. Reply within 24 hours of a contact&apos;s message; after that, send an approved template to re-open.
-        </p>
+        <header className="dash-head reveal" style={{ marginBottom: 18 }}>
+          <div>
+            <p className="eyebrow">Conversations</p>
+            <h1>Inbox</h1>
+            <p className="dash-status">
+              Reply free-form within 24 hours of a contact&apos;s message — after that, an approved template re-opens the window.
+            </p>
+          </div>
+        </header>
         <InboxClient />
       </main>
     </>
