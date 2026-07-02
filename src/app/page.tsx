@@ -113,8 +113,11 @@ export default function Landing() {
 
         <footer className="dk-foot">
           <span><T en="© NazzilVideo · WhatsApp Hub" ar="© NazzilVideo · مركز واتساب" /></span>
-          <span style={{ display: "inline-flex", gap: 18 }}>
+          <span style={{ display: "inline-flex", gap: 18, flexWrap: "wrap" }}>
             <a href="/tutorial.html"><T en="Tutorial" ar="الدليل التفاعلي" /></a>
+            <Link href="/privacy-policy"><T en="Privacy" ar="الخصوصية" /></Link>
+            <Link href="/terms-and-conditions"><T en="Terms" ar="الشروط" /></Link>
+            <Link href="/data-deletion"><T en="Data deletion" ar="حذف البيانات" /></Link>
             <Link href="/login"><T en="Log in" ar="تسجيل الدخول" /></Link>
           </span>
         </footer>
