@@ -44,6 +44,9 @@ export default function TemplatesManager() {
   const [buttons, setButtons] = useState<Btn[]>([]);
   const [carouselOn, setCarouselOn] = useState(false);
   const [cards, setCards] = useState<Card[]>([]);
+  const [ltoOn, setLtoOn] = useState(false);
+  const [ltoText, setLtoText] = useState("");
+  const [ltoExpiration, setLtoExpiration] = useState(false);
   const [busy, setBusy] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
@@ -51,6 +54,12 @@ export default function TemplatesManager() {
   const varCount = useMemo(() => (body.match(/\{\{\d+\}\}/g) ?? []).length, [body]);
   const carouselInvalid =
     carouselOn && (cards.length < 2 || cards.some((c) => !c.mediaUrl.trim() || !c.body.trim()));
+  // Meta rules for limited-time offers: URL button required; only copy-code + URL buttons.
+  const ltoInvalid =
+    ltoOn &&
+    (!ltoText.trim() ||
+      !buttons.some((b) => b.type === "URL") ||
+      buttons.some((b) => b.type === "QUICK_REPLY" || b.type === "PHONE_NUMBER"));
 
   async function loadTemplates(sync = false) {
     if (sync) setSyncing(true);
@@ -90,6 +99,19 @@ export default function TemplatesManager() {
     setHeaderFormat(f);
     setHeaderExample(""); setHeaderFile(""); setHeaderErr("");
   }
+  // Limited-time offer and carousel are mutually exclusive template layouts.
+  function toggleLto(on: boolean) {
+    setLtoOn(on);
+    if (on) {
+      setCarouselOn(false);
+      setFooter(""); // LTO templates don't support a footer
+      if (headerFormat === "DOCUMENT") changeHeaderFormat(""); // image/video only
+    }
+  }
+  function toggleCarousel(on: boolean) {
+    setCarouselOn(on);
+    if (on) setLtoOn(false);
+  }
   async function onHeaderFile(file: File | undefined) {
     if (!file) return;
     setHeaderUploading(true); setHeaderErr(""); setHeaderExample(""); setHeaderFile("");
@@ -118,7 +140,8 @@ export default function TemplatesManager() {
         // Carousel replaces the top-level header + buttons.
         header: carouselOn || !headerFormat ? undefined : { format: headerFormat, example: headerExample.trim() },
         bodyExamples: examples.slice(0, varCount),
-        footer: carouselOn ? undefined : footer.trim() || undefined,
+        footer: carouselOn || ltoOn ? undefined : footer.trim() || undefined,
+        limitedTimeOffer: ltoOn ? { text: ltoText.trim(), hasExpiration: ltoExpiration } : undefined,
         buttons: carouselOn ? [] : buttons.map((b) => ({
           type: b.type,
           text: b.text || (b.type === "COPY_CODE" ? "Copy code" : b.text),
@@ -138,6 +161,7 @@ export default function TemplatesManager() {
       setName(""); setBody(""); setExamples([]); setFooter(""); setButtons([]);
       setHeaderFormat(""); setHeaderExample(""); setHeaderFile(""); setHeaderErr("");
       setCarouselOn(false); setCards([]);
+      setLtoOn(false); setLtoText(""); setLtoExpiration(false);
       void loadTemplates();
     } else {
       setMsg({ kind: "err", text: j.error ?? `Error ${res.status}` });
@@ -173,7 +197,9 @@ export default function TemplatesManager() {
           <div className="row" style={{ gap: 8, alignItems: "center" }}>
             <select id="t-hdr" className="input input--sm" style={{ flex: "0 0 auto", width: "auto" }}
               value={headerFormat} onChange={(e) => changeHeaderFormat(e.target.value as HeaderFormat)}>
-              {HEADER_FORMATS.map((h) => <option key={h.value} value={h.value}>{h.label}</option>)}
+              {HEADER_FORMATS.filter((h) => !(ltoOn && h.value === "DOCUMENT")).map((h) => (
+                <option key={h.value} value={h.value}>{h.label}</option>
+              ))}
             </select>
             {headerFormat && (
               <input className="input input--sm" type="file" accept={headerAccept} style={{ flex: 1 }}
@@ -204,11 +230,13 @@ export default function TemplatesManager() {
             ))}
           </div>
         )}
-        <div className="field">
-          <label className="label" htmlFor="t-footer">Footer <span className="muted">(optional)</span></label>
-          <input id="t-footer" className="input" value={footer} maxLength={60}
-            onChange={(e) => setFooter(e.target.value)} placeholder="Reply STOP to opt out" />
-        </div>
+        {!ltoOn && (
+          <div className="field">
+            <label className="label" htmlFor="t-footer">Footer <span className="muted">(optional)</span></label>
+            <input id="t-footer" className="input" value={footer} maxLength={60}
+              onChange={(e) => setFooter(e.target.value)} placeholder="Reply STOP to opt out" />
+          </div>
+        )}
         <div className="field">
           <label className="label">Buttons <span className="muted">(optional, up to 3)</span></label>
           {buttons.map((b, i) => (
@@ -246,7 +274,28 @@ export default function TemplatesManager() {
 
         <div className="field">
           <label className="label" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <input type="checkbox" checked={carouselOn} onChange={(e) => setCarouselOn(e.target.checked)} />
+            <input type="checkbox" checked={ltoOn} onChange={(e) => toggleLto(e.target.checked)} />
+            Limited-time offer <span className="muted">— an offer banner above the body, with an optional countdown</span>
+          </label>
+          {ltoOn && (
+            <div style={{ marginTop: 8 }}>
+              <input className="input input--sm" style={{ marginBottom: 8, width: "100%" }} value={ltoText}
+                data-test-id="tmpl-lto-text" maxLength={16} placeholder="Offer text, e.g. Expiring offer!"
+                onChange={(e) => setLtoText(e.target.value)} />
+              <label className="label" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input type="checkbox" checked={ltoExpiration} onChange={(e) => setLtoExpiration(e.target.checked)} />
+                Show a countdown timer <span className="muted">— each broadcast supplies the expiry time</span>
+              </label>
+              <p className="muted" style={{ marginTop: 6, fontSize: 13 }}>
+                Needs a URL button below{ltoExpiration ? " (add a copy-code button to include a coupon)" : ""}; quick-reply and call buttons aren&apos;t allowed.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="field">
+          <label className="label" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input type="checkbox" checked={carouselOn} onChange={(e) => toggleCarousel(e.target.checked)} />
             Carousel (media cards) <span className="muted">— replaces the header &amp; buttons above; 2–10 cards, each with a public media URL</span>
           </label>
           {carouselOn && (
@@ -285,7 +334,7 @@ export default function TemplatesManager() {
         </div>
 
         <button data-test-id="tmpl-submit" className="btn" type="submit"
-          disabled={busy || !name || !body || headerUploading || (!carouselOn && !!headerFormat && !headerExample) || carouselInvalid} aria-busy={busy}>
+          disabled={busy || !name || !body || headerUploading || (!carouselOn && !!headerFormat && !headerExample) || carouselInvalid || ltoInvalid} aria-busy={busy}>
           {busy ? "Submitting to Meta…" : "Submit to Meta"}
         </button>
         {msg && (

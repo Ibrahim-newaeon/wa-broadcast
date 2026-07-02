@@ -21,15 +21,15 @@ A self-hosted, **multi-tenant** WhatsApp messaging platform on Meta's Cloud API 
 - **P1** — template-status webhook auto-syncs Meta approval/rejection.
 - **Phase 3 — multi-tenancy (COMPLETE):** `Client` model + `clientId` on every entity; auth token carries `cid`; all data + routes scoped per client; per-client uniques (`phone`, `name+language`); per-client WhatsApp config; super-admin **client switcher** (`acid` cookie) + Clients management + **cascade client-delete**; **per-client webhook signatures** (routed by WABA id `entry.id`). Enforced by `e2e/tenant-isolation.spec.ts`.
 - **Phase 4 — two-way inbox (COMPLETE):** `Conversation`/`Message` models; inbound capture for text/image/document/audio/video/sticker/interactive/reaction/location (idempotent on `wamid`); 24h-window tracking; outbound **text + attachments**; **media rendering** via token-safe proxy (`/api/media/:id`); **read receipts**; live two-pane `/inbox`.
-- **Phase 5 — rich templates (IN PROGRESS):** ✅ coupon **copy-code** buttons · ✅ **carousel** (2–10 static media cards). ⏳ remaining below.
+- **Phase 5 — rich templates (IN PROGRESS):** ✅ coupon **copy-code** buttons · ✅ **carousel** (2–10 static media cards) · ✅ **limited-time offer** (banner text ≤16 chars on the template; optional countdown whose expiry is supplied per broadcast, migration `0016`). ⏳ remaining below.
 - **Docs** — README, bilingual tutorial (`/tutorial.html`), VERIFY.md, this memo.
 
 ## Migrations
-`0001`→`0014`. Recent: `0007` appId · `0008` header media · `0009` multitenant foundation · `0010` per-client uniques · `0011` bootstrap superadmin · `0012` two-way messaging · `0013` copy-code · `0014` carousel. Hand-written SQL; applied on boot.
+`0001`→`0016`. Recent: `0009` multitenant foundation · `0010` per-client uniques · `0011` bootstrap superadmin · `0012` two-way messaging · `0013` copy-code · `0014` carousel · `0015` list-name unique · `0016` limited-time offer. Hand-written SQL; applied on boot.
 
 ## Next steps (priority order)
 1. **🔴 Live end-to-end verification — [VERIFY.md](./VERIFY.md).** Connect a real number (Settings → Connect WhatsApp), send a broadcast (plain → media → coupon → carousel), and do the inbox round-trip. _The user drives the Meta-side steps; assistant tails the worker + webhook logs and fixes real payload bugs._ This will likely shake out 1–2 small payload issues that unit tests can't catch. **Do this before building more.**
-2. **🟠 Phase 5 remaining** (by fit): **limited-time-offer** (best fit, do first) → authentication/OTP (transactional, low broadcast fit) → catalog/products (needs a Meta Commerce catalog) → Flows (big, niche).
+2. **🟠 Phase 5 remaining** (by fit): authentication/OTP (transactional, low broadcast fit) → catalog/products (needs a Meta Commerce catalog) → Flows (big, niche).
 3. **🟡 Polish ideas:** per-card carousel variables; richer inbox (search, templates-from-inbox to reopen closed windows); media-retention fallback for old outbound media.
 
 ## Key technical notes for next session

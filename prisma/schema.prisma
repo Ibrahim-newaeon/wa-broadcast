@@ -93,6 +93,10 @@ model Template {
   headerFormat  String?
   // True if the template has a COPY_CODE (coupon) button — the broadcast must supply a code.
   copyCode      Boolean  @default(false)
+  // Limited-time offer: the offer banner text (≤16 chars). Non-null = LTO template.
+  ltoText       String?
+  // True if the LTO shows a countdown — the broadcast must supply an expiry time.
+  ltoExpiration Boolean  @default(false)
   // Carousel card definitions (media URL + format per card) so sends can reuse them.
   // [{ format: "IMAGE"|"VIDEO", mediaUrl, body, buttonText?, buttonUrl? }]
   cards         Json?
@@ -122,6 +126,8 @@ model Broadcast {
   headerMediaUrl String?
   // Coupon code for a COPY_CODE button template.
   couponCode  String?
+  // Offer expiry for a limited-time-offer template with a countdown.
+  ltoExpiresAt DateTime?
   scheduledAt DateTime?           // null = send immediately
   createdAt   DateTime @default(now())
   startedAt   DateTime?

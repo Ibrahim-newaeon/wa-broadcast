@@ -24,6 +24,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   if (broadcast.template.status !== "APPROVED") {
     return NextResponse.json({ error: "template no longer approved" }, { status: 422 });
   }
+  // A countdown offer that already expired can't be re-sent — Meta would reject every job.
+  if (broadcast.ltoExpiresAt && broadcast.ltoExpiresAt.getTime() <= Date.now()) {
+    return NextResponse.json({ error: "the limited-time offer has expired — create a new broadcast" }, { status: 422 });
+  }
 
   // Skip opted-out contacts even on retry.
   const optOuts = new Set(
@@ -75,6 +79,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
         carouselCards: Array.isArray(broadcast.template.cards)
           ? (broadcast.template.cards as { format: string; mediaUrl: string }[]).map((c) => ({ format: c.format, mediaUrl: c.mediaUrl }))
           : null,
+        ltoExpiryMs: broadcast.ltoExpiresAt?.getTime() ?? null,
       },
       { jobId: `${id}:${rec.contactId}:r${stamp}` }, // fresh id avoids dedupe
     );

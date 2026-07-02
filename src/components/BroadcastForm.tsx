@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 
 interface List { id: string; name: string }
-interface Template { id: string; name: string; language: string; variableCount: number; headerFormat?: string | null; copyCode?: boolean }
+interface Template { id: string; name: string; language: string; variableCount: number; headerFormat?: string | null; copyCode?: boolean; ltoExpiration?: boolean }
 
 export default function BroadcastForm({ lists, templates }: { lists: List[]; templates: Template[] }) {
   const [templateId, setTemplateId] = useState("");
@@ -12,6 +12,7 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
   const [vars, setVars] = useState<string[]>([]);
   const [headerMediaUrl, setHeaderMediaUrl] = useState("");
   const [couponCode, setCouponCode] = useState("");
+  const [ltoExpiresAt, setLtoExpiresAt] = useState("");
   const [scheduleAt, setScheduleAt] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -19,6 +20,7 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
   const selected = useMemo(() => templates.find((t) => t.id === templateId), [templateId, templates]);
   const mediaHeader = !!selected && ["IMAGE", "DOCUMENT", "VIDEO"].includes(selected.headerFormat ?? "");
   const needsCoupon = !!selected?.copyCode;
+  const needsLtoExpiry = !!selected?.ltoExpiration;
 
   function onTemplateChange(id: string) {
     setTemplateId(id);
@@ -26,6 +28,7 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
     setVars(Array(t?.variableCount ?? 0).fill(""));
     setHeaderMediaUrl("");
     setCouponCode("");
+    setLtoExpiresAt("");
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -36,6 +39,7 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
     const body: Record<string, unknown> = { templateId, listId, variableMap };
     if (mediaHeader && headerMediaUrl.trim()) body.headerMediaUrl = headerMediaUrl.trim();
     if (needsCoupon && couponCode.trim()) body.couponCode = couponCode.trim();
+    if (needsLtoExpiry && ltoExpiresAt) body.ltoExpiresAt = new Date(ltoExpiresAt).toISOString();
     if (scheduleAt) body.scheduleAt = new Date(scheduleAt).toISOString();
 
     const res = await apiFetch("/api/broadcasts", {
@@ -95,6 +99,16 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
         </div>
       )}
 
+      {needsLtoExpiry && (
+        <div className="field">
+          <label className="label" htmlFor="bc-lto">
+            Offer expires at <span className="muted">— this template shows a countdown timer</span>
+          </label>
+          <input id="bc-lto" data-test-id="bc-lto-expiry" className="input" type="datetime-local" value={ltoExpiresAt}
+            onChange={(e) => setLtoExpiresAt(e.target.value)} required />
+        </div>
+      )}
+
       {selected && selected.variableCount > 0 && (
         <div className="field">
           <label className="label">
@@ -114,7 +128,7 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
       </div>
 
       <button data-test-id="bc-submit" className="btn" type="submit"
-        disabled={busy || !templateId || !listId || (mediaHeader && !headerMediaUrl.trim()) || (needsCoupon && !couponCode.trim())} aria-busy={busy}>
+        disabled={busy || !templateId || !listId || (mediaHeader && !headerMediaUrl.trim()) || (needsCoupon && !couponCode.trim()) || (needsLtoExpiry && !ltoExpiresAt)} aria-busy={busy}>
         {busy ? "Submitting…" : scheduleAt ? "Schedule broadcast" : "Send now"}
       </button>
       {msg && <p data-test-id="bc-result" className="note" style={{ marginTop: 10 }}>{msg}</p>}
