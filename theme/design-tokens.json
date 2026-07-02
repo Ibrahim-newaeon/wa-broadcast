@@ -1,7 +1,7 @@
 {
-  "name": "Broadcast Console",
+  "name": "Broadcast Hub",
   "brand": "NazzilVideo",
-  "description": "Design tokens for the WhatsApp Broadcast Console. Dark theme, teal/green brand, bilingual EN/AR. Live stylesheet: src/app/globals.css.",
+  "description": "Design tokens for the WhatsApp Broadcast Hub. Dark theme, teal/green brand, bilingual EN/AR. Live stylesheet: src/app/globals.css.",
   "color": {
     "bg": "#0e1a24", "bg2": "#0a131b", "card": "#14222e", "card2": "#172a38",
     "line": "#22323f", "line2": "#2c4150",

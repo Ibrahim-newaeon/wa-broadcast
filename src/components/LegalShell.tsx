@@ -5,7 +5,7 @@ import Link from "next/link";
 // text avoids translation drift on legal wording.
 export const LEGAL = {
   company: "NazzilVideo",
-  service: "WhatsApp Hub",
+  service: "Broadcast Hub",
   contactEmail: "abd.rabo.940@gmail.com",
 } as const;
 
