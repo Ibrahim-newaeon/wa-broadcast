@@ -37,6 +37,7 @@ export async function createAndEnqueueBroadcast(opts: {
   scheduledAt?: Date | null;
   headerMediaUrl?: string | null;
   couponCode?: string | null;
+  ltoExpiresAt?: Date | null;
 }): Promise<EnqueueResult> {
   // Scope everything to the caller's tenant so a broadcast can't reach another
   // client's template/list/contacts.
@@ -55,6 +56,12 @@ export async function createAndEnqueueBroadcast(opts: {
   const couponCode = template.copyCode ? (opts.couponCode ?? "").trim() : null;
   if (template.copyCode && !couponCode) {
     return { ok: false, error: "this template has a copy-code button — provide a coupon code", code: 422 };
+  }
+
+  // A countdown limited-time offer needs its expiry for this send.
+  const ltoExpiresAt = template.ltoExpiration ? (opts.ltoExpiresAt ?? null) : null;
+  if (template.ltoExpiration && (!ltoExpiresAt || ltoExpiresAt.getTime() <= Date.now())) {
+    return { ok: false, error: "this template is a countdown offer — provide a future expiry time", code: 422 };
   }
 
   // Carousel cards (media is reused from the template on every send).
@@ -87,6 +94,7 @@ export async function createAndEnqueueBroadcast(opts: {
       variableMap: opts.variableMap,
       headerMediaUrl,
       couponCode,
+      ltoExpiresAt,
       scheduledAt,
       startedAt: scheduledAt ? null : new Date(),
     },
@@ -110,6 +118,7 @@ export async function createAndEnqueueBroadcast(opts: {
         headerMediaUrl,
         couponCode,
         carouselCards,
+        ltoExpiryMs: ltoExpiresAt?.getTime() ?? null,
       },
       { jobId: `${broadcast.id}:${contact.id}`, delay: delayMs },
     );

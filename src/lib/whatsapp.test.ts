@@ -61,6 +61,30 @@ describe("buildTemplatePayload", () => {
     expect(carousel.cards[1]!.components[0]).toEqual({ type: "header", parameters: [{ type: "video", video: { link: "https://x.co/b.mp4" } }] });
   });
 
+  // POSITIVE: a countdown offer supplies its expiry per-send, ordered before the body
+  it("adds a limited_time_offer component when an expiry is supplied", () => {
+    const p = buildTemplatePayload({
+      to: "15551230000", templateName: "flash_sale", language: "en",
+      bodyParams: ["Sarah"], couponCode: "SAVE20", ltoExpiryMs: 1893456000000,
+    });
+    const comps = (p.template as { components?: Record<string, unknown>[] }).components ?? [];
+    expect(comps[0]).toEqual({
+      type: "limited_time_offer",
+      parameters: [{ type: "limited_time_offer", limited_time_offer: { expiration_time_ms: 1893456000000 } }],
+    });
+    expect(comps[1]).toMatchObject({ type: "body" });
+  });
+
+  // NEGATIVE: no expiry (has_expiration=false template) → no LTO component on send
+  it("omits the limited_time_offer component when no expiry is supplied", () => {
+    const p = buildTemplatePayload({
+      to: "15551230000", templateName: "flash_sale", language: "en",
+      bodyParams: ["Sarah"], ltoExpiryMs: null,
+    });
+    const comps = (p.template as { components?: Record<string, unknown>[] }).components ?? [];
+    expect(comps.some((c) => c.type === "limited_time_offer")).toBe(false);
+  });
+
   it("omits components when there are no params", () => {
     const p = buildTemplatePayload({
       to: "966500000000",
@@ -134,6 +158,24 @@ describe("buildTemplateComponents", () => {
     expect(carousel.cards[0]!.components[1]).toEqual({ type: "BODY", text: "Summer dress" });
     expect(carousel.cards[0]!.components[2]).toEqual({ type: "BUTTONS", buttons: [{ type: "URL", text: "Shop", url: "https://x.co/1" }] });
     expect(carousel.cards[1]!.components).toHaveLength(2); // no button on card 2
+  });
+
+  // POSITIVE: a limited-time offer maps to Meta's LIMITED_TIME_OFFER component,
+  // placed between the header and body per Meta's documented order
+  it("builds a limited-time-offer component in header→LTO→body order", () => {
+    const c = buildTemplateComponents({
+      name: "flash_sale", language: "en", category: "MARKETING",
+      header: { format: "IMAGE", example: "h1" },
+      body: "Ends soon, {{1}}!", bodyExamples: ["Sarah"],
+      buttons: [{ type: "COPY_CODE", text: "Copy code", couponExample: "SAVE20" }, { type: "URL", text: "Shop", url: "https://x.co" }],
+      limitedTimeOffer: { text: "Expiring offer!", hasExpiration: true },
+    });
+    expect(c[1]).toEqual({
+      type: "LIMITED_TIME_OFFER",
+      limited_time_offer: { text: "Expiring offer!", has_expiration: true },
+    });
+    expect(c[0]).toMatchObject({ type: "HEADER" });
+    expect(c[2]).toMatchObject({ type: "BODY" });
   });
 
   // NEGATIVE: a body with no variables must omit the example object

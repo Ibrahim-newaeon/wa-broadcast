@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PhoneSchema, ContactRowSchema, CreateContactSchema, composeName, CreateClientSchema } from "./validation";
+import { PhoneSchema, ContactRowSchema, CreateContactSchema, composeName, CreateClientSchema, CreateTemplateSchema } from "./validation";
 
 describe("PhoneSchema", () => {
   it("normalizes +966 50 000 0000 → 966500000000", () => {
@@ -50,6 +50,48 @@ describe("CreateClientSchema", () => {
   });
   it("rejects an admin password shorter than 8 chars", () => {
     expect(CreateClientSchema.safeParse({ name: "Acme", adminEmail: "owner@acme.com", adminPassword: "short" }).success).toBe(false);
+  });
+});
+
+describe("CreateTemplateSchema — limited-time offer", () => {
+  const base = {
+    name: "flash_sale",
+    language: "en",
+    category: "MARKETING" as const,
+    body: "Ends soon!",
+    bodyExamples: [],
+    limitedTimeOffer: { text: "Expiring offer!", hasExpiration: true },
+  };
+  const urlBtn = { type: "URL" as const, text: "Shop", url: "https://x.co" };
+
+  it("accepts an LTO with a URL button", () => {
+    const r = CreateTemplateSchema.safeParse({ ...base, buttons: [urlBtn] });
+    expect(r.success).toBe(true);
+  });
+  it("rejects an LTO without a URL button", () => {
+    expect(CreateTemplateSchema.safeParse({ ...base, buttons: [] }).success).toBe(false);
+  });
+  it("rejects quick-reply buttons on an LTO", () => {
+    expect(
+      CreateTemplateSchema.safeParse({ ...base, buttons: [urlBtn, { type: "QUICK_REPLY", text: "Hi" }] }).success,
+    ).toBe(false);
+  });
+  it("rejects a footer on an LTO", () => {
+    expect(CreateTemplateSchema.safeParse({ ...base, buttons: [urlBtn], footer: "STOP to opt out" }).success).toBe(false);
+  });
+  it("rejects a document header on an LTO", () => {
+    expect(
+      CreateTemplateSchema.safeParse({ ...base, buttons: [urlBtn], header: { format: "DOCUMENT", example: "h" } }).success,
+    ).toBe(false);
+  });
+  it("rejects offer text longer than 16 characters", () => {
+    expect(
+      CreateTemplateSchema.safeParse({
+        ...base,
+        buttons: [urlBtn],
+        limitedTimeOffer: { text: "This offer text is way too long", hasExpiration: false },
+      }).success,
+    ).toBe(false);
   });
 });
 

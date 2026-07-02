@@ -56,6 +56,12 @@ export const CreateBroadcastSchema = z.object({
   headerMediaUrl: z.string().url().optional(),
   // Coupon code — required when the chosen template has a COPY_CODE button.
   couponCode: z.string().trim().min(1).max(15).optional(),
+  // Offer expiry — required when the chosen template is a countdown limited-time offer.
+  ltoExpiresAt: z
+    .string()
+    .datetime()
+    .refine((s) => new Date(s).getTime() > Date.now(), "ltoExpiresAt must be in the future")
+    .optional(),
 });
 
 export const LoginSchema = z.object({
@@ -113,6 +119,14 @@ export const CreateTemplateSchema = z
           .max(10),
       })
       .optional(),
+    // Limited-time offer: a banner above the body (≤16 chars, no variables/emoji)
+    // with an optional countdown timer.
+    limitedTimeOffer: z
+      .object({
+        text: z.string().trim().min(1, "Add the offer text").max(16, "Offer text is 16 characters max"),
+        hasExpiration: z.boolean().default(false),
+      })
+      .optional(),
   })
   .refine((t) => t.buttons.every((b) => b.type !== "URL" || !!b.url), {
     message: "URL buttons need a URL",
@@ -132,7 +146,29 @@ export const CreateTemplateSchema = z
       return t.bodyExamples.filter((e) => e.trim()).length >= vars;
     },
     { message: "Provide an example value for each {{variable}}", path: ["bodyExamples"] },
-  );
+  )
+  // Limited-time offer constraints (Meta): URL button required; only copy-code +
+  // URL buttons; no footer; header must be image/video; not combinable with carousel.
+  .refine((t) => !t.limitedTimeOffer || t.buttons.some((b) => b.type === "URL"), {
+    message: "Limited-time offers need a URL button",
+    path: ["buttons"],
+  })
+  .refine((t) => !t.limitedTimeOffer || t.buttons.every((b) => b.type === "URL" || b.type === "COPY_CODE"), {
+    message: "Limited-time offers only allow copy-code and URL buttons",
+    path: ["buttons"],
+  })
+  .refine((t) => !t.limitedTimeOffer || !t.footer, {
+    message: "Limited-time offers don't support a footer",
+    path: ["footer"],
+  })
+  .refine((t) => !t.limitedTimeOffer || !t.header || t.header.format !== "DOCUMENT", {
+    message: "Limited-time offers only support image or video headers",
+    path: ["header"],
+  })
+  .refine((t) => !(t.limitedTimeOffer && t.carousel), {
+    message: "A template can't be both a carousel and a limited-time offer",
+    path: ["limitedTimeOffer"],
+  });
 
 // 5-field cron (min hour dom month dow). Loose validation — BullMQ parses fully.
 const CRON_RE = /^(\S+\s+){4}\S+$/;

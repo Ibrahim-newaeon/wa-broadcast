@@ -59,17 +59,20 @@ export async function POST(req: NextRequest) {
     const result = await createTemplate({ ...rest, carousel: carouselArg }, clientId);
     const headerFormat = input.header?.format ?? null; // IMAGE | DOCUMENT | VIDEO
     const copyCode = input.buttons.some((b) => b.type === "COPY_CODE");
+    const ltoText = input.limitedTimeOffer?.text ?? null;
+    const ltoExpiration = input.limitedTimeOffer?.hasExpiration ?? false;
     const template = await prisma.template.upsert({
       where: { clientId_name_language: { clientId, name: input.name, language: input.language } },
       create: {
         clientId,
         name: input.name, language: input.language, category: input.category,
         status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body), headerFormat, copyCode,
+        ltoText, ltoExpiration,
         ...(cards ? { cards } : {}),
       },
       update: {
         category: input.category, status: result.status ?? "PENDING",
-        variableCount: countTemplateVars(input.body), headerFormat, copyCode,
+        variableCount: countTemplateVars(input.body), headerFormat, copyCode, ltoText, ltoExpiration,
         ...(cards ? { cards } : {}),
       },
     });
@@ -125,10 +128,17 @@ async function syncFromMeta(clientId: string) {
       | undefined;
     const copyCode = (buttonsComp?.buttons ?? []).some((b) => b.type === "COPY_CODE");
 
+    // Detect a limited-time-offer component (banner text + countdown flag).
+    const lto = (t.components ?? []).find((c) => (c as { type?: string }).type === "LIMITED_TIME_OFFER") as
+      | { limited_time_offer?: { text?: string; has_expiration?: boolean } }
+      | undefined;
+    const ltoText = lto?.limited_time_offer?.text ?? null;
+    const ltoExpiration = lto?.limited_time_offer?.has_expiration ?? false;
+
     await prisma.template.upsert({
       where: { clientId_name_language: { clientId, name: t.name, language: t.language } },
-      create: { clientId, name: t.name, language: t.language, category: t.category, status: t.status, variableCount, headerFormat, copyCode },
-      update: { category: t.category, status: t.status, variableCount, headerFormat, copyCode },
+      create: { clientId, name: t.name, language: t.language, category: t.category, status: t.status, variableCount, headerFormat, copyCode, ltoText, ltoExpiration },
+      update: { category: t.category, status: t.status, variableCount, headerFormat, copyCode, ltoText, ltoExpiration },
     });
   }
 }

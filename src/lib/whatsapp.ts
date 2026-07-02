@@ -21,6 +21,9 @@ export function buildTemplatePayload(args: {
   couponCode?: string | null;
   // Carousel cards: each card's media is supplied per-send (body/buttons are static).
   carouselCards?: { format: string; mediaUrl: string }[] | null;
+  // Limited-time offer countdown expiry (epoch ms) — required when the template
+  // was created with has_expiration.
+  ltoExpiryMs?: number | null;
 }) {
   const components: Record<string, unknown>[] = [];
 
@@ -30,6 +33,14 @@ export function buildTemplatePayload(args: {
     components.push({
       type: "header",
       parameters: [{ type: kind, [kind]: { link: args.headerMediaUrl } }],
+    });
+  }
+
+  // Limited-time offer countdown — the expiry is supplied per-send.
+  if (args.ltoExpiryMs) {
+    components.push({
+      type: "limited_time_offer",
+      parameters: [{ type: "limited_time_offer", limited_time_offer: { expiration_time_ms: args.ltoExpiryMs } }],
     });
   }
 
@@ -97,6 +108,7 @@ export async function sendTemplate(args: {
   headerMediaUrl?: string | null;
   couponCode?: string | null;
   carouselCards?: { format: string; mediaUrl: string }[] | null;
+  ltoExpiryMs?: number | null;
   clientId?: string;
 }): Promise<string> {
   const cfg = await getWaConfig(args.clientId);
@@ -258,6 +270,8 @@ export interface CreateTemplateInput {
   footer?: string;
   buttons: TemplateButtonInput[];
   carousel?: { cards: CarouselCardInput[] };
+  // Limited-time offer: banner text (≤16 chars, no variables) + optional countdown.
+  limitedTimeOffer?: { text: string; hasExpiration: boolean };
 }
 
 /** Count {{n}} placeholders in a template body. */
@@ -278,6 +292,14 @@ export function buildTemplateComponents(input: CreateTemplateInput): Record<stri
       type: "HEADER",
       format: input.header.format,
       example: { header_handle: [input.header.example] },
+    });
+  }
+
+  // Limited-time offer banner. Meta's component order: header, LTO, body, buttons.
+  if (input.limitedTimeOffer) {
+    components.push({
+      type: "LIMITED_TIME_OFFER",
+      limited_time_offer: { text: input.limitedTimeOffer.text, has_expiration: input.limitedTimeOffer.hasExpiration },
     });
   }
 
