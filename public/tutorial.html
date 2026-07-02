@@ -6,21 +6,25 @@
 <title>WhatsApp Hub — Interactive Tutorial / الدليل التفاعلي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Schibsted+Grotesk:wght@700;800&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* Palette mirrors the landing page's "dk" WhatsApp-green theme (globals.css). */
 :root{
-  --bg:#0e1a24;--bg2:#0a131b;--card:#14222e;--card2:#172a38;--line:#22323f;--line2:#2c4150;
-  --ink:#eaf3f5;--muted:#90a6b4;--teal:#2dd4c4;--teal-soft:rgba(45,212,196,.12);--accent-hover:#3ee3d3;
-  --green:#46e08a;--orange:#fb7a1e;--danger:#ff6b6b;--btn-text:#06231f;
+  --bg:#06140d;--bg2:#04100a;--card:#0c1f16;--card2:#11291d;--line:#1c3b2b;--line2:#27503a;
+  --ink:#eafff4;--muted:#8fb1a1;--teal:#25d366;--teal-soft:rgba(37,211,102,.12);--accent-hover:#3fe07a;
+  --green:#0fae8b;--orange:#fb7a1e;--danger:#ff6b6b;--btn-text:#04140c;
   --r:14px;--r-sm:10px;--r-pill:999px;--max:1040px;
-  --grad:linear-gradient(135deg,var(--teal),var(--green));
+  --grad:linear-gradient(120deg,#25d366,#0fae8b);
   --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-ar:"Cairo",system-ui,sans-serif;
+  --font-display:"Schibsted Grotesk",var(--font);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.6}
+body{margin:0;color:var(--ink);font-family:var(--font);line-height:1.6;
+  background:radial-gradient(58% 44% at 50% -4%, rgba(37,211,102,.16), transparent 70%), var(--bg)}
 html[lang="ar"]{direction:rtl}
+html[lang="ar"]{--font-display:var(--font-ar)}
 html[lang="ar"] body{font-family:var(--font-ar);line-height:1.8}
 a{color:var(--teal);text-decoration:none}
 code{background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:.92em;direction:ltr;display:inline-block}
@@ -31,7 +35,7 @@ html[lang="en"] [data-lang="en"], html[lang="ar"] [data-lang="ar"]{display:rever
 
 /* top bar */
 .nav{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:16px;justify-content:space-between;
-  padding:0 18px;min-height:60px;background:rgba(14,26,36,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  padding:0 18px;min-height:60px;background:rgba(6,20,13,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:18px}
 .mark{width:24px;height:24px;border-radius:7px;border:2.5px solid var(--teal);display:grid;place-items:center}
 .mark::after{content:"";width:0;height:0;margin-inline-start:2px;border-inline-start:8px solid var(--green);border-top:5px solid transparent;border-bottom:5px solid transparent}
@@ -55,11 +59,11 @@ html[lang="en"] [data-lang="en"], html[lang="ar"] [data-lang="ar"]{display:rever
 .dot{width:9px;height:9px;border-radius:50%;background:var(--line2);flex:none}
 .side a.active .dot,.side a.done .dot{background:var(--teal)}
 
-h1{font-size:clamp(26px,5vw,38px);font-weight:800;margin:.1em 0 .3em}
+h1{font-family:var(--font-display);font-size:clamp(26px,5vw,38px);font-weight:800;letter-spacing:-.02em;margin:.1em 0 .3em}
 .lede{color:var(--muted);font-size:17px;margin-bottom:8px}
 section{scroll-margin-top:96px;padding:18px 0;border-top:1px solid var(--line)}
 section:first-of-type{border-top:0}
-h2{font-size:22px;font-weight:800;margin:.2em 0 .5em;display:flex;align-items:center;gap:10px}
+h2{font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-.01em;margin:.2em 0 .5em;display:flex;align-items:center;gap:10px}
 .step-num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--teal-soft);color:var(--teal);font-size:14px;font-weight:800;flex:none}
 h3{font-size:16px;margin:18px 0 8px}
 ul{padding-inline-start:18px} li{margin:4px 0}
@@ -72,18 +76,18 @@ ul{padding-inline-start:18px} li{margin:4px 0}
 .langbtn{height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line2);background:var(--card);color:var(--ink);cursor:pointer;font-size:13px;font-weight:700}
 .langbtn:hover{border-color:var(--teal)}
 :root[data-theme="light"]{
-  --bg:#eef4f3;--bg2:#e4edec;--card:#ffffff;--card2:#f2f8f7;--line:#d6e2e0;--line2:#c1d2cf;
-  --ink:#0b1f25;--muted:#506972;--teal:#0d9488;--teal-soft:rgba(13,148,136,.10);--accent-hover:#0b7c72;
-  --green:#15a05a;--orange:#d9620a;--danger:#dc4a4c;--btn-text:#04231d;
-  --grad:linear-gradient(135deg,#0d9488,#15a05a);
+  --bg:#eef6f1;--bg2:#e2efe7;--card:#ffffff;--card2:#f3faf6;--line:#d6e6dc;--line2:#bcd6c6;
+  --ink:#08160f;--muted:#4f6a5b;--teal:#0e9f6e;--teal-soft:rgba(14,159,110,.10);--accent-hover:#0b8a5f;
+  --green:#10a37f;--orange:#d9620a;--danger:#dc4a4c;--btn-text:#04231d;
+  --grad:linear-gradient(120deg,#0e9f6e,#10a37f);
 }
-:root[data-theme="light"] .nav{background:rgba(255,255,255,.82)}
+:root[data-theme="light"] .nav{background:rgba(238,246,241,.85)}
 .pillrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .pill{background:var(--teal-soft);color:var(--teal);border-radius:var(--r-pill);padding:6px 12px;font-size:12.5px;font-weight:700}
 
 /* code blocks — always LTR */
 .code{position:relative;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);margin:10px 0;direction:ltr;text-align:left}
-.code pre{margin:0;padding:14px 14px;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#cfe9e6}
+.code pre{margin:0;padding:14px 14px;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:var(--ink)}
 .code .kw{color:var(--teal)} .code .cm{color:var(--muted)} .code .st{color:var(--green)}
 .copy{position:absolute;top:8px;inset-inline-end:8px;background:var(--card2);color:var(--muted);border:1px solid var(--line2);
   border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;min-height:32px}
@@ -109,9 +113,9 @@ details .body{padding-bottom:14px;color:var(--muted)}
 .check input{width:22px;height:22px;accent-color:var(--teal);margin-top:1px;flex:none}
 .check label{cursor:pointer}
 .check.done label{color:var(--muted);text-decoration:line-through}
-.callout{border-inline-start:3px solid var(--teal);background:var(--teal-soft);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 14px;margin:12px 0}
-.callout.warn{border-color:var(--orange);background:rgba(251,122,30,.1)}
-.callout.danger{border-color:var(--danger);background:rgba(255,107,107,.1)}
+.callout{border:1px solid color-mix(in oklab, var(--teal) 35%, var(--line));background:var(--teal-soft);border-radius:var(--r-sm);padding:12px 14px;margin:12px 0}
+.callout.warn{border-color:color-mix(in oklab, var(--orange) 40%, var(--line));background:rgba(251,122,30,.1)}
+.callout.danger{border-color:color-mix(in oklab, var(--danger) 40%, var(--line));background:rgba(255,107,107,.1)}
 .kbd{font-size:12px;color:var(--muted)}
 table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
 th,td{text-align:start;padding:8px;border-bottom:1px solid var(--line)} th{color:var(--muted);font-size:12px}
@@ -132,7 +136,7 @@ document.addEventListener('DOMContentLoaded',function(){var b=document.getElemen
 </head>
 <body>
 <nav class="nav">
-  <span class="brand"><span class="mark"></span><span><span class="b1">whatsapp</span><span class="b2">hub</span></span></span>
+  <a class="brand" href="/" style="color:inherit"><span class="mark"></span><span><span class="b1">whatsapp</span><span class="b2">hub</span></span></a>
   <span class="nav-links">
     <a href="/"><span data-lang="en">← Home</span><span data-lang="ar">الرئيسية →</span></a>
     <button id="langBtn" class="langbtn" type="button" aria-label="Switch language" onclick="toggleLang()">ع</button>
@@ -152,8 +156,8 @@ document.addEventListener('DOMContentLoaded',function(){var b=document.getElemen
   <main>
     <h1><span data-lang="en">Get your broadcasts live</span><span data-lang="ar">شغّل حملاتك على واتساب</span></h1>
     <p class="lede">
-      <span data-lang="en">A hands-on walkthrough of the WhatsApp Hub — from first boot to recurring campaigns. Tick items off as you go; your progress is saved in this browser.</span>
-      <span data-lang="ar">دليل عملي لمركز واتساب — من أول تشغيل حتى الحملات المتكرّرة. علِّم الخطوات أثناء تقدّمك؛ يُحفظ تقدّمك في هذا المتصفّح.</span>
+      <span data-lang="en">A hands-on walkthrough of the WhatsApp Hub — from connecting WhatsApp to recurring campaigns. Tick items off as you go; your progress is saved in this browser.</span>
+      <span data-lang="ar">دليل عملي لمركز واتساب — من ربط واتساب حتى الحملات المتكرّرة. علِّم الخطوات أثناء تقدّمك؛ يُحفظ تقدّمك في هذا المتصفّح.</span>
     </p>
 
     <!-- 1 -->
@@ -172,41 +176,14 @@ document.addEventListener('DOMContentLoaded',function(){var b=document.getElemen
         <span class="pill"><span data-lang="en">Team accounts</span><span data-lang="ar">حسابات للفريق</span></span>
       </div>
       <div class="callout">
-        <span data-lang="en">Three processes run together: the <b>web</b> app, a <b>worker</b> (sends + recurring scheduler), and <b>Postgres + Redis</b>. Docker Compose wires them up.</span>
-        <span data-lang="ar">ثلاث عمليات تعمل معًا: تطبيق <b>الويب</b>، و<b>العامل (worker)</b> للإرسال والجدولة المتكرّرة، و<b>Postgres + Redis</b>. يربطها Docker Compose معًا.</span>
+        <span data-lang="en">Log in to your console, connect your WhatsApp number once, and everything below happens from the browser — no installation, no code.</span>
+        <span data-lang="ar">سجّل الدخول إلى لوحتك، اربط رقم واتساب مرة واحدة، وكل ما يلي يتم من المتصفّح — دون تثبيت ودون كود.</span>
       </div>
     </section>
 
     <!-- 2 -->
-    <section id="setup">
-      <h2><span class="step-num">2</span><span data-lang="en">First boot</span><span data-lang="ar">أول تشغيل</span></h2>
-      <p><span data-lang="en">Pick how you want to run it.</span><span data-lang="ar">اختر طريقة التشغيل المناسبة لك.</span></p>
-      <div class="tabs">
-        <button class="tab active" data-tab="docker"><span data-lang="en">Docker (recommended)</span><span data-lang="ar">Docker (مُستحسَن)</span></button>
-        <button class="tab" data-tab="local"><span data-lang="en">Local dev</span><span data-lang="ar">تشغيل محلي</span></button>
-      </div>
-      <div class="tabpane active" data-pane="docker">
-        <div class="code"><button class="copy">Copy</button><pre><span class="cm"># 1. configure</span>
-cp .env.example .env
-<span class="cm"># 2. hash your admin password → paste into ADMIN_PASSWORD_HASH</span>
-node scripts/hash-password.mjs <span class="st">'YourStrongPassword'</span>
-<span class="cm"># 3. boot everything (runs migrations automatically)</span>
-docker compose up --build</pre></div>
-        <p class="kbd"><span data-lang="en">App → http://localhost:3000 · Health → /api/health</span><span data-lang="ar">التطبيق ← http://localhost:3000 · الصحة ← /api/health</span></p>
-      </div>
-      <div class="tabpane" data-pane="local">
-        <div class="code"><button class="copy">Copy</button><pre>npm install
-npm run prisma:migrate -- --name init   <span class="cm"># applies migrations</span>
-node scripts/seed-admin.mjs              <span class="cm"># creates the first ADMIN</span>
-npm run dev        <span class="cm"># web :3000</span>
-npm run worker:dev <span class="cm"># worker (second terminal)</span></pre></div>
-      </div>
-      <div class="check"><input type="checkbox" id="c-boot"><label for="c-boot"><span data-lang="en">App boots and <code>/api/health</code> returns <code>ok</code></span><span data-lang="ar">يعمل التطبيق ويُرجِع <code>/api/health</code> القيمة <code>ok</code></span></label></div>
-    </section>
-
-    <!-- 3 -->
     <section id="whatsapp">
-      <h2><span class="step-num">3</span><span data-lang="en">Connect WhatsApp (no code)</span><span data-lang="ar">ربط واتساب (بدون كود)</span></h2>
+      <h2><span class="step-num">2</span><span data-lang="en">Connect WhatsApp (no code)</span><span data-lang="ar">ربط واتساب (بدون كود)</span></h2>
       <p>
         <span data-lang="en">Go to <b>Settings → Connect WhatsApp</b> and paste your Meta values straight into the form — no <code>.env</code> editing needed (saved values override env and are stored in the database):</span>
         <span data-lang="ar">اذهب إلى <b>الإعدادات → ربط واتساب</b> والصِق قيم Meta مباشرة في النموذج — دون تعديل <code>.env</code> (القيم المحفوظة تتجاوز متغيرات البيئة وتُخزَّن في قاعدة البيانات):</span>
@@ -237,9 +214,9 @@ Verify token:  <span class="cm">(the webhook verify token from the form)</span><
       <div class="check"><input type="checkbox" id="c-wa"><label for="c-wa"><span data-lang="en">Connection tested OK, webhook verified &amp; subscribed to <code>messages</code></span><span data-lang="ar">نجح اختبار الاتصال، وتمّ التحقّق من الـ Webhook والاشتراك في <code>messages</code></span></label></div>
     </section>
 
-    <!-- 4 -->
+    <!-- 3 -->
     <section id="templates">
-      <h2><span class="step-num">4</span><span data-lang="en">Create &amp; sync templates</span><span data-lang="ar">إنشاء القوالب ومزامنتها</span></h2>
+      <h2><span class="step-num">3</span><span data-lang="en">Create &amp; sync templates</span><span data-lang="ar">إنشاء القوالب ومزامنتها</span></h2>
       <p>
         <span data-lang="en">You can only broadcast templates Meta has <b>approved</b>. Build one right in the app on <b>Templates → Create</b>, then submit it to Meta for review:</span>
         <span data-lang="ar">لا يمكنك الإرسال إلا بقوالب <b>اعتمدتها</b> Meta. أنشئ قالبًا داخل التطبيق من <b>القوالب → إنشاء</b>، ثم أرسله إلى Meta للمراجعة:</span>
@@ -266,9 +243,9 @@ Verify token:  <span class="cm">(the webhook verify token from the form)</span><
       <div class="check"><input type="checkbox" id="c-tpl"><label for="c-tpl"><span data-lang="en">A template is created/submitted and at least one approved template is in the picker</span><span data-lang="ar">تمّ إنشاء/إرسال قالب، ويوجد قالب معتمد واحد على الأقل في القائمة</span></label></div>
     </section>
 
-    <!-- 5 -->
+    <!-- 4 -->
     <section id="contacts">
-      <h2><span class="step-num">5</span><span data-lang="en">Upload contacts</span><span data-lang="ar">رفع جهات الاتصال</span></h2>
+      <h2><span class="step-num">4</span><span data-lang="en">Upload contacts</span><span data-lang="ar">رفع جهات الاتصال</span></h2>
       <p>
         <span data-lang="en">On <b>Contacts</b> (or the dashboard upload card), import a CSV. A <code>phone</code> column is required; <code>name</code> is reserved; any other column becomes a template variable.</span>
         <span data-lang="ar">من <b>جهات الاتصال</b> (أو بطاقة الرفع في لوحة التحكّم)، استورد ملف CSV. عمود <code>phone</code> مطلوب؛ و<code>name</code> محجوز؛ وأي عمود آخر يصبح متغيّر قالب.</span>
@@ -291,9 +268,9 @@ Verify token:  <span class="cm">(the webhook verify token from the form)</span><
       <div class="check"><input type="checkbox" id="c-csv"><label for="c-csv"><span data-lang="en">Contacts imported and added to a list</span><span data-lang="ar">تمّ استيراد جهات الاتصال وإضافتها إلى قائمة</span></label></div>
     </section>
 
-    <!-- 6 -->
+    <!-- 5 -->
     <section id="send">
-      <h2><span class="step-num">6</span><span data-lang="en">Send a broadcast</span><span data-lang="ar">إرسال حملة</span></h2>
+      <h2><span class="step-num">5</span><span data-lang="en">Send a broadcast</span><span data-lang="ar">إرسال حملة</span></h2>
       <p>
         <span data-lang="en">Dashboard → <b>New broadcast</b>: pick a template + list, fill the variables, send now or schedule.</span>
         <span data-lang="ar">لوحة التحكّم → <b>حملة جديدة</b>: اختر قالبًا وقائمة، واملأ المتغيّرات، ثم أرسل الآن أو جدوِل.</span>
@@ -309,9 +286,9 @@ Verify token:  <span class="cm">(the webhook verify token from the form)</span><
       <div class="check"><input type="checkbox" id="c-send"><label for="c-send"><span data-lang="en">First broadcast queued</span><span data-lang="ar">أُضيفت أول حملة إلى الطابور</span></label></div>
     </section>
 
-    <!-- 7 -->
+    <!-- 6 -->
     <section id="monitor">
-      <h2><span class="step-num">7</span><span data-lang="en">Monitor, analytics &amp; retry</span><span data-lang="ar">المتابعة والتحليلات وإعادة المحاولة</span></h2>
+      <h2><span class="step-num">6</span><span data-lang="en">Monitor, analytics &amp; retry</span><span data-lang="ar">المتابعة والتحليلات وإعادة المحاولة</span></h2>
       <p>
         <span data-lang="en">Click a broadcast to open its detail page. While it's in flight you'll see a <span class="pill">● live</span> progress bar that polls every few seconds.</span>
         <span data-lang="ar">اضغط على حملة لفتح صفحة تفاصيلها. أثناء التنفيذ سترى شريط تقدّم <span class="pill">● مباشر</span> يُحدَّث كل بضع ثوانٍ.</span>
@@ -335,9 +312,9 @@ Verify token:  <span class="cm">(the webhook verify token from the form)</span><
       <div class="check"><input type="checkbox" id="c-mon"><label for="c-mon"><span data-lang="en">Watched a broadcast reach DELIVERED/READ and checked the analytics</span><span data-lang="ar">تابعت حملة حتى DELIVERED/READ واطّلعت على التحليلات</span></label></div>
     </section>
 
-    <!-- 8 -->
+    <!-- 7 -->
     <section id="recurring">
-      <h2><span class="step-num">8</span><span data-lang="en">Recurring / drip campaigns</span><span data-lang="ar">الحملات المتكرّرة</span></h2>
+      <h2><span class="step-num">7</span><span data-lang="en">Recurring / drip campaigns</span><span data-lang="ar">الحملات المتكرّرة</span></h2>
       <p>
         <span data-lang="en">On <b>Campaigns</b>, create a schedule that fires a fresh broadcast on a cron (UTC). Pick a preset or write your own.</span>
         <span data-lang="ar">من <b>الحملات</b>، أنشئ جدولًا يطلق حملة جديدة وفق توقيت cron (بتوقيت UTC). اختر إعدادًا جاهزًا أو اكتب تعبيرك.</span>
@@ -352,9 +329,9 @@ Verify token:  <span class="cm">(the webhook verify token from the form)</span><
       <div class="check"><input type="checkbox" id="c-rec"><label for="c-rec"><span data-lang="en">A recurring campaign is active</span><span data-lang="ar">توجد حملة متكرّرة نشطة</span></label></div>
     </section>
 
-    <!-- 9 -->
+    <!-- 8 -->
     <section id="team">
-      <h2><span class="step-num">9</span><span data-lang="en">Team &amp; security</span><span data-lang="ar">الفريق والأمان</span></h2>
+      <h2><span class="step-num">8</span><span data-lang="en">Team &amp; security</span><span data-lang="ar">الفريق والأمان</span></h2>
       <ul data-lang="en">
         <li><b>Settings</b> → invite teammates (ADMIN or MEMBER). Only ADMINs can manage users.</li>
         <li>Sessions use short access tokens + rotating refresh tokens — <b>Sign out everywhere</b> kills every session.</li>
@@ -387,7 +364,6 @@ Verify token:  <span class="cm">(the webhook verify token from the form)</span><
 <script>
 const STEPS = [
   ["overview", {en:"Overview", ar:"نظرة عامة"}],
-  ["setup",    {en:"First boot", ar:"أول تشغيل"}],
   ["whatsapp", {en:"Connect WhatsApp", ar:"ربط واتساب"}],
   ["templates",{en:"Templates", ar:"القوالب"}],
   ["contacts", {en:"Contacts", ar:"جهات الاتصال"}],
@@ -396,7 +372,7 @@ const STEPS = [
   ["recurring",{en:"Recurring", ar:"التكرار"}],
   ["team",     {en:"Team", ar:"الفريق"}]
 ];
-const CHECKS = ["c-boot","c-wa","c-tpl","c-csv","c-send","c-mon","c-rec","c-team"];
+const CHECKS = ["c-wa","c-tpl","c-csv","c-send","c-mon","c-rec","c-team"];
 const KEY = "wa-tutorial-progress-v1";
 function lang(){ return document.documentElement.lang === "ar" ? "ar" : "en"; }
 

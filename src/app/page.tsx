@@ -45,10 +45,10 @@ export default function Landing() {
     <main className="dk">
       <div className="dk-wrap">
         <header className="dk-nav reveal">
-          <div className="brand">
+          <Link href="/" className="brand" style={{ color: "inherit" }} aria-label="WhatsApp Hub home">
             <span className="mark" aria-hidden />
             <span><span className="b1">whatsapp</span><span className="b2">hub</span></span>
-          </div>
+          </Link>
           <nav className="dk-nav__links">
             <a href="/tutorial.html"><T en="How it works" ar="كيف تعمل" /></a>
             <Link href="/dashboard"><T en="Dashboard" ar="لوحة التحكم" /></Link>
