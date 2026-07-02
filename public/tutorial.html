@@ -6,21 +6,25 @@
 <title>WhatsApp Hub — Interactive Tutorial / الدليل التفاعلي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Schibsted+Grotesk:wght@700;800&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* Palette mirrors the landing page's "dk" WhatsApp-green theme (globals.css). */
 :root{
-  --bg:#0e1a24;--bg2:#0a131b;--card:#14222e;--card2:#172a38;--line:#22323f;--line2:#2c4150;
-  --ink:#eaf3f5;--muted:#90a6b4;--teal:#2dd4c4;--teal-soft:rgba(45,212,196,.12);--accent-hover:#3ee3d3;
-  --green:#46e08a;--orange:#fb7a1e;--danger:#ff6b6b;--btn-text:#06231f;
+  --bg:#06140d;--bg2:#04100a;--card:#0c1f16;--card2:#11291d;--line:#1c3b2b;--line2:#27503a;
+  --ink:#eafff4;--muted:#8fb1a1;--teal:#25d366;--teal-soft:rgba(37,211,102,.12);--accent-hover:#3fe07a;
+  --green:#0fae8b;--orange:#fb7a1e;--danger:#ff6b6b;--btn-text:#04140c;
   --r:14px;--r-sm:10px;--r-pill:999px;--max:1040px;
-  --grad:linear-gradient(135deg,var(--teal),var(--green));
+  --grad:linear-gradient(120deg,#25d366,#0fae8b);
   --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-ar:"Cairo",system-ui,sans-serif;
+  --font-display:"Schibsted Grotesk",var(--font);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.6}
+body{margin:0;color:var(--ink);font-family:var(--font);line-height:1.6;
+  background:radial-gradient(58% 44% at 50% -4%, rgba(37,211,102,.16), transparent 70%), var(--bg)}
 html[lang="ar"]{direction:rtl}
+html[lang="ar"]{--font-display:var(--font-ar)}
 html[lang="ar"] body{font-family:var(--font-ar);line-height:1.8}
 a{color:var(--teal);text-decoration:none}
 code{background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:.92em;direction:ltr;display:inline-block}
@@ -31,7 +35,7 @@ html[lang="en"] [data-lang="en"], html[lang="ar"] [data-lang="ar"]{display:rever
 
 /* top bar */
 .nav{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:16px;justify-content:space-between;
-  padding:0 18px;min-height:60px;background:rgba(14,26,36,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  padding:0 18px;min-height:60px;background:rgba(6,20,13,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:18px}
 .mark{width:24px;height:24px;border-radius:7px;border:2.5px solid var(--teal);display:grid;place-items:center}
 .mark::after{content:"";width:0;height:0;margin-inline-start:2px;border-inline-start:8px solid var(--green);border-top:5px solid transparent;border-bottom:5px solid transparent}
@@ -55,11 +59,11 @@ html[lang="en"] [data-lang="en"], html[lang="ar"] [data-lang="ar"]{display:rever
 .dot{width:9px;height:9px;border-radius:50%;background:var(--line2);flex:none}
 .side a.active .dot,.side a.done .dot{background:var(--teal)}
 
-h1{font-size:clamp(26px,5vw,38px);font-weight:800;margin:.1em 0 .3em}
+h1{font-family:var(--font-display);font-size:clamp(26px,5vw,38px);font-weight:800;letter-spacing:-.02em;margin:.1em 0 .3em}
 .lede{color:var(--muted);font-size:17px;margin-bottom:8px}
 section{scroll-margin-top:96px;padding:18px 0;border-top:1px solid var(--line)}
 section:first-of-type{border-top:0}
-h2{font-size:22px;font-weight:800;margin:.2em 0 .5em;display:flex;align-items:center;gap:10px}
+h2{font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-.01em;margin:.2em 0 .5em;display:flex;align-items:center;gap:10px}
 .step-num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--teal-soft);color:var(--teal);font-size:14px;font-weight:800;flex:none}
 h3{font-size:16px;margin:18px 0 8px}
 ul{padding-inline-start:18px} li{margin:4px 0}
@@ -72,18 +76,18 @@ ul{padding-inline-start:18px} li{margin:4px 0}
 .langbtn{height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line2);background:var(--card);color:var(--ink);cursor:pointer;font-size:13px;font-weight:700}
 .langbtn:hover{border-color:var(--teal)}
 :root[data-theme="light"]{
-  --bg:#eef4f3;--bg2:#e4edec;--card:#ffffff;--card2:#f2f8f7;--line:#d6e2e0;--line2:#c1d2cf;
-  --ink:#0b1f25;--muted:#506972;--teal:#0d9488;--teal-soft:rgba(13,148,136,.10);--accent-hover:#0b7c72;
-  --green:#15a05a;--orange:#d9620a;--danger:#dc4a4c;--btn-text:#04231d;
-  --grad:linear-gradient(135deg,#0d9488,#15a05a);
+  --bg:#eef6f1;--bg2:#e2efe7;--card:#ffffff;--card2:#f3faf6;--line:#d6e6dc;--line2:#bcd6c6;
+  --ink:#08160f;--muted:#4f6a5b;--teal:#0e9f6e;--teal-soft:rgba(14,159,110,.10);--accent-hover:#0b8a5f;
+  --green:#10a37f;--orange:#d9620a;--danger:#dc4a4c;--btn-text:#04231d;
+  --grad:linear-gradient(120deg,#0e9f6e,#10a37f);
 }
-:root[data-theme="light"] .nav{background:rgba(255,255,255,.82)}
+:root[data-theme="light"] .nav{background:rgba(238,246,241,.85)}
 .pillrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .pill{background:var(--teal-soft);color:var(--teal);border-radius:var(--r-pill);padding:6px 12px;font-size:12.5px;font-weight:700}
 
 /* code blocks — always LTR */
 .code{position:relative;background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r-sm);margin:10px 0;direction:ltr;text-align:left}
-.code pre{margin:0;padding:14px 14px;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#cfe9e6}
+.code pre{margin:0;padding:14px 14px;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:var(--ink)}
 .code .kw{color:var(--teal)} .code .cm{color:var(--muted)} .code .st{color:var(--green)}
 .copy{position:absolute;top:8px;inset-inline-end:8px;background:var(--card2);color:var(--muted);border:1px solid var(--line2);
   border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;min-height:32px}
@@ -109,9 +113,9 @@ details .body{padding-bottom:14px;color:var(--muted)}
 .check input{width:22px;height:22px;accent-color:var(--teal);margin-top:1px;flex:none}
 .check label{cursor:pointer}
 .check.done label{color:var(--muted);text-decoration:line-through}
-.callout{border-inline-start:3px solid var(--teal);background:var(--teal-soft);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 14px;margin:12px 0}
-.callout.warn{border-color:var(--orange);background:rgba(251,122,30,.1)}
-.callout.danger{border-color:var(--danger);background:rgba(255,107,107,.1)}
+.callout{border:1px solid color-mix(in oklab, var(--teal) 35%, var(--line));background:var(--teal-soft);border-radius:var(--r-sm);padding:12px 14px;margin:12px 0}
+.callout.warn{border-color:color-mix(in oklab, var(--orange) 40%, var(--line));background:rgba(251,122,30,.1)}
+.callout.danger{border-color:color-mix(in oklab, var(--danger) 40%, var(--line));background:rgba(255,107,107,.1)}
 .kbd{font-size:12px;color:var(--muted)}
 table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
 th,td{text-align:start;padding:8px;border-bottom:1px solid var(--line)} th{color:var(--muted);font-size:12px}
