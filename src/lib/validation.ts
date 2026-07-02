@@ -64,6 +64,15 @@ export const CreateBroadcastSchema = z.object({
     .optional(),
 });
 
+// Public landing-page lead form. `website` is a honeypot — humans never see
+// it; the route silently drops submissions that fill it.
+export const LeadSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(120),
+  phone: PhoneSchema,
+  business: z.string().trim().max(120).optional(),
+  website: z.string().max(200).optional(),
+});
+
 export const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1).max(200),

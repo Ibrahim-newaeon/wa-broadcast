@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PhoneSchema, ContactRowSchema, CreateContactSchema, composeName, CreateClientSchema, CreateTemplateSchema } from "./validation";
+import { PhoneSchema, ContactRowSchema, CreateContactSchema, composeName, CreateClientSchema, CreateTemplateSchema, LeadSchema } from "./validation";
 
 describe("PhoneSchema", () => {
   it("normalizes +966 50 000 0000 → 966500000000", () => {
@@ -92,6 +92,24 @@ describe("CreateTemplateSchema — limited-time offer", () => {
         limitedTimeOffer: { text: "This offer text is way too long", hasExpiration: false },
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("LeadSchema", () => {
+  it("accepts a lead and normalizes the phone", () => {
+    const r = LeadSchema.parse({ name: "Ahmed", phone: "+966 50 000 0000", business: "Cafe Nour" });
+    expect(r.phone).toBe("966500000000");
+    expect(r.business).toBe("Cafe Nour");
+  });
+  it("keeps the honeypot field so the route can inspect it", () => {
+    const r = LeadSchema.parse({ name: "Bot", phone: "966500000000", website: "spam.example" });
+    expect(r.website).toBe("spam.example");
+  });
+  it("rejects a missing name", () => {
+    expect(LeadSchema.safeParse({ phone: "966500000000" }).success).toBe(false);
+  });
+  it("rejects an invalid phone", () => {
+    expect(LeadSchema.safeParse({ name: "Ahmed", phone: "12" }).success).toBe(false);
   });
 });
 

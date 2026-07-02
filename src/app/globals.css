@@ -293,6 +293,19 @@ html[lang="ar"] .dk-h1 { letter-spacing:normal; line-height:1.15; }
 .dk-final { text-align:center; padding:clamp(48px,8vw,90px) 0; }
 .dk-final h2 { font-family:var(--font-display); font-weight:800; letter-spacing:-.02em;
   font-size:clamp(30px,5vw,52px); line-height:1.03; margin:0 auto 24px; max-width:18ch; }
+/* lead-capture form (public landing) */
+.dk-form { max-width:440px; margin:28px auto 0; display:grid; gap:12px; text-align:start; }
+.dk-form__input { background:var(--dk-panel); border:1px solid var(--dk-line); border-radius:12px;
+  padding:13px 16px; color:var(--dk-ink); font-size:15px; width:100%; font-family:inherit; }
+.dk-form__input::placeholder { color:var(--dk-muted); }
+.dk-form__input:focus { outline:none;
+  border-color:color-mix(in oklab, var(--dk-green) 55%, var(--dk-line));
+  box-shadow:0 0 0 3px color-mix(in oklab, var(--dk-green) 18%, transparent); }
+/* honeypot: off-screen for humans, present in the DOM for bots */
+.dk-form__hp { position:absolute; inset-inline-start:-9999px; width:1px; height:1px; opacity:0; }
+.dk-form__done { font-size:17px; font-weight:600; color:var(--dk-green); margin:28px auto 0; }
+.dk-form__err { font-size:14px; color:var(--danger); margin:0; }
+
 .dk-foot { border-top:1px solid var(--dk-line); padding:24px 0 40px; display:flex;
   justify-content:space-between; flex-wrap:wrap; gap:14px; color:var(--dk-muted); font-size:14px; }
 .dk-foot a { color:var(--dk-muted); } .dk-foot a:hover { color:var(--dk-ink); }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyToken, ACCESS_COOKIE } from "@/lib/auth";
 
 // Public paths that must NOT require auth.
-const PUBLIC_PREFIXES = ["/login", "/api/auth", "/api/webhooks", "/api/health"];
+const PUBLIC_PREFIXES = ["/login", "/api/auth", "/api/webhooks", "/api/health", "/api/leads"];
 // Public exact paths (prefix match would over-match, e.g. "/" matches everything).
 const PUBLIC_EXACT = new Set(["/", "/contacts-template.csv", "/tutorial.html"]);
 
