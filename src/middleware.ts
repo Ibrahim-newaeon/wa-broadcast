@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyToken, ACCESS_COOKIE } from "@/lib/auth";
 
 // Public paths that must NOT require auth.
-const PUBLIC_PREFIXES = ["/login", "/api/auth", "/api/webhooks", "/api/health", "/api/leads"];
+const PUBLIC_PREFIXES = [
+  "/login", "/api/auth", "/api/webhooks", "/api/health", "/api/leads",
+  // Legal pages — must stay public (Meta App Review links to them).
+  "/privacy-policy", "/terms-and-conditions", "/data-deletion",
+];
 // Public exact paths (prefix match would over-match, e.g. "/" matches everything).
 const PUBLIC_EXACT = new Set(["/", "/contacts-template.csv", "/tutorial.html"]);
 
