@@ -15,8 +15,8 @@ test.describe("Authenticated dashboard", () => {
     await page.getByTestId("login-password").fill(password!);
     await page.getByTestId("login-submit").click();
 
-    await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole("heading", { name: "WhatsApp Broadcast Console" })).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
     await expect(page.getByTestId("broadcasts-table")).toBeVisible();
   });
 });

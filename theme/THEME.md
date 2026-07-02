@@ -1,6 +1,6 @@
-# Broadcast Console — Design System
+# Broadcast Hub — Design System
 
-Brand lineage: **NazzilVideo** (dark, teal/green, bilingual EN/AR). This is the applied design system for the WhatsApp Broadcast Console. The **live source of truth is `src/app/globals.css`** — these files document it.
+Brand lineage: **NazzilVideo** (dark, teal/green, bilingual EN/AR). This is the applied design system for the WhatsApp Broadcast Hub. The **live source of truth is `src/app/globals.css`** — these files document it.
 
 Files: `design-tokens.json` (machine-readable) · `theme.css` (portable variables) · `palette.svg` (swatches) · this doc.
 

@@ -8,12 +8,12 @@ export class DashboardPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.getByRole("heading", { name: "WhatsApp Broadcast Console" });
+    this.heading = page.getByRole("heading", { name: "Dashboard" });
     this.broadcastsTable = page.locator('[data-test-id="broadcasts-table"]');
   }
 
   async goto() {
-    await this.page.goto("/");
+    await this.page.goto("/dashboard");
   }
 
   async expectLoaded() {

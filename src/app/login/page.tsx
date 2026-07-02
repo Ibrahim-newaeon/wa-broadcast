@@ -65,7 +65,7 @@ export default function LoginPage() {
       <aside className="auth__aside">
         <div className="brand reveal">
           <span className="mark" aria-hidden />
-          <span><span className="b1">broadcast</span><span className="b2">console</span></span>
+          <span><span className="b1">broadcast</span><span className="b2">hub</span></span>
         </div>
         <div>
           <p className="auth__pitch reveal d1">Reach every customer on <em>WhatsApp</em> — and watch each message land.</p>
@@ -82,7 +82,7 @@ export default function LoginPage() {
         <div className="auth__top"><ThemeToggle /></div>
         <form onSubmit={onSubmit} className="auth__form reveal">
           <h1>Welcome back</h1>
-          <p className="sub">Sign in to your broadcast console.</p>
+          <p className="sub">Sign in to your Broadcast Hub.</p>
           <div className="field">
             <label className="label" htmlFor="email">Email</label>
             <input id="email" data-test-id="login-email" className="input" type="email" value={email}

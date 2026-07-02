@@ -45,9 +45,9 @@ export default function Landing() {
     <main className="dk">
       <div className="dk-wrap">
         <header className="dk-nav reveal">
-          <Link href="/" className="brand" style={{ color: "inherit" }} aria-label="WhatsApp Hub home">
+          <Link href="/" className="brand" style={{ color: "inherit" }} aria-label="Broadcast Hub home">
             <span className="mark" aria-hidden />
-            <span><span className="b1">whatsapp</span><span className="b2">hub</span></span>
+            <span><span className="b1">broadcast</span><span className="b2">hub</span></span>
           </Link>
           <nav className="dk-nav__links">
             <a href="/tutorial.html"><T en="How it works" ar="كيف تعمل" /></a>
@@ -112,7 +112,7 @@ export default function Landing() {
         </section>
 
         <footer className="dk-foot">
-          <span><T en="© NazzilVideo · WhatsApp Hub" ar="© NazzilVideo · مركز واتساب" /></span>
+          <span><T en="© NazzilVideo · Broadcast Hub" ar="© NazzilVideo · مركز البث" /></span>
           <span style={{ display: "inline-flex", gap: 18, flexWrap: "wrap" }}>
             <a href="/tutorial.html"><T en="Tutorial" ar="الدليل التفاعلي" /></a>
             <Link href="/privacy-policy"><T en="Privacy" ar="الخصوصية" /></Link>

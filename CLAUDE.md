@@ -1,4 +1,4 @@
-# CLAUDE.md — Broadcast Console
+# CLAUDE.md — Broadcast Hub
 
 Context for Claude Code working in this repo. Read this first.
 
