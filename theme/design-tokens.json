@@ -3,11 +3,11 @@
   "brand": "NazzilVideo",
   "description": "Design tokens for the WhatsApp Broadcast Hub. Dark theme, teal/green brand, bilingual EN/AR. Live stylesheet: src/app/globals.css.",
   "color": {
-    "bg": "#0e1a24", "bg2": "#0a131b", "card": "#14222e", "card2": "#172a38",
-    "line": "#22323f", "line2": "#2c4150",
-    "ink": "#eaf3f5", "muted": "#90a6b4",
-    "teal": "#2dd4c4", "tealHover": "#3ee3d3", "tealSoft": "rgba(45,212,196,0.12)",
-    "green": "#46e08a", "orange": "#fb7a1e", "danger": "#ff6b6b", "btnText": "#06231f"
+    "bg": "#06140d", "bg2": "#04100a", "card": "#0c1f16", "card2": "#11291d",
+    "line": "#1c3b2b", "line2": "#275038",
+    "ink": "#eafff4", "muted": "#8fb1a1",
+    "teal": "#25d366", "tealHover": "#3fe07f", "tealSoft": "rgba(37,211,102,0.12)",
+    "green": "#46e08a", "orange": "#fb7a1e", "danger": "#ff6b6b", "btnText": "#04140c"
   },
   "status": {
     "PENDING": "#90a6b4",
@@ -19,7 +19,7 @@
     "SENDING": "#2dd4c4",
     "COMPLETED": "#46e08a"
   },
-  "gradient": { "brand": "linear-gradient(135deg, #2dd4c4, #46e08a)" },
+  "gradient": { "brand": "linear-gradient(120deg, #25d366, #0fae8b)" },
   "font": {
     "en": "\"Inter\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
     "ar": "\"Cairo\", \"Segoe UI Arabic\", \"Tahoma\", sans-serif",
@@ -36,9 +36,9 @@
     "small": "12px"
   },
   "components": {
-    "button": "pill, teal→green gradient, #06231f text, 48px min-height",
+    "button": "pill, WhatsApp green→teal gradient, #04140c text, 48px min-height",
     "badge": "pill outline, color = status token",
-    "input": "bg2 fill, line2 border, teal focus ring rgba(45,212,196,.14)",
+    "input": "bg2 fill, line2 border, green focus ring (16% accent)",
     "card": "card fill, line border, radius 14, soft shadow",
     "progress": "12px track, brand gradient bar",
     "touchTarget": "44px minimum (mobile-first)"

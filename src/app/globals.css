@@ -3,15 +3,15 @@
    Dark · teal→green · bilingual EN/AR. Single source of truth.
    ============================================================ */
 :root {
-  /* surfaces */
-  --bg:#0e1a24; --bg2:#0a131b; --card:#14222e; --card2:#172a38;
-  --line:#22323f; --line2:#2c4150;
+  /* surfaces — WhatsApp-green dark, shared with the landing (.dk) */
+  --bg:#06140d; --bg2:#04100a; --card:#0c1f16; --card2:#11291d;
+  --line:#1c3b2b; --line2:#275038;
   /* text */
-  --ink:#eaf3f5; --muted:#90a6b4;
-  /* brand accents */
-  --teal:#2dd4c4; --teal-soft:rgba(45,212,196,.12); --accent-hover:#3ee3d3;
+  --ink:#eafff4; --muted:#8fb1a1;
+  /* brand accents — primary accent is the landing's WhatsApp green */
+  --teal:#25d366; --teal-soft:rgba(37,211,102,.12); --accent-hover:#3fe07f;
   --green:#46e08a; --orange:#fb7a1e; --accent:var(--teal);
-  --danger:#ff6b6b; --btn-text:#06231f;
+  --danger:#ff6b6b; --btn-text:#04140c;
   /* delivery status colors */
   --st-pending:#90a6b4; --st-sent:#5ac8ff; --st-delivered:#2dd4c4;
   --st-read:#46e08a; --st-failed:#ff6b6b;
@@ -23,20 +23,27 @@
   --font-en:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-ar:"Cairo","Segoe UI Arabic","Tahoma",sans-serif;
   --font:var(--font-en);
-  --grad-brand:linear-gradient(135deg,var(--teal),var(--green));
+  --grad-brand:linear-gradient(120deg,#25d366,#0fae8b);
 }
 html[lang="ar"], [dir="rtl"] { --font:var(--font-ar); }
 
 * { box-sizing:border-box; }
 html, body { margin:0; padding:0; }
 body {
-  font-family:var(--font); background:var(--bg); color:var(--ink);
+  font-family:var(--font); color:var(--ink);
+  /* same top glow as the landing, dialed down for long operator sessions */
+  background:
+    radial-gradient(58% 44% at 50% -4%, color-mix(in oklab, var(--teal) 9%, transparent), transparent 70%),
+    var(--bg);
+  background-attachment:fixed;
   -webkit-font-smoothing:antialiased; line-height:1.55;
 }
 a { color:var(--teal); text-decoration:none; }
 a:hover { color:var(--accent-hover); }
-h1 { font-size:clamp(26px,4vw,40px); font-weight:800; margin:.2em 0 .4em; }
-h2 { font-size:clamp(20px,3vw,28px); font-weight:800; margin:1.2em 0 .5em; }
+h1 { font-family:var(--font-display,var(--font)); font-size:clamp(26px,4vw,40px);
+  font-weight:800; letter-spacing:-.02em; margin:.2em 0 .4em; }
+h2 { font-family:var(--font-display,var(--font)); font-size:clamp(20px,3vw,28px);
+  font-weight:800; letter-spacing:-.01em; margin:1.2em 0 .5em; }
 h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
 
 /* layout */
@@ -44,7 +51,7 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
 .nav {
   position:sticky; top:0; z-index:20; display:flex; align-items:center;
   justify-content:space-between; gap:16px; min-height:var(--nav-h);
-  padding:0 20px; background:rgba(14,26,36,.82); backdrop-filter:blur(10px);
+  padding:0 20px; background:color-mix(in srgb, var(--bg) 84%, transparent); backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
 }
 .nav__links { display:flex; gap:18px; align-items:center; }
@@ -65,7 +72,8 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
   display:grid; place-items:center; }
 .brand .mark::after { content:""; width:0; height:0; margin-inline-start:2px;
   border-left:9px solid var(--green); border-top:6px solid transparent; border-bottom:6px solid transparent; }
-.brand .b1 { color:var(--orange); } .brand .b2 { color:var(--green); }
+/* Wordmark matches the landing: "broadcast" green, "hub" ink. */
+.brand .b1 { color:var(--teal); } .brand .b2 { color:var(--ink); }
 
 /* stat cards */
 .stats { display:flex; gap:14px; flex-wrap:wrap; margin:18px 0; }
@@ -85,7 +93,8 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
   width:100%; min-height:44px; padding:10px 12px; border-radius:var(--r-sm);
   border:1px solid var(--line2); background:var(--bg2); color:var(--ink); font-family:var(--font);
 }
-.input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 4px rgba(45,212,196,.14); }
+.input:focus { outline:none; border-color:var(--teal);
+  box-shadow:0 0 0 4px color-mix(in oklab, var(--teal) 16%, transparent); }
 .input--sm { min-height:36px; padding:6px 10px; font-size:14px; }
 /* Keep autofilled inputs on-theme (Chrome forces a light fill by default). */
 .input:-webkit-autofill, .input:-webkit-autofill:focus {
@@ -153,7 +162,7 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
 .convo--active { background:var(--teal-soft); }
 .convo__top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .convo__name { font-weight:600; font-size:14px; }
-.convo__badge { background:var(--green); color:var(--btn-text,#06231f); border-radius:999px; font-size:11px;
+.convo__badge { background:var(--green); color:var(--btn-text,#04140c); border-radius:999px; font-size:11px;
   font-weight:700; min-width:20px; height:20px; padding:0 6px; display:inline-grid; place-items:center; }
 .convo__preview { color:var(--muted); font-size:12.5px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .inbox__thread { display:flex; flex-direction:column; border:1px solid var(--line); border-radius:var(--r,14px); background:var(--card); overflow:hidden; }
@@ -191,16 +200,16 @@ html[lang="ar"] { --font-display: var(--font-ar); }
 html[lang="ar"] .lp-h1, html[lang="ar"] h1, html[lang="ar"] h2,
 html[lang="ar"] .lp-kicker, html[lang="ar"] .auth__pitch { letter-spacing:normal; }
 
-/* Light palette — neutrals tinted toward the teal brand hue, deeper accents
-   for contrast on light surfaces. */
+/* Light palette — neutrals tinted toward the green brand hue, deeper accents
+   for contrast on light surfaces (mirrors the landing's light .dk palette). */
 :root[data-theme="light"] {
-  --bg:#eef4f3; --bg2:#e4edec; --card:#ffffff; --card2:#f2f8f7;
-  --line:#d6e2e0; --line2:#c1d2cf;
-  --ink:#0b1f25; --muted:#506972;
-  --teal:#0d9488; --teal-soft:rgba(13,148,136,.10); --accent-hover:#0b7c72;
+  --bg:#eef6f1; --bg2:#e2eee7; --card:#ffffff; --card2:#f2f8f4;
+  --line:#d6e6dc; --line2:#c0d8ca;
+  --ink:#08160f; --muted:#4f6a5b;
+  --teal:#0e9f6e; --teal-soft:rgba(14,159,110,.10); --accent-hover:#0c8a60;
   --green:#15a05a; --orange:#d9620a; --danger:#dc4a4c; --btn-text:#04231d;
-  --grad-brand:linear-gradient(135deg,#0d9488,#15a05a);
-  --shadow:0 14px 34px rgba(11,46,56,.12);
+  --grad-brand:linear-gradient(120deg,#0e9f6e,#10a37f);
+  --shadow:0 14px 34px rgba(11,56,36,.12);
 }
 
 /* theme toggle */

@@ -2,12 +2,12 @@
    The full component layer lives in src/app/globals.css; this is the
    token-only subset for reuse in ads, emails, Canva exports, etc. */
 :root{
-  --bg:#0e1a24; --bg2:#0a131b; --card:#14222e; --card2:#172a38;
-  --line:#22323f; --line2:#2c4150;
-  --ink:#eaf3f5; --muted:#90a6b4;
-  --teal:#2dd4c4; --teal-soft:rgba(45,212,196,.12); --accent-hover:#3ee3d3;
+  --bg:#06140d; --bg2:#04100a; --card:#0c1f16; --card2:#11291d;
+  --line:#1c3b2b; --line2:#275038;
+  --ink:#eafff4; --muted:#8fb1a1;
+  --teal:#25d366; --teal-soft:rgba(37,211,102,.12); --accent-hover:#3fe07f;
   --green:#46e08a; --orange:#fb7a1e; --accent:var(--teal);
-  --danger:#ff6b6b; --btn-text:#06231f;
+  --danger:#ff6b6b; --btn-text:#04140c;
   /* delivery status */
   --st-pending:#90a6b4; --st-sent:#5ac8ff; --st-delivered:#2dd4c4;
   --st-read:#46e08a; --st-failed:#ff6b6b;
@@ -16,11 +16,11 @@
   --font-en:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-ar:"Cairo","Segoe UI Arabic","Tahoma",sans-serif;
   --font:var(--font-en);
-  --grad-brand:linear-gradient(135deg,var(--teal),var(--green));
+  --grad-brand:linear-gradient(120deg,#25d366,#0fae8b);
 }
 html[lang="ar"],[dir="rtl"]{ --font:var(--font-ar); }
 .btn{ font-family:var(--font); font-weight:700; cursor:pointer; border:0;
   border-radius:var(--r-pill); padding:12px 24px; color:var(--btn-text);
   background:var(--grad-brand); transition:filter .15s, transform .15s; }
 .btn:hover{ filter:brightness(1.08); } .btn:active{ transform:translateY(1px); }
-.brand .b1{ color:var(--orange); } .brand .b2{ color:var(--green); }
+.brand .b1{ color:var(--teal); } .brand .b2{ color:var(--ink); }
