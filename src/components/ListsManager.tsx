@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
+import { useRole } from "@/lib/useRole";
 
 interface List { id: string; name: string; _count: { memberships: number } }
 interface Snapshot { id: string; listName: string; memberCount: number; reason: string; createdAt: string }
 
 export default function ListsManager() {
+  const { isAdmin } = useRole(); // restoring a snapshot (overwrite) is admin-only
   const [lists, setLists] = useState<List[]>([]);
   const [snaps, setSnaps] = useState<Record<string, Snapshot[]>>({});
   const [open, setOpen] = useState<Set<string>>(new Set());
@@ -109,10 +111,14 @@ export default function ListsManager() {
                       <td><span className="badge badge--PENDING">{s.reason}</span></td>
                       <td>{s.memberCount}</td>
                       <td style={{ textAlign: "end" }}>
-                        <button className="btn btn--ghost btn--sm" data-test-id="restore-snapshot"
-                          onClick={() => restore(l.id, s.id)} disabled={busy === `restore:${s.id}`} aria-busy={busy === `restore:${s.id}`}>
-                          {busy === `restore:${s.id}` ? "Restoring…" : "Restore"}
-                        </button>
+                        {isAdmin ? (
+                          <button className="btn btn--ghost btn--sm" data-test-id="restore-snapshot"
+                            onClick={() => restore(l.id, s.id)} disabled={busy === `restore:${s.id}`} aria-busy={busy === `restore:${s.id}`}>
+                            {busy === `restore:${s.id}` ? "Restoring…" : "Restore"}
+                          </button>
+                        ) : (
+                          <span className="muted" style={{ fontSize: 13 }}>admin only</span>
+                        )}
                       </td>
                     </tr>
                   ))}

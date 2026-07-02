@@ -5,7 +5,8 @@ import { prisma } from "@/lib/db";
 import { CreateTemplateSchema } from "@/lib/validation";
 import { createTemplate, countTemplateVars, uploadTemplateMediaFromUrl, type CarouselCardInput, WhatsAppError } from "@/lib/whatsapp";
 import { getWaConfig } from "@/lib/waConfig";
-import { getClientId } from "@/lib/users";
+import { getClientId, requireAdmin } from "@/lib/users";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -33,6 +34,7 @@ export async function GET(req: NextRequest) {
  * The local copy is cached with Meta's returned status (usually PENDING).
  */
 export async function POST(req: NextRequest) {
+  if (!(await requireAdmin(req))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const parsed = CreateTemplateSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid template" }, { status: 400 });
@@ -76,6 +78,7 @@ export async function POST(req: NextRequest) {
         ...(cards ? { cards } : {}),
       },
     });
+    void audit(req, "template.submitted", input.name, { language: input.language, category: input.category });
     return NextResponse.json({ ok: true, template, metaId: result.id ?? null }, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Template submission failed";

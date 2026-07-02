@@ -3,6 +3,7 @@ import { CreateBroadcastSchema } from "@/lib/validation";
 import { prisma } from "@/lib/db";
 import { createAndEnqueueBroadcast } from "@/lib/broadcast";
 import { getClientId } from "@/lib/users";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,9 @@ export async function POST(req: NextRequest) {
   });
 
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.code ?? 422 });
+  void audit(req, result.scheduledAt ? "broadcast.scheduled" : "broadcast.sent", result.broadcastId, {
+    templateId, listId, queued: result.queued, ...(result.scheduledAt ? { scheduledAt: result.scheduledAt } : {}),
+  });
   return NextResponse.json({ broadcastId: result.broadcastId, queued: result.queued, scheduledAt: result.scheduledAt });
 }
 

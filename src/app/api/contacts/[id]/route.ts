@@ -3,7 +3,8 @@ import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { PhoneSchema } from "@/lib/validation";
-import { getClientId } from "@/lib/users";
+import { getClientId, requireAdmin } from "@/lib/users";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -64,15 +65,24 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     }
   }
 
+  void audit(req, "contact.updated", updated.phone, {
+    ...(name !== undefined ? { name: updated.name } : {}),
+    ...(phone !== undefined ? { previousPhone: contact.phone } : {}),
+    ...(optedOut !== undefined ? { optedOut } : {}),
+  });
   return NextResponse.json({
     ok: true,
     contact: { id: updated.id, phone: updated.phone, name: updated.name, optedOut: updated.optedOut },
   });
 }
 
-/** DELETE /api/contacts/:id (scoped to the caller's client). */
+/** DELETE /api/contacts/:id (ADMIN only, scoped to the caller's client). */
 export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!(await requireAdmin(req))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const { id } = await ctx.params;
-  await prisma.contact.deleteMany({ where: { id, clientId: await getClientId(req) } }).catch(() => null);
+  const clientId = await getClientId(req);
+  const contact = await prisma.contact.findFirst({ where: { id, clientId }, select: { phone: true } });
+  const r = await prisma.contact.deleteMany({ where: { id, clientId } }).catch(() => null);
+  if (r && r.count > 0) void audit(req, "contact.deleted", contact?.phone ?? id);
   return NextResponse.json({ ok: true });
 }

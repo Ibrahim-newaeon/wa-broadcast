@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { CreateContactSchema, composeName } from "@/lib/validation";
 import { getClientId } from "@/lib/users";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -91,6 +92,7 @@ export async function POST(req: NextRequest) {
     await prisma.contactListMembership.create({ data: { contactId: contact.id, listId } });
   }
 
+  void audit(req, "contact.created", contact.phone, listId ? { listId } : undefined);
   return NextResponse.json(
     { ok: true, contact: { id: contact.id, phone: contact.phone, name: contact.name } },
     { status: 201 },

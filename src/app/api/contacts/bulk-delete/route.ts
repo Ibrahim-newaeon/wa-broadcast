@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { getClientId } from "@/lib/users";
+import { getClientId, requireAdmin } from "@/lib/users";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,7 @@ const BulkDeleteSchema = z.object({
  * skipped rather than failing the whole batch.
  */
 export async function POST(req: NextRequest) {
+  if (!(await requireAdmin(req))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const parsed = BulkDeleteSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "invalid" }, { status: 400 });
@@ -36,5 +38,6 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  if (deleted > 0) void audit(req, "contacts.bulk_deleted", null, { deleted, skipped });
   return NextResponse.json({ ok: true, deleted, skipped });
 }

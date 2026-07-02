@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadTemplateMedia, WhatsAppError } from "@/lib/whatsapp";
-import { getClientId } from "@/lib/users";
+import { getClientId, requireAdmin } from "@/lib/users";
 
 // Node runtime: we read the uploaded file bytes and stream them to Meta's
 // Resumable Upload API. Auth is enforced by middleware (access token).
@@ -14,6 +14,8 @@ const ALLOWED = /^(image\/(jpeg|png)|application\/pdf|video\/mp4)$/;
  * Meta and return a `handle` to use as a template header sample.
  */
 export async function POST(req: NextRequest) {
+  // Template creation is admin-only, so its media-sample upload is too.
+  if (!(await requireAdmin(req))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
   if (!(file instanceof File)) {
