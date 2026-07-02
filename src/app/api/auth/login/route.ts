@@ -9,6 +9,7 @@ import {
 import { getVersion, registerJti } from "@/lib/tokenStore";
 import { verifyCredentials } from "@/lib/users";
 import { rateLimit } from "@/lib/ratelimit";
+import { prisma } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -33,6 +34,11 @@ export async function POST(req: NextRequest) {
     signAccess(sub, user.role, user.clientId),
     signRefresh(sub, ver, jti),
   ]);
+
+  // Direct audit write — lib/audit reads the access cookie, which doesn't exist yet here.
+  await prisma.auditLog
+    .create({ data: { clientId: user.clientId, actor: sub, role: user.role, action: "auth.login", meta: { ip } } })
+    .catch(() => null);
 
   const res = NextResponse.json({ ok: true });
   res.cookies.set(ACCESS_COOKIE, access, { ...cookieBase, maxAge: ACCESS_MAX_AGE });

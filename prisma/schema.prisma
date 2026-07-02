@@ -201,6 +201,21 @@ model RecurringCampaign {
   @@index([active])
 }
 
+// Append-only record of who did what. Written best-effort by lib/audit.ts;
+// never blocks the action it describes.
+model AuditLog {
+  id        String   @id @default(cuid())
+  clientId  String   @default("default")
+  actor     String   // user email (denormalized — survives user deletion)
+  role      String?  // actor's role at the time
+  action    String   // dotted verb, e.g. "broadcast.created", "contact.deleted"
+  target    String?  // human-readable target (template name, phone, list name…)
+  meta      Json?    // small structured extras (counts, ids)
+  createdAt DateTime @default(now())
+
+  @@index([clientId, createdAt])
+}
+
 model User {
   id           String   @id @default(cuid())
   clientId     String   @default("default")

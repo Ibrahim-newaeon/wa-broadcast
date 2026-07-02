@@ -3,6 +3,7 @@ import { ContactRowSchema, composeName } from "@/lib/validation";
 import { prisma } from "@/lib/db";
 import { snapshotList } from "@/lib/snapshots";
 import { getClientId } from "@/lib/users";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -104,6 +105,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  void audit(req, "contacts.imported", file.name || null, {
+    inserted,
+    rejected: rejected.length,
+    ...(typeof listId === "string" && listId ? { listId } : {}),
+  });
   return NextResponse.json({
     inserted,
     rejectedCount: rejected.length,

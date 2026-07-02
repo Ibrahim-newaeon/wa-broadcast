@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
+import { useRole } from "@/lib/useRole";
 
 interface Status {
   phoneNumberId: string;
@@ -15,6 +16,7 @@ interface Status {
 }
 
 export default function WhatsAppSetup() {
+  const { me, isAdmin } = useRole(); // saving credentials is admin-only
   const [phoneNumberId, setPhoneNumberId] = useState("");
   const [businessAccountId, setBusinessAccountId] = useState("");
   const [appId, setAppId] = useState("");
@@ -87,6 +89,19 @@ export default function WhatsAppSetup() {
   function genToken() {
     const t = (crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)).replace(/-/g, "");
     setWebhookVerifyToken(t);
+  }
+
+  if (me === null) return null; // role unknown yet — avoid flashing the wrong view
+  if (!isAdmin) {
+    return (
+      <div className="card" style={{ maxWidth: 680 }}>
+        <h3>Connect WhatsApp</h3>
+        <p className="note" style={{ margin: 0 }}>
+          Connection settings are managed by an admin.
+          {savedAt && <> Last saved {new Date(savedAt).toLocaleString()}.</>}
+        </p>
+      </div>
+    );
   }
 
   return (

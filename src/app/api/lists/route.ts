@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { CreateListSchema } from "@/lib/validation";
 import { prisma } from "@/lib/db";
 import { getClientId } from "@/lib/users";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -30,6 +31,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const list = await prisma.contactList.create({ data: { name, clientId } });
+    void audit(req, "list.created", name);
     return NextResponse.json({ list }, { status: 201 });
   } catch (err) {
     // Backstop for the exact-case unique index (e.g. a concurrent create).

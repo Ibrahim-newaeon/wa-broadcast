@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
+import { useRole } from "@/lib/useRole";
 
 interface List { id: string; name: string }
 interface Template { id: string; name: string; language: string; variableCount: number }
@@ -15,6 +16,7 @@ const CRON_PRESETS: { label: string; cron: string }[] = [
 ];
 
 export default function CampaignsManager({ lists, templates }: { lists: List[]; templates: Template[] }) {
+  const { isAdmin } = useRole(); // recurring automation is admin-only; members see the list read-only
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [name, setName] = useState("");
   const [templateId, setTemplateId] = useState("");
@@ -58,7 +60,8 @@ export default function CampaignsManager({ lists, templates }: { lists: List[]; 
   }
 
   return (
-    <div className="grid-forms">
+    <div className="grid-forms" style={isAdmin ? undefined : { gridTemplateColumns: "1fr" }}>
+      {isAdmin && (
       <form onSubmit={create} className="card">
         <h3>New recurring campaign</h3>
         <div className="field">
@@ -96,6 +99,7 @@ export default function CampaignsManager({ lists, templates }: { lists: List[]; 
         </button>
         {msg && <p className="note" style={{ marginTop: 10 }}>{msg}</p>}
       </form>
+      )}
 
       <div className="card">
         <h3>Active & paused</h3>
@@ -108,8 +112,14 @@ export default function CampaignsManager({ lists, templates }: { lists: List[]; 
                 <td><code>{c.cron}</code></td>
                 <td><span className={`badge badge--${c.active ? "SENDING" : "PENDING"}`}>{c.active ? "ACTIVE" : "PAUSED"}</span></td>
                 <td style={{ textAlign: "end" }}>
-                  <button className="btn btn--ghost btn--sm" onClick={() => toggle(c)}>{c.active ? "Pause" : "Resume"}</button>{" "}
-                  <button className="btn btn--danger btn--sm" onClick={() => remove(c)}>Delete</button>
+                  {isAdmin ? (
+                    <>
+                      <button className="btn btn--ghost btn--sm" onClick={() => toggle(c)}>{c.active ? "Pause" : "Resume"}</button>{" "}
+                      <button className="btn btn--danger btn--sm" onClick={() => remove(c)}>Delete</button>
+                    </>
+                  ) : (
+                    <span className="muted" style={{ fontSize: 13 }}>admin only</span>
+                  )}
                 </td>
               </tr>
             ))}

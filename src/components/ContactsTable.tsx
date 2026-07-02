@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
+import { useRole } from "@/lib/useRole";
 
 interface Contact { id: string; phone: string; name: string | null; optedOut: boolean }
 const PAGE = 50;
 
 export default function ContactsTable() {
+  const { isAdmin } = useRole(); // deleting contacts is admin-only
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [query, setQuery] = useState("");
   const [optFilter, setOptFilter] = useState<"all" | "true" | "false">("all");
@@ -127,7 +129,7 @@ export default function ContactsTable() {
           </button>
         ))}
         <span className="spacer" />
-        {selected.size > 0 && (
+        {isAdmin && selected.size > 0 && (
           <button data-test-id="bulk-delete" className="btn btn--danger btn--sm" onClick={bulkDelete}>
             Delete selected ({selected.size})
           </button>
@@ -182,8 +184,8 @@ export default function ContactsTable() {
                       <button className="btn btn--ghost btn--sm" data-test-id="edit-contact" onClick={() => startEdit(c)}>Edit</button>{" "}
                       <button className="btn btn--ghost btn--sm" onClick={() => toggleOptOut(c)}>
                         {c.optedOut ? "Re-subscribe" : "Opt out"}
-                      </button>{" "}
-                      <button className="btn btn--danger btn--sm" onClick={() => remove(c)}>Delete</button>
+                      </button>
+                      {isAdmin && <>{" "}<button className="btn btn--danger btn--sm" onClick={() => remove(c)}>Delete</button></>}
                     </>
                   )}
                 </td>

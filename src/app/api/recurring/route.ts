@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { CreateRecurringSchema } from "@/lib/validation";
 import { prisma } from "@/lib/db";
 import { upsertSchedule } from "@/lib/recurring";
-import { getClientId } from "@/lib/users";
+import { getClientId, requireAdmin } from "@/lib/users";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -27,8 +28,9 @@ export async function GET(req: NextRequest) {
   });
 }
 
-/** POST /api/recurring — create a campaign and register its cron schedule. */
+/** POST /api/recurring — create a campaign and register its cron schedule (ADMIN only). */
 export async function POST(req: NextRequest) {
+  if (!(await requireAdmin(req))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const parsed = CreateRecurringSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "invalid" }, { status: 400 });
@@ -49,5 +51,6 @@ export async function POST(req: NextRequest) {
   });
   await upsertSchedule(campaign.id, cron);
 
+  void audit(req, "campaign.created", name, { cron, templateId, listId });
   return NextResponse.json({ campaign: { id: campaign.id, name: campaign.name } }, { status: 201 });
 }

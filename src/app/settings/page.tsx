@@ -2,6 +2,7 @@ import Nav from "@/components/Nav";
 import UsersManager from "@/components/UsersManager";
 import WhatsAppSetup from "@/components/WhatsAppSetup";
 import ClientsManager from "@/components/ClientsManager";
+import AuditLogViewer from "@/components/AuditLogViewer";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,8 @@ export default function SettingsPage() {
         <WhatsAppSetup />
         <h2 style={{ marginTop: 32 }}>Team members</h2>
         <UsersManager />
+        {/* ADMIN-only; renders nothing (including its heading) for members. */}
+        <AuditLogViewer />
       </main>
     </>
   );

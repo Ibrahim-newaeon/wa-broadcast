@@ -5,6 +5,7 @@ import { prisma } from "./db";
 import { env } from "./env";
 import { verifyToken, ACCESS_COOKIE, ACTING_CLIENT_COOKIE } from "./auth";
 import { DEFAULT_CLIENT_ID, resolveActingClientId } from "./tenancy";
+import { isAdminRole } from "./rbac";
 
 // Node-only auth helpers (DB + bcrypt). The single env admin is used to
 // BOOTSTRAP when no users exist yet; afterwards everything is DB-backed.
@@ -95,7 +96,7 @@ export async function getClientIdFromCookies(): Promise<string> {
 /** Read the access token and require ADMIN (or SUPERADMIN). Returns claims or null. */
 export async function requireAdmin(req: NextRequest) {
   const claims = await verifyToken(req.cookies.get(ACCESS_COOKIE)?.value, "access");
-  if (!claims || (claims.role !== "ADMIN" && claims.role !== "SUPERADMIN")) return null;
+  if (!claims || !isAdminRole(claims.role)) return null;
   return claims;
 }
 

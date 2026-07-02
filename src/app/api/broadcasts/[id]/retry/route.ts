@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { sendQueue } from "@/lib/queue";
 import { resolveBodyParams, type VariableMap } from "@/lib/broadcast";
 import { getClientId } from "@/lib/users";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -85,5 +86,6 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     );
   }
 
+  void audit(req, "broadcast.retried", id, { retried: retriable.length });
   return NextResponse.json({ retried: retriable.length });
 }

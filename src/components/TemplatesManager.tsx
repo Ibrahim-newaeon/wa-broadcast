@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
+import { useRole } from "@/lib/useRole";
 
 interface Template { id: string; name: string; language: string; category: string; status: string; variableCount: number }
 interface Btn { type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER" | "COPY_CODE"; text: string; url: string; phoneNumber: string; couponExample: string }
@@ -29,6 +30,7 @@ function statusBadge(s: string) {
 }
 
 export default function TemplatesManager() {
+  const { isAdmin } = useRole(); // submitting templates to Meta is admin-only
   const [templates, setTemplates] = useState<Template[]>([]);
   const [name, setName] = useState("");
   const [language, setLanguage] = useState("ar");
@@ -169,7 +171,8 @@ export default function TemplatesManager() {
   }
 
   return (
-    <div className="grid-forms" style={{ gridTemplateColumns: "minmax(320px,1.1fr) 1fr", alignItems: "start" }}>
+    <div className="grid-forms" style={{ gridTemplateColumns: isAdmin ? "minmax(320px,1.1fr) 1fr" : "1fr", alignItems: "start" }}>
+      {isAdmin && (
       <form onSubmit={onSubmit} className="card">
         <h3>Create a template</h3>
         <div className="field">
@@ -343,6 +346,7 @@ export default function TemplatesManager() {
           </p>
         )}
       </form>
+      )}
 
       <div className="card">
         <div className="row" style={{ justifyContent: "space-between", marginBottom: 10 }}>

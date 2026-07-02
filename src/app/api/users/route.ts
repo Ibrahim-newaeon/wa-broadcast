@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { createUser, requireAdmin, getClientId } from "@/lib/users";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -38,5 +39,6 @@ export async function POST(req: NextRequest) {
   if (exists) return NextResponse.json({ error: "email already exists" }, { status: 409 });
 
   const user = await createUser({ ...parsed.data, clientId: await getClientId(req) });
+  void audit(req, "user.created", user.email, { role: user.role });
   return NextResponse.json({ user }, { status: 201 });
 }

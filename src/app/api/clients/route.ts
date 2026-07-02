@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { CreateClientSchema } from "@/lib/validation";
 import { requireSuperAdmin, getClientId, createUser, generatePassword } from "@/lib/users";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -66,6 +67,7 @@ export async function POST(req: NextRequest) {
     admin = { email: adminEmail.toLowerCase(), password, generated: !adminPassword };
   }
 
+  void audit(req, "client.created", client.name, adminEmail ? { adminEmail: adminEmail.toLowerCase() } : undefined);
   return NextResponse.json(
     { client: { id: client.id, name: client.name, slug: client.slug }, admin },
     { status: 201 },

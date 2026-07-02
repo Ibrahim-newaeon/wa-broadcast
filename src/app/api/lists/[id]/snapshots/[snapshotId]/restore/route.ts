@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { restoreSnapshot } from "@/lib/snapshots";
 import { prisma } from "@/lib/db";
-import { getClientId } from "@/lib/users";
+import { getClientId, requireAdmin } from "@/lib/users";
+import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
-/** POST /api/lists/:id/snapshots/:snapshotId/restore — restore the list to a snapshot. */
+/** POST /api/lists/:id/snapshots/:snapshotId/restore — restore the list to a
+ *  snapshot (ADMIN only — overwrites the list's current membership). */
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string; snapshotId: string }> }) {
+  if (!(await requireAdmin(req))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const { id, snapshotId } = await ctx.params;
   // The list (and therefore its snapshots) must belong to the caller's client.
   const list = await prisma.contactList.findFirst({
@@ -19,5 +22,6 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   const result = await restoreSnapshot(snapshotId);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 404 });
+  void audit(req, "list.restored", id, { snapshotId });
   return NextResponse.json(result);
 }

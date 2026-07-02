@@ -102,8 +102,7 @@ wa-broadcast/
 - **`strict` + `noUncheckedIndexedAccess`** will flag array indexing — expect a few small guards.
 
 ## Known limitations (by design / roadmap — not bugs to "fix" silently)
-- Authorization is mostly authentication-only; only `/api/users` is role-gated. Per-action RBAC is a roadmap item.
-- No actor attribution / audit log on broadcasts or deletions.
+- RBAC is coarse (MEMBER = operator, ADMIN/SUPERADMIN = management via `requireAdmin`); no per-resource permissions. Audit log (`lib/audit.ts` → `AuditLog`) covers API mutations, not inbox replies or system/recurring sends.
 - Opt-in consent is trusted from the uploaded CSV, not structurally enforced.
 - Contact delete is a no-op if the contact has broadcast history (FK `RESTRICT`).
 - Access-token revocation lags ≤15 min by design; login rate-limit fails open.
