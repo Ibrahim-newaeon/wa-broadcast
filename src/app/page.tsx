@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 import LangToggle from "@/components/LangToggle";
+import LeadForm from "@/components/LeadForm";
 
 // Public marketing landing — "Dockit"-style docs layout in a WhatsApp-green
 // palette. Bilingual EN/AR (CSS shows one based on <html lang>). Stays outside
@@ -71,7 +72,7 @@ export default function Landing() {
             />
           </p>
           <div className="dk-actions reveal d3">
-            <Link href="/login" className="dk-btn dk-btn--primary" data-test-id="landing-cta"><T en="Open the hub" ar="افتح المركز" /></Link>
+            <a href="#get-started" className="dk-btn dk-btn--primary" data-test-id="landing-cta"><T en="Get started" ar="ابدأ الآن" /></a>
             <a href="#features" className="dk-btn dk-btn--ghost"><T en="See features" ar="شاهد المزايا" /></a>
           </div>
           <div className="dk-pop reveal d4">
@@ -101,9 +102,13 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="dk-final">
-          <h2><T en="Start sending from your WhatsApp Hub." ar="ابدأ الإرسال من مركز واتساب." /></h2>
-          <Link href="/login" className="dk-btn dk-btn--primary"><T en="Open the hub" ar="افتح المركز" /></Link>
+        <section id="get-started" className="dk-final">
+          <h2><T en="Want this for your business?" ar="تريد هذا لنشاطك التجاري؟" /></h2>
+          <p className="dk-lead" style={{ margin: "0 auto" }}>
+            <T en="Leave your WhatsApp number — we'll message you there. No email, no calls."
+              ar="اترك رقم واتساب الخاص بك — وسنراسلك عليه مباشرة. بلا بريد إلكتروني، بلا مكالمات." />
+          </p>
+          <LeadForm />
         </section>
 
         <footer className="dk-foot">
