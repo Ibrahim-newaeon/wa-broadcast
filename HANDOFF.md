@@ -1,6 +1,8 @@
 # Handoff memo — WhatsApp Broadcast Platform
 
-_Status snapshot for the next session. Last updated: 2026-06-28._
+_Status snapshot for the next session. Last updated: 2026-07-02._
+
+> **Resume protocol:** when the user says **"continue"**, pick up from **Next steps** below — no re-explaining, no re-planning.
 
 ## TL;DR
 A self-hosted, **multi-tenant** WhatsApp messaging platform on Meta's Cloud API is **built, deployed, and green** (typecheck · 45 unit tests · build · 1 e2e). It does broadcasts, a two-way inbox, and rich templates across isolated clients.
@@ -24,13 +26,16 @@ A self-hosted, **multi-tenant** WhatsApp messaging platform on Meta's Cloud API 
 - **Phase 5 — rich templates (IN PROGRESS):** ✅ coupon **copy-code** buttons · ✅ **carousel** (2–10 static media cards) · ✅ **limited-time offer** (banner text ≤16 chars on the template; optional countdown whose expiry is supplied per broadcast, migration `0016`). ⏳ remaining below.
 - **RBAC + audit trail (2026-07-02):** MEMBER role is now enforced — admin-only routes (template submit, contact deletes, snapshot restore, recurring CRUD, WhatsApp settings) return 403 via `requireAdmin`; role-aware UI hides those controls (`useRole` → `/api/auth/me`). Every consequential mutation writes an `AuditLog` row (`lib/audit.ts`, best-effort, never blocks); admins browse it in Settings → Activity (`/api/audit`). Migration `0017`.
 - **Lead capture (2026-07-02):** public bilingual lead form on the landing page (`#get-started`) → `POST /api/leads` (no auth, 5/10min per-IP rate limit, honeypot) → Contact upserted into an auto-created **"Website Leads"** list under the default client + `lead.created` audit row. Operator follow-up = template broadcast to that list (the only Meta-legal way to message a lead who never wrote in).
+- **Public legal pages (2026-07-02, PR #8):** `/privacy-policy` · `/terms-and-conditions` · `/data-deletion` — public via middleware allowlist (Meta App Review links to them), shared `LegalShell` frame, footer links from the landing.
+- **Branding unified: "Broadcast Hub" (2026-07-02, PR #9):** the landing had borrowed V2's name (whatsapphub) while the app said broadcastconsole. Everything is now **Broadcast Hub** (nav/login wordmarks, metadata, footer AR «مركز البث», legal pages, tutorial, theme docs). **"WhatsApp Hub" is V2-only.** Also fixed stale e2e dashboard selectors (heading "Dashboard" at `/dashboard`).
+- **App retheme to landing palette (2026-07-02, PR #10):** root tokens in `globals.css` remapped to the landing's WhatsApp-green (`.dk`) palette — surfaces `#06140d`/`#0c1f16`, accent `#25d366`, landing gradient on buttons/progress, wordmark green+ink, Schibsted Grotesk h1/h2, light theme remapped too. Delivery-status colors intentionally unchanged. Theme docs synced. **Verified live on Railway** (CSS bundle carries the new palette).
 - **Docs** — README, bilingual tutorial (`/tutorial.html`), VERIFY.md, this memo.
 
 ## Migrations
 `0001`→`0017`. Recent: `0011` bootstrap superadmin · `0012` two-way messaging · `0013` copy-code · `0014` carousel · `0015` list-name unique · `0016` limited-time offer · `0017` audit log. Hand-written SQL; applied on boot.
 
 ## Next steps (priority order)
-1. **🔴 Live end-to-end verification — [VERIFY.md](./VERIFY.md).** Connect a real number (Settings → Connect WhatsApp), send a broadcast (plain → media → coupon → carousel), and do the inbox round-trip. _The user drives the Meta-side steps; assistant tails the worker + webhook logs and fixes real payload bugs._ This will likely shake out 1–2 small payload issues that unit tests can't catch. **Do this before building more.**
+1. **🔴 Finish live end-to-end verification — [VERIFY.md](./VERIFY.md).** The live Meta **connection** is verified (real number on the Default client — see the meta-credentials memory), but the full round-trip (broadcast sends: plain → media → coupon → carousel, plus the inbox round-trip) isn't recorded as done. _The user drives the Meta-side steps; assistant tails the worker + webhook logs and fixes real payload bugs._ **Do this before building more.**
 2. **🟠 Phase 5 remaining** (by fit): authentication/OTP (transactional, low broadcast fit) → catalog/products (needs a Meta Commerce catalog) → Flows (big, niche).
 3. **🟡 Polish ideas:** per-card carousel variables; richer inbox (search, templates-from-inbox to reopen closed windows); media-retention fallback for old outbound media.
 
