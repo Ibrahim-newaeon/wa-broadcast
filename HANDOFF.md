@@ -30,10 +30,11 @@ A self-hosted, **multi-tenant** WhatsApp messaging platform on Meta's Cloud API 
 - **Branding unified: "Broadcast Hub" (2026-07-02, PR #9):** the landing had borrowed V2's name (whatsapphub) while the app said broadcastconsole. Everything is now **Broadcast Hub** (nav/login wordmarks, metadata, footer AR «مركز البث», legal pages, tutorial, theme docs). **"WhatsApp Hub" is V2-only.** Also fixed stale e2e dashboard selectors (heading "Dashboard" at `/dashboard`).
 - **App retheme to landing palette (2026-07-02, PR #10):** root tokens in `globals.css` remapped to the landing's WhatsApp-green (`.dk`) palette — surfaces `#06140d`/`#0c1f16`, accent `#25d366`, landing gradient on buttons/progress, wordmark green+ink, Schibsted Grotesk h1/h2, light theme remapped too. Delivery-status colors intentionally unchanged. Theme docs synced. **Verified live on Railway** (CSS bundle carries the new palette).
 - **Polish round (2026-07-03):** ① **Per-card carousel media** — broadcasts can override each carousel card's media URL per send (blank = template default); overrides saved on `Broadcast.cardMediaUrls` so retries reuse them (pure logic in `lib/carousel.ts`, unit-tested; migration `0018`). ② **Richer inbox** — conversation search (`?q=` on name/phone digits/preview) + **send-template-from-inbox** (`POST /api/conversations/:id/template`, 📋 in the composer) to re-open closed 24h windows; rich templates (media/coupon/carousel/LTO) are rejected with a pointer to broadcasts. ③ **Media-retention fallback** — `/api/media/:id` now returns **410** when Meta has aged the media out (~30 days) vs 502 for transient failures; inbox bubbles swap in a quiet "media no longer available" placeholder instead of a broken player.
+- **Broadcast message preview (2026-07-03):** the broadcast form renders a live WhatsApp-style preview (header/LTO/body/footer/buttons/carousel cards) with `{{n}}` variables substituted as you type (`field:x` shows as a ⟨x⟩ token). Backed by `Template.bodyText/footerText/buttons` mirrored from Meta on **create + sync** (migration `0019`; pre-existing cached templates show the preview after their next sync). Pure logic in `lib/templatePreview.ts` (tested).
 - **Docs** — README, bilingual tutorial (`/tutorial.html`), VERIFY.md, this memo.
 
 ## Migrations
-`0001`→`0018`. Recent: `0013` copy-code · `0014` carousel · `0015` list-name unique · `0016` limited-time offer · `0017` audit log · `0018` broadcast card-media overrides. Hand-written SQL; applied on boot.
+`0001`→`0019`. Recent: `0014` carousel · `0015` list-name unique · `0016` limited-time offer · `0017` audit log · `0018` broadcast card-media overrides · `0019` template body mirror (preview). Hand-written SQL; applied on boot.
 
 ## Next steps (priority order)
 1. **🔴 Finish live end-to-end verification — [VERIFY.md](./VERIFY.md).** The live Meta **connection** is verified (real number on the Default client — see the meta-credentials memory), but the full round-trip (broadcast sends: plain → media → coupon → carousel, plus the inbox round-trip) isn't recorded as done. _The user drives the Meta-side steps; assistant tails the worker + webhook logs and fixes real payload bugs._ **Do this before building more.**
@@ -45,7 +46,7 @@ A self-hosted, **multi-tenant** WhatsApp messaging platform on Meta's Cloud API 
 - **Webhooks:** verified against the owning client's app secret (resolved by `entry.id` WABA id); per-change writes routed by `metadata.phone_number_id` else the entry's WABA client.
 - **Carousel:** cards are **static** (fixed body + button); only the media is supplied on send; card defs stored on `Template.cards` and reused per broadcast.
 - **Builds without secrets:** `SKIP_ENV_VALIDATION=1 npm run build`.
-- **Gates (must stay green):** `npm run typecheck` · `npm test` (70) · `npm run build`. E2E: `BASE_URL=… E2E_EMAIL=… E2E_PASSWORD=… npx playwright test tenant-isolation` (skips without creds; self-cleans its test clients).
+- **Gates (must stay green):** `npm run typecheck` · `npm test` (77) · `npm run build`. E2E: `BASE_URL=… E2E_EMAIL=… E2E_PASSWORD=… npx playwright test tenant-isolation` (skips without creds; self-cleans its test clients).
 - **Imports:** `@/…` everywhere except `src/worker/index.ts` (relative, runs under tsx).
 
 ## Security to-dos

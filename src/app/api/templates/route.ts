@@ -63,18 +63,23 @@ export async function POST(req: NextRequest) {
     const copyCode = input.buttons.some((b) => b.type === "COPY_CODE");
     const ltoText = input.limitedTimeOffer?.text ?? null;
     const ltoExpiration = input.limitedTimeOffer?.hasExpiration ?? false;
+    // Mirror the message text + buttons for the broadcast-form preview.
+    const bodyText = input.body;
+    const footerText = input.footer ?? null;
+    const buttons = input.buttons.map((b) => ({ type: b.type, text: b.text, ...(b.url ? { url: b.url } : {}) }));
     const template = await prisma.template.upsert({
       where: { clientId_name_language: { clientId, name: input.name, language: input.language } },
       create: {
         clientId,
         name: input.name, language: input.language, category: input.category,
         status: result.status ?? "PENDING", variableCount: countTemplateVars(input.body), headerFormat, copyCode,
-        ltoText, ltoExpiration,
+        ltoText, ltoExpiration, bodyText, footerText, buttons,
         ...(cards ? { cards } : {}),
       },
       update: {
         category: input.category, status: result.status ?? "PENDING",
         variableCount: countTemplateVars(input.body), headerFormat, copyCode, ltoText, ltoExpiration,
+        bodyText, footerText, buttons,
         ...(cards ? { cards } : {}),
       },
     });
@@ -125,11 +130,23 @@ async function syncFromMeta(clientId: string) {
       | undefined;
     const headerFormat = header?.format && ["IMAGE", "DOCUMENT", "VIDEO"].includes(header.format) ? header.format : null;
 
-    // Detect a COPY_CODE button in the BUTTONS component.
+    // Buttons: detect COPY_CODE + mirror the definitions for the preview.
     const buttonsComp = (t.components ?? []).find((c) => (c as { type?: string }).type === "BUTTONS") as
-      | { buttons?: { type?: string }[] }
+      | { buttons?: { type?: string; text?: string; url?: string }[] }
       | undefined;
     const copyCode = (buttonsComp?.buttons ?? []).some((b) => b.type === "COPY_CODE");
+    const buttons = (buttonsComp?.buttons ?? []).map((b) => ({
+      type: b.type ?? "QUICK_REPLY",
+      ...(b.text ? { text: b.text } : {}),
+      ...(b.url ? { url: b.url } : {}),
+    }));
+
+    // Mirror the message text for the broadcast-form preview.
+    const bodyText = body?.text ?? null;
+    const footer = (t.components ?? []).find((c) => (c as { type?: string }).type === "FOOTER") as
+      | { text?: string }
+      | undefined;
+    const footerText = footer?.text ?? null;
 
     // Detect a limited-time-offer component (banner text + countdown flag).
     const lto = (t.components ?? []).find((c) => (c as { type?: string }).type === "LIMITED_TIME_OFFER") as
@@ -140,8 +157,8 @@ async function syncFromMeta(clientId: string) {
 
     await prisma.template.upsert({
       where: { clientId_name_language: { clientId, name: t.name, language: t.language } },
-      create: { clientId, name: t.name, language: t.language, category: t.category, status: t.status, variableCount, headerFormat, copyCode, ltoText, ltoExpiration },
-      update: { category: t.category, status: t.status, variableCount, headerFormat, copyCode, ltoText, ltoExpiration },
+      create: { clientId, name: t.name, language: t.language, category: t.category, status: t.status, variableCount, headerFormat, copyCode, ltoText, ltoExpiration, bodyText, footerText, buttons },
+      update: { category: t.category, status: t.status, variableCount, headerFormat, copyCode, ltoText, ltoExpiration, bodyText, footerText, buttons },
     });
   }
 }
