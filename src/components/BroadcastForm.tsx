@@ -2,11 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
+import { substituteTemplateVars, previewVarValue } from "@/lib/templatePreview";
 
 interface List { id: string; name: string }
-interface Template { id: string; name: string; language: string; variableCount: number; headerFormat?: string | null; copyCode?: boolean; ltoExpiration?: boolean; cards?: unknown }
+interface Template {
+  id: string; name: string; language: string; variableCount: number;
+  headerFormat?: string | null; copyCode?: boolean; ltoExpiration?: boolean; cards?: unknown;
+  bodyText?: string | null; footerText?: string | null; buttons?: unknown; ltoText?: string | null;
+}
 
-interface CardDef { format: string; mediaUrl: string; body?: string }
+interface CardDef { format: string; mediaUrl: string; body?: string; buttonText?: string }
+interface ButtonDef { type: string; text?: string; url?: string }
+const BTN_ICON: Record<string, string> = { URL: "🔗", PHONE_NUMBER: "📞", COPY_CODE: "⧉", QUICK_REPLY: "↩" };
 function cardsOf(t: Template | undefined): CardDef[] | null {
   return t && Array.isArray(t.cards) && t.cards.length > 0 ? (t.cards as CardDef[]) : null;
 }
@@ -28,6 +35,10 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
   const needsCoupon = !!selected?.copyCode;
   const needsLtoExpiry = !!selected?.ltoExpiration;
   const cards = useMemo(() => cardsOf(selected), [selected]);
+  const previewBody = selected?.bodyText
+    ? substituteTemplateVars(selected.bodyText, vars.map(previewVarValue))
+    : null;
+  const previewButtons: ButtonDef[] = Array.isArray(selected?.buttons) ? (selected.buttons as ButtonDef[]) : [];
 
   function onTemplateChange(id: string) {
     setTemplateId(id);
@@ -144,6 +155,58 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
               value={v} onChange={(e) => setVars((p) => p.map((x, idx) => (idx === i ? e.target.value : x)))}
               style={{ marginBottom: 8 }} />
           ))}
+        </div>
+      )}
+
+      {selected && (
+        <div className="field">
+          <label className="label">
+            Message preview <span className="muted">— what recipients will see; updates as you type</span>
+          </label>
+          {previewBody !== null ? (
+            <div className="wa-preview">
+              <div className="wa-preview__bubble">
+                {mediaHeader && (
+                  <div className={`wa-preview__media${headerMediaUrl.trim() ? " wa-preview__media--set" : ""}`}>
+                    {selected.headerFormat === "IMAGE" ? "📷" : selected.headerFormat === "VIDEO" ? "🎬" : "📄"}{" "}
+                    {headerMediaUrl.trim()
+                      ? headerMediaUrl.trim().split("/").pop()?.split("?")[0] || "media"
+                      : `${selected.headerFormat?.toLowerCase()} header — paste the media URL above`}
+                  </div>
+                )}
+                {selected.ltoText && <div className="wa-preview__lto">⏳ {selected.ltoText}</div>}
+                <div className="wa-preview__body" dir="auto">{previewBody}</div>
+                {selected.footerText && <div className="wa-preview__footer" dir="auto">{selected.footerText}</div>}
+              </div>
+              {cards && (
+                <div className="wa-preview__cards">
+                  {cards.map((c, i) => (
+                    <div key={i} className="wa-preview__card">
+                      <div className="wa-preview__cardmedia">
+                        {c.format === "VIDEO" ? "🎬" : "📷"} {cardUrls[i]?.trim() ? "new media" : "template media"}
+                      </div>
+                      {c.body && <div dir="auto">{c.body}</div>}
+                      {c.buttonText && <span className="wa-preview__btn">🔗 {c.buttonText}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {previewButtons.length > 0 && (
+                <div className="wa-preview__btns">
+                  {previewButtons.map((b, i) => (
+                    <span key={i} className="wa-preview__btn">
+                      {BTN_ICON[b.type] ?? "↩"} {b.type === "COPY_CODE" ? couponCode.trim() || b.text || "Copy code" : b.text ?? ""}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="note">
+              No preview for this template yet — its message text hasn&apos;t been cached locally. Open <b>Templates</b> and
+              sync to pull it from Meta.
+            </p>
+          )}
         </div>
       )}
 

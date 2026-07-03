@@ -100,6 +100,13 @@ model Template {
   // Carousel card definitions (media URL + format per card) so sends can reuse them.
   // [{ format: "IMAGE"|"VIDEO", mediaUrl, body, buttonText?, buttonUrl? }]
   cards         Json?
+  // Message text mirrored from Meta (captured on create + sync) so the
+  // broadcast form can preview the message. Null until the next sync for
+  // templates cached before this column existed.
+  bodyText      String?
+  footerText    String?
+  // Button definitions for the preview: [{ type, text?, url? }]
+  buttons       Json?
   status        String   @default("APPROVED") // mirror of Meta status
   createdAt     DateTime @default(now())
 

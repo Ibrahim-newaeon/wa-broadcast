@@ -191,6 +191,27 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
 .thread__tplpanel .note { margin:0; }
 .linklike { background:none; border:0; padding:0; font:inherit; color:var(--green); cursor:pointer; text-decoration:underline; }
 
+/* broadcast form — live message preview (WhatsApp-style incoming bubble) */
+.wa-preview { background:var(--bg); border:1px solid var(--line); border-radius:var(--r-sm,10px);
+  padding:14px; display:grid; gap:8px; justify-items:start; }
+.wa-preview__bubble { background:var(--card2); border:1px solid var(--line); border-radius:14px;
+  border-bottom-left-radius:4px; padding:10px 12px; max-width:340px; font-size:13.5px; display:grid; gap:6px; }
+.wa-preview__media { width:100%; font-size:12.5px; color:var(--muted); border:1px dashed var(--line2);
+  border-radius:8px; padding:14px 12px; text-align:center; word-break:break-all; }
+.wa-preview__media--set { color:var(--ink); border-style:solid; }
+.wa-preview__lto { font-size:12.5px; font-weight:700; color:var(--st-scheduled); }
+.wa-preview__body { white-space:pre-wrap; word-break:break-word; }
+.wa-preview__footer { font-size:11.5px; color:var(--muted); }
+.wa-preview__btns { display:grid; gap:4px; width:100%; max-width:340px; }
+.wa-preview__btn { display:block; text-align:center; background:var(--card2); border:1px solid var(--line);
+  border-radius:10px; padding:7px 10px; font-size:13px; font-weight:600; color:var(--teal); }
+.wa-preview__cards { display:flex; gap:8px; overflow-x:auto; max-width:100%; padding-bottom:4px; }
+.wa-preview__card { min-width:150px; max-width:170px; flex:none; background:var(--card2); border:1px solid var(--line);
+  border-radius:12px; padding:8px; font-size:12.5px; display:grid; gap:6px; }
+.wa-preview__card .wa-preview__btn { padding:5px 8px; font-size:12px; }
+.wa-preview__cardmedia { font-size:12px; color:var(--muted); border:1px dashed var(--line2);
+  border-radius:8px; padding:12px 8px; text-align:center; }
+
 /* ============================================================
    Public marketing surface — landing + login (bold, product-led)
    Distinctive display face (Bricolage Grotesque) + body system font.
