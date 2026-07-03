@@ -19,7 +19,11 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
   if (!msg?.mediaId) return new NextResponse("not found", { status: 404 });
 
   const media = await fetchMediaBytes(msg.mediaId, msg.clientId);
-  if (!media) return new NextResponse("media unavailable", { status: 502 });
+  if (!media.ok) {
+    // 410 = the media has aged out at Meta (kept ~30 days) — the client shows
+    // a placeholder. Anything else is transient, so the browser may retry.
+    return new NextResponse(media.gone ? "media expired" : "media unavailable", { status: media.gone ? 410 : 502 });
+  }
 
   const mime = msg.mediaMime || media.mime;
   const disposition =

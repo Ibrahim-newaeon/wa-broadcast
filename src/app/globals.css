@@ -182,6 +182,14 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
 .bubble__media { display:block; max-width:260px; max-height:280px; width:auto; border-radius:10px; margin-bottom:4px; }
 .bubble__audio { width:240px; max-width:100%; margin:2px 0; }
 .bubble__doc { display:inline-flex; align-items:center; gap:6px; color:var(--teal); font-weight:600; }
+.bubble__missing { font-size:12.5px; color:var(--muted); font-style:italic; border:1px dashed var(--line2);
+  border-radius:10px; padding:10px 12px; }
+.inbox__search { position:sticky; top:0; z-index:1; padding:10px; background:var(--card); border-bottom:1px solid var(--line); }
+.inbox__search .input { width:100%; }
+.thread__tplpanel { background:var(--card2); border:1px solid var(--line); border-radius:var(--r-sm,10px);
+  padding:12px; margin-bottom:10px; display:grid; gap:8px; }
+.thread__tplpanel .note { margin:0; }
+.linklike { background:none; border:0; padding:0; font:inherit; color:var(--green); cursor:pointer; text-decoration:underline; }
 
 /* ============================================================
    Public marketing surface — landing + login (bold, product-led)

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendQueue } from "@/lib/queue";
 import { resolveBodyParams, type VariableMap } from "@/lib/broadcast";
+import { resolveCarouselCards } from "@/lib/carousel";
 import { getClientId } from "@/lib/users";
 import { audit } from "@/lib/audit";
 
@@ -77,9 +78,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
         headerFormat: broadcast.template.headerFormat,
         headerMediaUrl: broadcast.headerMediaUrl,
         couponCode: broadcast.couponCode,
-        carouselCards: Array.isArray(broadcast.template.cards)
-          ? (broadcast.template.cards as { format: string; mediaUrl: string }[]).map((c) => ({ format: c.format, mediaUrl: c.mediaUrl }))
-          : null,
+        carouselCards: resolveCarouselCards(
+          broadcast.template.cards,
+          (broadcast.cardMediaUrls as string[] | null) ?? null,
+        ),
         ltoExpiryMs: broadcast.ltoExpiresAt?.getTime() ?? null,
       },
       { jobId: `${id}:${rec.contactId}:r${stamp}` }, // fresh id avoids dedupe
