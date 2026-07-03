@@ -4,7 +4,12 @@ import { useMemo, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 
 interface List { id: string; name: string }
-interface Template { id: string; name: string; language: string; variableCount: number; headerFormat?: string | null; copyCode?: boolean; ltoExpiration?: boolean }
+interface Template { id: string; name: string; language: string; variableCount: number; headerFormat?: string | null; copyCode?: boolean; ltoExpiration?: boolean; cards?: unknown }
+
+interface CardDef { format: string; mediaUrl: string; body?: string }
+function cardsOf(t: Template | undefined): CardDef[] | null {
+  return t && Array.isArray(t.cards) && t.cards.length > 0 ? (t.cards as CardDef[]) : null;
+}
 
 export default function BroadcastForm({ lists, templates }: { lists: List[]; templates: Template[] }) {
   const [templateId, setTemplateId] = useState("");
@@ -12,6 +17,7 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
   const [vars, setVars] = useState<string[]>([]);
   const [headerMediaUrl, setHeaderMediaUrl] = useState("");
   const [couponCode, setCouponCode] = useState("");
+  const [cardUrls, setCardUrls] = useState<string[]>([]);
   const [ltoExpiresAt, setLtoExpiresAt] = useState("");
   const [scheduleAt, setScheduleAt] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
@@ -21,6 +27,7 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
   const mediaHeader = !!selected && ["IMAGE", "DOCUMENT", "VIDEO"].includes(selected.headerFormat ?? "");
   const needsCoupon = !!selected?.copyCode;
   const needsLtoExpiry = !!selected?.ltoExpiration;
+  const cards = useMemo(() => cardsOf(selected), [selected]);
 
   function onTemplateChange(id: string) {
     setTemplateId(id);
@@ -28,6 +35,7 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
     setVars(Array(t?.variableCount ?? 0).fill(""));
     setHeaderMediaUrl("");
     setCouponCode("");
+    setCardUrls(Array(cardsOf(t)?.length ?? 0).fill(""));
     setLtoExpiresAt("");
   }
 
@@ -39,6 +47,7 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
     const body: Record<string, unknown> = { templateId, listId, variableMap };
     if (mediaHeader && headerMediaUrl.trim()) body.headerMediaUrl = headerMediaUrl.trim();
     if (needsCoupon && couponCode.trim()) body.couponCode = couponCode.trim();
+    if (cards && cardUrls.some((u) => u.trim())) body.cardMediaUrls = cardUrls.map((u) => u.trim());
     if (needsLtoExpiry && ltoExpiresAt) body.ltoExpiresAt = new Date(ltoExpiresAt).toISOString();
     if (scheduleAt) body.scheduleAt = new Date(scheduleAt).toISOString();
 
@@ -96,6 +105,22 @@ export default function BroadcastForm({ lists, templates }: { lists: List[]; tem
           </label>
           <input id="bc-coupon" data-test-id="bc-coupon" className="input" value={couponCode}
             maxLength={15} onChange={(e) => setCouponCode(e.target.value)} placeholder="e.g. SAVE20" required />
+        </div>
+      )}
+
+      {cards && (
+        <div className="field">
+          <label className="label">
+            Carousel card media <span className="muted">— optional per-send overrides; blank keeps the template&apos;s media</span>
+          </label>
+          {cards.map((c, i) => (
+            <div key={i} style={{ marginBottom: 8 }}>
+              <input data-test-id={`bc-card-${i + 1}`} className="input" type="url" value={cardUrls[i] ?? ""}
+                onChange={(e) => setCardUrls((p) => p.map((x, idx) => (idx === i ? e.target.value : x)))}
+                placeholder={c.mediaUrl} />
+              <span className="note">Card {i + 1} · {c.format.toLowerCase()}{c.body ? ` · “${c.body}”` : ""}</span>
+            </div>
+          ))}
         </div>
       )}
 

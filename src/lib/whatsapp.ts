@@ -183,20 +183,24 @@ export async function sendReadReceipt(wamid: string, clientId?: string): Promise
   }
 }
 
+export type MediaFetchResult =
+  | { ok: true; bytes: ArrayBuffer; mime: string }
+  // gone = Meta no longer has the media (it retains message media ~30 days);
+  // otherwise the failure is transient (network, rate limit, expired temp URL).
+  | { ok: false; gone: boolean };
+
 /** Resolve a media id → its bytes (two-step: get the temp URL, then download). */
-export async function fetchMediaBytes(
-  mediaId: string,
-  clientId?: string,
-): Promise<{ bytes: ArrayBuffer; mime: string } | null> {
+export async function fetchMediaBytes(mediaId: string, clientId?: string): Promise<MediaFetchResult> {
   const cfg = await getWaConfig(clientId);
   const auth = { Authorization: `Bearer ${cfg.accessToken}` };
   const metaRes = await fetch(`https://graph.facebook.com/${cfg.graphApiVersion}/${mediaId}`, { headers: auth });
-  if (!metaRes.ok) return null;
+  // 400/404 on the id lookup = the media has aged out (or the id is bogus).
+  if (!metaRes.ok) return { ok: false, gone: metaRes.status === 400 || metaRes.status === 404 };
   const meta = (await metaRes.json().catch(() => ({}))) as { url?: string; mime_type?: string };
-  if (!meta.url) return null;
+  if (!meta.url) return { ok: false, gone: true };
   const bin = await fetch(meta.url, { headers: auth }); // the URL itself also needs the token
-  if (!bin.ok) return null;
-  return { bytes: await bin.arrayBuffer(), mime: meta.mime_type || "application/octet-stream" };
+  if (!bin.ok) return { ok: false, gone: false }; // temp URL hiccup → retryable
+  return { ok: true, bytes: await bin.arrayBuffer(), mime: meta.mime_type || "application/octet-stream" };
 }
 
 /** Upload a file to the messages media store; returns the media id. */

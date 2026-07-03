@@ -1,5 +1,6 @@
 import { prisma } from "./db";
 import { sendQueue } from "./queue";
+import { resolveCarouselCards } from "./carousel";
 
 // variableMap entries: { from: <field> } (pulls "name" / a contact attribute)
 // or { literal: <text> }.
@@ -37,6 +38,7 @@ export async function createAndEnqueueBroadcast(opts: {
   scheduledAt?: Date | null;
   headerMediaUrl?: string | null;
   couponCode?: string | null;
+  cardMediaUrls?: string[] | null;
   ltoExpiresAt?: Date | null;
 }): Promise<EnqueueResult> {
   // Scope everything to the caller's tenant so a broadcast can't reach another
@@ -64,10 +66,9 @@ export async function createAndEnqueueBroadcast(opts: {
     return { ok: false, error: "this template is a countdown offer — provide a future expiry time", code: 422 };
   }
 
-  // Carousel cards (media is reused from the template on every send).
-  const carouselCards = Array.isArray(template.cards)
-    ? (template.cards as { format: string; mediaUrl: string }[]).map((c) => ({ format: c.format, mediaUrl: c.mediaUrl }))
-    : null;
+  // Carousel cards: template defaults, with any per-broadcast media overrides.
+  const cardMediaUrls = Array.isArray(template.cards) ? (opts.cardMediaUrls ?? null) : null;
+  const carouselCards = resolveCarouselCards(template.cards, cardMediaUrls);
 
   const optOuts = new Set(
     (await prisma.optOut.findMany({ where: { clientId: opts.clientId }, select: { phone: true } })).map((o) => o.phone),
@@ -94,6 +95,7 @@ export async function createAndEnqueueBroadcast(opts: {
       variableMap: opts.variableMap,
       headerMediaUrl,
       couponCode,
+      ...(cardMediaUrls ? { cardMediaUrls } : {}),
       ltoExpiresAt,
       scheduledAt,
       startedAt: scheduledAt ? null : new Date(),

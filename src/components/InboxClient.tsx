@@ -11,6 +11,17 @@ interface Msg {
   id: string; direction: "IN" | "OUT"; type: string; text: string | null;
   mediaMime: string | null; mediaFilename: string | null; status: string | null; error: string | null; createdAt: string;
 }
+interface TplOption {
+  id: string; name: string; language: string; variableCount: number; status: string;
+  headerFormat?: string | null; copyCode?: boolean; ltoExpiration?: boolean; cards?: unknown;
+}
+// Rich templates need per-send inputs (media/coupon/expiry) the inbox doesn't collect.
+function isRichTemplate(t: TplOption): boolean {
+  return (
+    ["IMAGE", "DOCUMENT", "VIDEO"].includes(t.headerFormat ?? "") ||
+    !!t.copyCode || !!t.ltoExpiration || (Array.isArray(t.cards) && t.cards.length > 0)
+  );
+}
 
 const MEDIA_LABEL: Record<string, string> = {
   image: "📷 Photo", audio: "🎙️ Voice message", video: "🎬 Video",
@@ -35,14 +46,20 @@ function shortWhen(s: string): string {
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
-/** Render a bubble's content — media is streamed (token-safe) via /api/media/:id. */
+/** Render a bubble's content — media is streamed (token-safe) via /api/media/:id.
+ *  WhatsApp deletes media after ~30 days; when the proxy can't fetch it anymore
+ *  we swap in a quiet placeholder instead of a broken player. */
 function MessageContent({ m }: { m: Msg }) {
+  const [gone, setGone] = useState(false);
   const src = `/api/media/${m.id}`;
+  const missing = <div className="bubble__missing">Media no longer available — WhatsApp keeps media for about 30 days.</div>;
   if (m.type === "image" || m.type === "sticker") {
     return (
       <>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="bubble__media" src={src} alt={m.text ?? "image"} loading="lazy" />
+        {gone ? missing : (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img className="bubble__media" src={src} alt={m.text ?? "image"} loading="lazy" onError={() => setGone(true)} />
+        )}
         {m.text && <div className="bubble__text">{m.text}</div>}
       </>
     );
@@ -50,12 +67,14 @@ function MessageContent({ m }: { m: Msg }) {
   if (m.type === "video") {
     return (
       <>
-        <video className="bubble__media" src={src} controls />
+        {gone ? missing : <video className="bubble__media" src={src} controls onError={() => setGone(true)} />}
         {m.text && <div className="bubble__text">{m.text}</div>}
       </>
     );
   }
-  if (m.type === "audio") return <audio className="bubble__audio" src={src} controls />;
+  if (m.type === "audio") {
+    return gone ? missing : <audio className="bubble__audio" src={src} controls onError={() => setGone(true)} />;
+  }
   if (m.type === "document") {
     return <a className="bubble__doc" href={src} target="_blank" rel="noreferrer">📄 {m.mediaFilename ?? "Document"}</a>;
   }
@@ -71,13 +90,18 @@ export default function InboxClient() {
   const [reply, setReply] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [q, setQ] = useState("");
+  const [tplOpen, setTplOpen] = useState(false);
+  const [templates, setTemplates] = useState<TplOption[] | null>(null);
+  const [tplId, setTplId] = useState("");
+  const [tplVars, setTplVars] = useState<string[]>([]);
   const threadRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const loadConvos = useCallback(async () => {
-    const r = await apiFetch("/api/conversations");
+    const r = await apiFetch(`/api/conversations${q.trim() ? `?q=${encodeURIComponent(q.trim())}` : ""}`);
     if (r.ok) setConvos((await r.json()).conversations);
-  }, []);
+  }, [q]);
 
   const loadThread = useCallback(async (id: string) => {
     const r = await apiFetch(`/api/conversations/${id}`);
@@ -109,7 +133,51 @@ export default function InboxClient() {
   function open(id: string) {
     setActiveId(id);
     setErr(null);
+    setTplOpen(false);
     setConvos((cs) => cs.map((c) => (c.id === id ? { ...c, unread: 0 } : c)));
+  }
+
+  async function toggleTplPanel() {
+    const next = !tplOpen;
+    setTplOpen(next);
+    setErr(null);
+    if (next && templates === null) {
+      const r = await apiFetch("/api/templates");
+      if (r.ok) {
+        const all = (await r.json()).templates as TplOption[];
+        setTemplates(all.filter((t) => t.status === "APPROVED"));
+      } else {
+        setTemplates([]);
+      }
+    }
+  }
+
+  function onTplChange(id: string) {
+    setTplId(id);
+    const t = templates?.find((x) => x.id === id);
+    setTplVars(Array(t?.variableCount ?? 0).fill(""));
+  }
+
+  async function sendTpl() {
+    if (!tplId || !activeId) return;
+    setBusy(true);
+    setErr(null);
+    const r = await apiFetch(`/api/conversations/${activeId}/template`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ templateId: tplId, variables: tplVars }),
+    });
+    const j = await r.json().catch(() => ({}));
+    setBusy(false);
+    if (r.ok) {
+      setTplOpen(false);
+      setTplId("");
+      setTplVars([]);
+      setMessages((m) => [...m, j.message]);
+      loadConvos();
+    } else {
+      setErr(j.error ?? "Could not send template");
+    }
   }
 
   async function send(e: React.FormEvent) {
@@ -156,10 +224,29 @@ export default function InboxClient() {
   return (
     <div className="inbox">
       <aside className="inbox__list">
+        <div className="inbox__search">
+          <input
+            className="input"
+            type="search"
+            placeholder="Search name, phone, or message…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            aria-label="Search conversations"
+          />
+        </div>
         {convos.length === 0 ? (
           <div className="dash-empty">
-            <strong>No conversations yet</strong>
-            They appear here the moment a contact replies to one of your messages.
+            {q.trim() ? (
+              <>
+                <strong>No matches</strong>
+                Nothing matches “{q.trim()}” — try a name, phone digits, or message text.
+              </>
+            ) : (
+              <>
+                <strong>No conversations yet</strong>
+                They appear here the moment a contact replies to one of your messages.
+              </>
+            )}
           </div>
         ) : (
           convos.map((c) => (
@@ -206,12 +293,50 @@ export default function InboxClient() {
             </div>
 
             <form className="thread__reply" onSubmit={send}>
-              {!windowOpen && (
+              {!windowOpen && !tplOpen && (
                 <div className="thread__closed">
-                  The 24-hour reply window is closed. Send an approved <b>template</b> to re-open the conversation.
+                  The 24-hour reply window is closed. Send an approved{" "}
+                  <button type="button" className="linklike" onClick={toggleTplPanel}><b>template</b></button> to re-open the conversation.
+                </div>
+              )}
+              {tplOpen && (
+                <div className="thread__tplpanel">
+                  <label className="label" htmlFor="inbox-tpl">Send an approved template</label>
+                  <select id="inbox-tpl" className="input" value={tplId} onChange={(e) => onTplChange(e.target.value)}>
+                    <option value="">{templates === null ? "Loading…" : "— choose a template —"}</option>
+                    {(templates ?? []).map((t) => (
+                      <option key={t.id} value={t.id} disabled={isRichTemplate(t)}>
+                        {t.name} ({t.language}) · {t.variableCount} vars{isRichTemplate(t) ? " — use a broadcast" : ""}
+                      </option>
+                    ))}
+                  </select>
+                  {tplVars.map((v, i) => (
+                    <input key={i} className="input" placeholder={`{{${i + 1}}}`} value={v}
+                      onChange={(e) => setTplVars((p) => p.map((x, idx) => (idx === i ? e.target.value : x)))} />
+                  ))}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button type="button" className="btn" onClick={sendTpl}
+                      disabled={busy || !tplId || tplVars.some((v) => !v.trim())} aria-busy={busy}>
+                      {busy ? "Sending…" : "Send template"}
+                    </button>
+                    <button type="button" className="btn btn--ghost" onClick={() => setTplOpen(false)} disabled={busy}>
+                      Cancel
+                    </button>
+                  </div>
+                  <p className="note">Templates with media, coupons, or countdowns need per-send inputs — send those from a broadcast.</p>
                 </div>
               )}
               <div className="thread__inputrow">
+                <button
+                  type="button"
+                  className="btn btn--ghost thread__attach"
+                  onClick={toggleTplPanel}
+                  disabled={busy}
+                  title="Send a template (works after the 24h window closes)"
+                  aria-label="Send a template"
+                >
+                  📋
+                </button>
                 <input
                   ref={fileRef}
                   type="file"

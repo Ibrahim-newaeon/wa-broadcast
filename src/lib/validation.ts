@@ -56,6 +56,9 @@ export const CreateBroadcastSchema = z.object({
   headerMediaUrl: z.string().url().optional(),
   // Coupon code — required when the chosen template has a COPY_CODE button.
   couponCode: z.string().trim().min(1).max(15).optional(),
+  // Per-card media URL overrides for a carousel template, by card index.
+  // "" keeps that card's default media from the template.
+  cardMediaUrls: z.array(z.union([z.string().url(), z.literal("")])).max(10).optional(),
   // Offer expiry — required when the chosen template is a countdown limited-time offer.
   ltoExpiresAt: z
     .string()
@@ -194,6 +197,13 @@ export type CreateBroadcastInput = z.infer<typeof CreateBroadcastSchema>;
 
 export const SendMessageSchema = z.object({
   text: z.string().trim().min(1, "Message can't be empty").max(4096),
+});
+
+// Send an approved template into a single conversation (re-opens a closed
+// 24h window). Variables are literal values — there's exactly one recipient.
+export const SendTemplateMessageSchema = z.object({
+  templateId: z.string().min(1),
+  variables: z.array(z.string().trim().max(1024)).max(20).default([]),
 });
 
 export const CreateClientSchema = z.object({

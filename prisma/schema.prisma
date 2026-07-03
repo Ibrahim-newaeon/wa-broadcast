@@ -126,6 +126,9 @@ model Broadcast {
   headerMediaUrl String?
   // Coupon code for a COPY_CODE button template.
   couponCode  String?
+  // Per-card media URL overrides for a carousel template ("" = keep the
+  // template's default card media). Saved so retries reuse the same media.
+  cardMediaUrls Json?
   // Offer expiry for a limited-time-offer template with a countdown.
   ltoExpiresAt DateTime?
   scheduledAt DateTime?           // null = send immediately
