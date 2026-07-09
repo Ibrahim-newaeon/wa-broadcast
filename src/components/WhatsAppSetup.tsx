@@ -161,9 +161,9 @@ export default function WhatsAppSetup() {
       </div>
 
       <div className="field">
-        <label className="label">Webhook callback URL <span className="muted">— paste this into Meta</span></label>
+        <label className="label" htmlFor="wa-webhook">Webhook callback URL <span className="muted">— paste this into Meta</span></label>
         <div style={{ display: "flex", gap: 8 }}>
-          <input className="input" readOnly value={webhookUrl} onFocus={(e) => e.target.select()} />
+          <input id="wa-webhook" className="input" readOnly value={webhookUrl} onFocus={(e) => e.target.select()} />
           <button type="button" className="btn btn--ghost btn--sm" onClick={copyWebhook}>Copy</button>
         </div>
       </div>

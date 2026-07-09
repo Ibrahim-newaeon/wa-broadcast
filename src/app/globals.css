@@ -20,8 +20,10 @@
   --r:14px; --r-sm:10px; --r-pill:999px; --max:1180px; --nav-h:62px;
   --shadow:0 10px 30px rgba(0,0,0,.35);
   /* type */
-  --font-en:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --font-ar:"Cairo","Segoe UI Arabic","Tahoma",sans-serif;
+  /* Families are supplied by next/font (self-hosted, no render-blocking link);
+     the literal names are kept as fallbacks if the variables are absent. */
+  --font-en:var(--font-inter),"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-ar:var(--font-cairo),"Cairo","Segoe UI Arabic","Tahoma",sans-serif;
   --font:var(--font-en);
   --grad-brand:linear-gradient(120deg,#25d366,#0fae8b);
 }
@@ -30,13 +32,15 @@ html[lang="ar"], [dir="rtl"] { --font:var(--font-ar); }
 * { box-sizing:border-box; }
 html, body { margin:0; padding:0; }
 body {
-  font-family:var(--font); color:var(--ink);
-  /* same top glow as the landing, dialed down for long operator sessions */
-  background:
-    radial-gradient(58% 44% at 50% -4%, color-mix(in oklab, var(--teal) 9%, transparent), transparent 70%),
-    var(--bg);
-  background-attachment:fixed;
+  font-family:var(--font); color:var(--ink); background:var(--bg);
   -webkit-font-smoothing:antialiased; line-height:1.55;
+}
+/* Brand glow as its own fixed layer (same top glow as the landing, dialed down
+   for long operator sessions). A fixed pseudo-element avoids the scroll-repaint
+   cost of background-attachment:fixed, which is heavy on mobile. */
+body::before {
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:radial-gradient(58% 44% at 50% -4%, color-mix(in oklab, var(--teal) 9%, transparent), transparent 70%);
 }
 a { color:var(--teal); text-decoration:none; }
 a:hover { color:var(--accent-hover); }
@@ -57,6 +61,20 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
 .nav__links { display:flex; gap:18px; align-items:center; }
 .nav__links a { color:var(--muted); font-weight:600; font-size:14px; }
 .nav__links a.is-active, .nav__links a:hover { color:var(--ink); }
+/* mobile menu toggle — hidden on desktop, disclosure panel on narrow screens */
+.nav__toggle { display:none; }
+@media (max-width:760px) {
+  .nav__toggle { display:inline-grid; place-items:center; width:44px; height:44px;
+    background:none; border:1px solid var(--line2); border-radius:var(--r-sm);
+    color:var(--ink); font-size:18px; cursor:pointer; flex:none; }
+  .nav__links { position:absolute; top:var(--nav-h); inset-inline:0; display:none;
+    flex-direction:column; align-items:stretch; gap:4px; padding:12px 16px 16px;
+    background:color-mix(in srgb, var(--bg) 96%, transparent); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line); }
+  .nav__links--open { display:flex; }
+  .nav__links a { padding:10px 8px; border-radius:var(--r-sm); font-size:15px; }
+  .nav__links a:hover { background:var(--card2); }
+}
 
 /* super-admin client switcher */
 .client-switch { display:inline-flex; align-items:center; gap:7px; padding:5px 10px;
@@ -65,6 +83,8 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
 .client-switch__select { background:none; border:0; color:var(--ink); font:inherit; font-size:13px;
   font-weight:600; cursor:pointer; padding-inline-end:2px; }
 .client-switch__select:focus { outline:none; }
+.client-switch__select:focus-visible { outline:none; border-radius:6px;
+  box-shadow:0 0 0 3px color-mix(in oklab, var(--teal) 24%, transparent); }
 
 /* brand wordmark */
 .brand { display:inline-flex; align-items:center; gap:10px; font-weight:800; font-size:20px; }
@@ -217,7 +237,7 @@ h3 { font-size:17px; font-weight:700; margin:0 0 12px; }
    Distinctive display face (Bricolage Grotesque) + body system font.
    Dark by default; [data-theme="light"] is the opt-in light palette.
    ============================================================ */
-:root { --font-display:"Schibsted Grotesk", var(--font-en); }
+:root { --font-display:var(--font-schibsted), "Schibsted Grotesk", var(--font-en); }
 
 /* Bilingual: render both languages, show the one matching <html lang>.
    (Set pre-paint by the layout script + the LangToggle — no flash.) */
@@ -317,7 +337,10 @@ html[lang="ar"] .dk-h1 { letter-spacing:normal; line-height:1.15; }
   font-size:clamp(30px,5vw,54px); line-height:1.02; margin:0 0 14px; }
 .dk-features__head h2 .sub { color:var(--dk-ink2); }
 .dk-features__head p { color:var(--dk-muted); margin:0; }
-.dk-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(238px,1fr)); gap:18px; }
+/* Asymmetric bento — one lead feature anchors the block so it doesn't read as
+   an identical icon-card grid. Perfect 3×3 tiling on desktop (lead = 2×2). */
+.dk-grid { display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:1fr;
+  grid-auto-flow:dense; gap:18px; }
 .dk-card { background:var(--dk-panel); border:1px solid var(--dk-line); border-radius:18px;
   padding:26px 24px; display:flex; flex-direction:column; min-height:238px;
   transition:border-color .15s, transform .15s; }
@@ -326,6 +349,23 @@ html[lang="ar"] .dk-h1 { letter-spacing:normal; line-height:1.15; }
 .dk-card h3 { font-size:19px; margin:30px 0 8px; }
 .dk-card p { color:var(--dk-muted); line-height:1.55; margin:0; font-size:14.5px; }
 .dk-card__arrow { margin-top:auto; padding-top:18px; color:var(--dk-green); font-size:20px; }
+/* lead card — spans two columns and two rows on desktop */
+.dk-card--lead { grid-column:span 2; grid-row:span 2;
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in oklab, var(--dk-green) 12%, transparent), transparent 60%),
+    var(--dk-panel); }
+.dk-card--lead .dk-card__ic { font-size:38px; }
+.dk-card--lead h3 { font-size:clamp(24px,3vw,32px); margin-top:36px; }
+.dk-card--lead p { font-size:16px; max-width:46ch; }
+.dk-card--lead .dk-card__arrow { font-size:24px; }
+@media (max-width:900px) {
+  .dk-grid { grid-template-columns:repeat(2,1fr); }
+  .dk-card--lead { grid-column:1 / -1; grid-row:auto; }
+}
+@media (max-width:560px) {
+  .dk-grid { grid-template-columns:1fr; }
+  .dk-card--lead { grid-column:auto; }
+}
 
 /* closing CTA + footer */
 .dk-final { text-align:center; padding:clamp(48px,8vw,90px) 0; }

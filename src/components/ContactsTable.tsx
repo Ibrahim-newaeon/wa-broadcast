@@ -23,6 +23,11 @@ export default function ContactsTable() {
   const [editPhone, setEditPhone] = useState("");
   const [editErr, setEditErr] = useState<string | null>(null);
 
+  // Inline confirmation state (replaces native confirm()/alert()).
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [confirmBulk, setConfirmBulk] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
   const load = useCallback(async (mode: "replace" | "append") => {
     setBusy(true);
     const offset = mode === "append" ? offsetRef.current : 0;
@@ -67,7 +72,7 @@ export default function ContactsTable() {
   }
 
   async function remove(c: Contact) {
-    if (!confirm(`Delete ${c.phone}? This cannot be undone.`)) return;
+    setConfirmingId(null);
     const res = await apiFetch(`/api/contacts/${c.id}`, { method: "DELETE" });
     if (res.ok) {
       setContacts((prev) => prev.filter((x) => x.id !== c.id));
@@ -79,7 +84,7 @@ export default function ContactsTable() {
   async function bulkDelete() {
     const ids = [...selected];
     if (ids.length === 0) return;
-    if (!confirm(`Delete ${ids.length} selected contact(s)? This cannot be undone.`)) return;
+    setConfirmBulk(false);
     const res = await apiFetch("/api/contacts/bulk-delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -92,7 +97,11 @@ export default function ContactsTable() {
     setSelected(new Set());
     offsetRef.current = 0;
     await load("replace");
-    if (j.skipped > 0) alert(`Deleted ${j.deleted}. Skipped ${j.skipped} (have broadcast history).`);
+    setNotice(
+      j.skipped > 0
+        ? `Deleted ${j.deleted}. Skipped ${j.skipped} (they have broadcast history).`
+        : `Deleted ${j.deleted} contact${j.deleted === 1 ? "" : "s"}.`,
+    );
   }
 
   function startEdit(c: Contact) {
@@ -121,20 +130,31 @@ export default function ContactsTable() {
       <div className="ct-toolbar">
         <input
           data-test-id="contacts-search" className="input input--sm" style={{ maxWidth: 320 }}
+          aria-label="Search contacts by phone or name"
           placeholder="Search phone or name…" value={query} onChange={(e) => setQuery(e.target.value)}
         />
         {(["all", "false", "true"] as const).map((f) => (
-          <button key={f} className={`pill ${optFilter === f ? "is-active" : ""}`} onClick={() => setOptFilter(f)}>
+          <button key={f} aria-pressed={optFilter === f} className={`pill ${optFilter === f ? "is-active" : ""}`} onClick={() => setOptFilter(f)}>
             {f === "all" ? "All" : f === "false" ? "Active" : "Opted out"}
           </button>
         ))}
         <span className="spacer" />
         {isAdmin && selected.size > 0 && (
-          <button data-test-id="bulk-delete" className="btn btn--danger btn--sm" onClick={bulkDelete}>
-            Delete selected ({selected.size})
-          </button>
+          confirmBulk ? (
+            <span className="row" style={{ gap: 8 }}>
+              <span className="note">Delete {selected.size} selected? Can&apos;t be undone.</span>
+              <button data-test-id="bulk-delete" className="btn btn--danger btn--sm" onClick={bulkDelete}>Confirm</button>
+              <button className="btn btn--ghost btn--sm" onClick={() => setConfirmBulk(false)}>Cancel</button>
+            </span>
+          ) : (
+            <button className="btn btn--danger btn--sm" onClick={() => { setConfirmBulk(true); setNotice(null); }}>
+              Delete selected ({selected.size})
+            </button>
+          )
         )}
-        <span className="note">{total.toLocaleString()} {total === 1 ? "contact" : "contacts"}</span>
+        <span className="note" aria-live="polite">
+          {notice ?? `${total.toLocaleString()} ${total === 1 ? "contact" : "contacts"}`}
+        </span>
       </div>
 
       <table data-test-id="contacts-table" className="table dash-table">
@@ -185,7 +205,19 @@ export default function ContactsTable() {
                       <button className="btn btn--ghost btn--sm" onClick={() => toggleOptOut(c)}>
                         {c.optedOut ? "Re-subscribe" : "Opt out"}
                       </button>
-                      {isAdmin && <>{" "}<button className="btn btn--danger btn--sm" onClick={() => remove(c)}>Delete</button></>}
+                      {isAdmin && (
+                        <>
+                          {" "}
+                          {confirmingId === c.id ? (
+                            <>
+                              <button className="btn btn--danger btn--sm" onClick={() => remove(c)}>Confirm delete</button>{" "}
+                              <button className="btn btn--ghost btn--sm" onClick={() => setConfirmingId(null)}>Cancel</button>
+                            </>
+                          ) : (
+                            <button className="btn btn--danger btn--sm" onClick={() => setConfirmingId(c.id)}>Delete</button>
+                          )}
+                        </>
+                      )}
                     </>
                   )}
                 </td>

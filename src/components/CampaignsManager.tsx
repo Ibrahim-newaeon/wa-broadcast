@@ -65,25 +65,25 @@ export default function CampaignsManager({ lists, templates }: { lists: List[]; 
       <form onSubmit={create} className="card">
         <h3>New recurring campaign</h3>
         <div className="field">
-          <label className="label">Name</label>
-          <input className="input" data-test-id="camp-name" value={name} onChange={(e) => setName(e.target.value)} required />
+          <label className="label" htmlFor="camp-name">Name</label>
+          <input id="camp-name" className="input" data-test-id="camp-name" value={name} onChange={(e) => setName(e.target.value)} required />
         </div>
         <div className="field">
-          <label className="label">Template (approved)</label>
-          <select className="input" data-test-id="camp-template" value={templateId} onChange={(e) => setTemplateId(e.target.value)} required>
+          <label className="label" htmlFor="camp-template">Template (approved)</label>
+          <select id="camp-template" className="input" data-test-id="camp-template" value={templateId} onChange={(e) => setTemplateId(e.target.value)} required>
             <option value="">— choose —</option>
             {templates.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.language})</option>)}
           </select>
         </div>
         <div className="field">
-          <label className="label">List</label>
-          <select className="input" data-test-id="camp-list" value={listId} onChange={(e) => setListId(e.target.value)} required>
+          <label className="label" htmlFor="camp-list">List</label>
+          <select id="camp-list" className="input" data-test-id="camp-list" value={listId} onChange={(e) => setListId(e.target.value)} required>
             <option value="">— choose —</option>
             {lists.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
           </select>
         </div>
         <div className="field">
-          <label className="label">Schedule (cron, UTC)</label>
+          <label className="label" htmlFor="camp-cron">Schedule (cron, UTC)</label>
           <div className="row" style={{ marginBottom: 8 }}>
             {CRON_PRESETS.map((p) => (
               <button type="button" key={p.cron} className={`pill ${cron === p.cron ? "is-active" : ""}`} onClick={() => setCron(p.cron)}>
@@ -91,7 +91,7 @@ export default function CampaignsManager({ lists, templates }: { lists: List[]; 
               </button>
             ))}
           </div>
-          <input className="input" data-test-id="camp-cron" value={cron} onChange={(e) => setCron(e.target.value)} required />
+          <input id="camp-cron" className="input" data-test-id="camp-cron" value={cron} onChange={(e) => setCron(e.target.value)} required />
           <p className="note" style={{ marginTop: 4 }}>5-field cron, evaluated in UTC.</p>
         </div>
         <button className="btn" type="submit" data-test-id="camp-submit" disabled={busy || !templateId || !listId}>

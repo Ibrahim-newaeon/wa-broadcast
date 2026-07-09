@@ -91,8 +91,8 @@ export default function Landing() {
               ar="من إرسال القائمة حتى إيصالات التسليم — من مكان واحد." /></p>
           </div>
           <div className="dk-grid">
-            {FEATURES.map((f) => (
-              <article key={f.icon} className="dk-card">
+            {FEATURES.map((f, i) => (
+              <article key={f.icon} className={`dk-card${i === 0 ? " dk-card--lead" : ""}`}>
                 <div className="dk-card__ic" aria-hidden>{f.icon}</div>
                 <h3><T en={f.title.en} ar={f.title.ar} /></h3>
                 <p><T en={f.body.en} ar={f.body.ar} /></p>
