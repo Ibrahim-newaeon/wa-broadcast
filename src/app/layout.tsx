@@ -1,4 +1,21 @@
 import "./globals.css";
+import { Inter, Cairo, Schibsted_Grotesk } from "next/font/google";
+
+// Self-hosted at build time — no render-blocking Google Fonts request, no FOUT.
+// Each exposes a CSS variable consumed by globals.css (--font-inter etc.).
+const inter = Inter({
+  subsets: ["latin"], weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-inter", display: "swap",
+});
+const cairo = Cairo({
+  subsets: ["arabic", "latin"], weight: ["400", "600", "700", "800"],
+  variable: "--font-cairo", display: "swap",
+});
+const schibsted = Schibsted_Grotesk({
+  subsets: ["latin"], weight: ["500", "600", "700", "800", "900"],
+  variable: "--font-schibsted", display: "swap",
+});
+const fontVars = `${inter.variable} ${cairo.variable} ${schibsted.variable}`;
 
 export const metadata = {
   title: "Broadcast Hub",
@@ -9,14 +26,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // suppressHydrationWarning on <html>: the pre-paint theme script sets
   // data-theme, which intentionally differs from the server markup.
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={fontVars} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Schibsted+Grotesk:wght@500;600;700;800;900&family=Cairo:wght@400;600;700;800&display=swap"
-          rel="stylesheet"
-        />
         {/* Apply saved theme (global) + saved language (landing only) before
             paint to avoid a flash. Dark + English are the defaults. */}
         <script

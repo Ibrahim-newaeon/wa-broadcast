@@ -70,7 +70,7 @@ export default async function Dashboard() {
           <div>
             <p className="eyebrow">Command center</p>
             <h1>Dashboard</h1>
-            <p className="dash-status">
+            <p className="dash-status" aria-live="polite">
               {sendingNow > 0 ? (
                 <>
                   <span className="pulse-dot" aria-hidden />

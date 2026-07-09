@@ -49,20 +49,20 @@ export default function UsersManager() {
       <form onSubmit={invite} className="card">
         <h3>Invite teammate</h3>
         <div className="field">
-          <label className="label">Email</label>
-          <input className="input" data-test-id="user-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <label className="label" htmlFor="user-email">Email</label>
+          <input id="user-email" className="input" data-test-id="user-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div className="field">
-          <label className="label">Name (optional)</label>
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
+          <label className="label" htmlFor="user-name">Name (optional)</label>
+          <input id="user-name" className="input" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div className="field">
-          <label className="label">Temporary password (≥8 chars)</label>
-          <input className="input" data-test-id="user-password" type="text" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+          <label className="label" htmlFor="user-password">Temporary password (≥8 chars)</label>
+          <input id="user-password" className="input" data-test-id="user-password" type="text" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
         </div>
         <div className="field">
-          <label className="label">Role</label>
-          <select className="input" value={role} onChange={(e) => setRole(e.target.value as "MEMBER" | "ADMIN")}>
+          <label className="label" htmlFor="user-role">Role</label>
+          <select id="user-role" className="input" value={role} onChange={(e) => setRole(e.target.value as "MEMBER" | "ADMIN")}>
             <option value="MEMBER">Member</option>
             <option value="ADMIN">Admin</option>
           </select>

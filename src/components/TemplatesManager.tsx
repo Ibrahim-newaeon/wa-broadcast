@@ -225,10 +225,11 @@ export default function TemplatesManager() {
             value={body} onChange={(e) => setBody(e.target.value)} placeholder="Hello {{1}}, today's menu is ready!" required />
         </div>
         {varCount > 0 && (
-          <div className="field">
-            <label className="label">Example values <span className="muted">(Meta requires one per variable)</span></label>
+          <div className="field" role="group" aria-labelledby="tmpl-examples-lbl">
+            <div className="label" id="tmpl-examples-lbl">Example values <span className="muted">(Meta requires one per variable)</span></div>
             {Array.from({ length: varCount }, (_, i) => (
               <input key={i} className="input input--sm" style={{ marginBottom: 6 }} value={examples[i] ?? ""}
+                aria-label={`Example for variable ${i + 1}`}
                 onChange={(e) => setExample(i, e.target.value)} placeholder={`Example for {{${i + 1}}}`} />
             ))}
           </div>
@@ -240,11 +241,12 @@ export default function TemplatesManager() {
               onChange={(e) => setFooter(e.target.value)} placeholder="Reply STOP to opt out" />
           </div>
         )}
-        <div className="field">
-          <label className="label">Buttons <span className="muted">(optional, up to 3)</span></label>
+        <div className="field" role="group" aria-labelledby="tmpl-buttons-lbl">
+          <div className="label" id="tmpl-buttons-lbl">Buttons <span className="muted">(optional, up to 3)</span></div>
           {buttons.map((b, i) => (
             <div key={i} className="row" style={{ gap: 8, marginBottom: 8 }}>
               <select className="input input--sm" style={{ flex: "0 0 auto", width: "auto" }} value={b.type}
+                aria-label={`Button ${i + 1} type`}
                 onChange={(e) => updateButton(i, { type: e.target.value as Btn["type"] })}>
                 <option value="QUICK_REPLY">Quick reply</option>
                 <option value="URL">URL</option>
@@ -253,21 +255,25 @@ export default function TemplatesManager() {
               </select>
               {b.type !== "COPY_CODE" && (
                 <input className="input input--sm" style={{ flex: 1 }} value={b.text} placeholder="Button text"
+                  aria-label={`Button ${i + 1} text`}
                   maxLength={25} onChange={(e) => updateButton(i, { text: e.target.value })} />
               )}
               {b.type === "URL" && (
                 <input className="input input--sm" style={{ flex: 1 }} value={b.url} placeholder="https://…"
+                  aria-label={`Button ${i + 1} URL`}
                   onChange={(e) => updateButton(i, { url: e.target.value })} />
               )}
               {b.type === "PHONE_NUMBER" && (
                 <input className="input input--sm" style={{ flex: 1 }} value={b.phoneNumber} placeholder="+15551234567"
+                  aria-label={`Button ${i + 1} phone number`}
                   onChange={(e) => updateButton(i, { phoneNumber: e.target.value })} />
               )}
               {b.type === "COPY_CODE" && (
                 <input className="input input--sm" style={{ flex: 1 }} value={b.couponExample} placeholder="Sample code e.g. SAVE20"
+                  aria-label={`Button ${i + 1} coupon code`}
                   maxLength={15} onChange={(e) => updateButton(i, { couponExample: e.target.value })} />
               )}
-              <button type="button" className="btn btn--ghost btn--sm" onClick={() => removeButton(i)} aria-label="Remove">✕</button>
+              <button type="button" className="btn btn--ghost btn--sm" onClick={() => removeButton(i)} aria-label={`Remove button ${i + 1}`}>✕</button>
             </div>
           ))}
           {buttons.length < 3 && (

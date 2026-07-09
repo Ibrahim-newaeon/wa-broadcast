@@ -58,7 +58,7 @@ function MessageContent({ m }: { m: Msg }) {
       <>
         {gone ? missing : (
           /* eslint-disable-next-line @next/next/no-img-element */
-          <img className="bubble__media" src={src} alt={m.text ?? "image"} loading="lazy" onError={() => setGone(true)} />
+          <img className="bubble__media" src={src} alt={m.text || (m.type === "sticker" ? "Sticker" : "Photo")} loading="lazy" onError={() => setGone(true)} />
         )}
         {m.text && <div className="bubble__text">{m.text}</div>}
       </>
@@ -250,7 +250,7 @@ export default function InboxClient() {
           </div>
         ) : (
           convos.map((c) => (
-            <button key={c.id} type="button" className={`convo${c.id === activeId ? " convo--active" : ""}`} onClick={() => open(c.id)}>
+            <button key={c.id} type="button" aria-current={c.id === activeId ? "true" : undefined} className={`convo${c.id === activeId ? " convo--active" : ""}`} onClick={() => open(c.id)}>
               <div className="convo__top">
                 <span className="convo__name">{c.name ?? c.phone}</span>
                 <span className="convo__when">{shortWhen(c.lastMessageAt)}</span>
@@ -280,7 +280,7 @@ export default function InboxClient() {
               </span>
             </header>
 
-            <div className="thread__body" ref={threadRef}>
+            <div className="thread__body" ref={threadRef} aria-live="polite" aria-relevant="additions">
               {messages.map((m) => (
                 <div key={m.id} className={`bubble bubble--${m.direction === "OUT" ? "out" : "in"}`}>
                   <MessageContent m={m} />
@@ -359,6 +359,7 @@ export default function InboxClient() {
                 </button>
                 <input
                   className="input"
+                  aria-label="Type a reply"
                   placeholder={windowOpen ? "Type a reply…" : "Window closed — a free-form reply may be rejected"}
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
@@ -367,7 +368,7 @@ export default function InboxClient() {
                   {busy ? "Sending…" : "Send"}
                 </button>
               </div>
-              {err && <p className="note" style={{ color: "var(--danger)", marginTop: 8 }}>{err}</p>}
+              {err && <p role="alert" className="note" style={{ color: "var(--danger)", marginTop: 8 }}>{err}</p>}
             </form>
           </>
         )}
