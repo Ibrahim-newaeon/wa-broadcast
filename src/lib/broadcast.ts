@@ -1,5 +1,6 @@
 import { prisma } from "./db";
 import { sendQueue } from "./queue";
+import { sendJobId } from "./jobId";
 import { resolveCarouselCards } from "./carousel";
 
 // variableMap entries: { from: <field> } (pulls "name" / a contact attribute)
@@ -122,7 +123,7 @@ export async function createAndEnqueueBroadcast(opts: {
         carouselCards,
         ltoExpiryMs: ltoExpiresAt?.getTime() ?? null,
       },
-      { jobId: `${broadcast.id}:${contact.id}`, delay: delayMs },
+      { jobId: sendJobId(broadcast.id, contact.id), delay: delayMs },
     );
   }
 

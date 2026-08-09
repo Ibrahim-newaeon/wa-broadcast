@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendQueue } from "@/lib/queue";
+import { sendJobId } from "@/lib/jobId";
 import { resolveBodyParams, type VariableMap } from "@/lib/broadcast";
 import { resolveCarouselCards } from "@/lib/carousel";
 import { getClientId } from "@/lib/users";
@@ -84,7 +85,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
         ),
         ltoExpiryMs: broadcast.ltoExpiresAt?.getTime() ?? null,
       },
-      { jobId: `${id}:${rec.contactId}:r${stamp}` }, // fresh id avoids dedupe
+      { jobId: sendJobId(id, rec.contactId, `r${stamp}`) }, // fresh id avoids dedupe
     );
   }
 
