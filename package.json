@@ -12,6 +12,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "seed:admin": "node scripts/seed-admin.mjs",
+    "cleanup:stuck": "tsx scripts/cleanup-stuck-broadcasts.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test"
