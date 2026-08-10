@@ -4,6 +4,8 @@ import { verifyToken, ACCESS_COOKIE } from "@/lib/auth";
 // Public paths that must NOT require auth.
 const PUBLIC_PREFIXES = [
   "/login", "/api/auth", "/api/webhooks", "/api/health", "/api/leads",
+  // Outbound link bouncer for template URL buttons — recipients are not logged in.
+  "/go",
   // Legal pages — must stay public (Meta App Review links to them).
   "/privacy-policy", "/terms-and-conditions", "/data-deletion",
 ];
