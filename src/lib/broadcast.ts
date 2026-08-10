@@ -1,6 +1,7 @@
 import { prisma } from "./db";
 import { sendQueue } from "./queue";
 import { sendJobId } from "./jobId";
+import { statusAfterEnqueue } from "./broadcastStatus";
 import { resolveCarouselCards } from "./carousel";
 
 // variableMap entries: { from: <field> } (pulls "name" / a contact attribute)
@@ -21,6 +22,10 @@ export interface EnqueueResult {
   ok: boolean;
   broadcastId?: string;
   queued?: number;
+  /** Recipients whose job could not be queued (already marked FAILED). */
+  failed?: number;
+  /** Set when SOME recipients failed to queue but the broadcast still runs. */
+  warning?: string;
   scheduledAt?: string | null;
   error?: string;
   code?: number;
@@ -78,9 +83,12 @@ export async function createAndEnqueueBroadcast(opts: {
     where: { listId: opts.listId, list: { clientId: opts.clientId } },
     include: { contact: true },
   });
-  const recipients = members
+  // De-duplicate by contact: totalCount must equal the number of recipient rows
+  // that actually exist, or the completion math can never balance.
+  const eligible = members
     .map((m) => m.contact)
     .filter((c) => c.clientId === opts.clientId && !c.optedOut && !optOuts.has(c.phone));
+  const recipients = [...new Map(eligible.map((c) => [c.id, c])).values()];
   if (recipients.length === 0) return { ok: false, error: "no opted-in recipients in list", code: 422 };
 
   const scheduledAt = opts.scheduledAt ?? null;
@@ -103,29 +111,90 @@ export async function createAndEnqueueBroadcast(opts: {
     },
   });
 
+  // Create every recipient row up front, then enqueue. Doing it in one pass
+  // meant an enqueue error left rows behind with no job and no way to reach
+  // them again — the broadcast sat in SENDING forever.
+  await prisma.broadcastRecipient.createMany({
+    data: recipients.map((c) => ({ broadcastId: broadcast.id, contactId: c.id, status: "PENDING" as const })),
+  });
+  const rows = await prisma.broadcastRecipient.findMany({
+    where: { broadcastId: broadcast.id },
+    select: { id: true, contactId: true },
+  });
+  const recipientIdByContact = new Map(rows.map((r) => [r.contactId, r.id]));
+
+  let queued = 0;
+  const notQueued: string[] = [];
+  let enqueueError: string | null = null;
+
   for (const contact of recipients) {
-    const rec = await prisma.broadcastRecipient.create({
-      data: { broadcastId: broadcast.id, contactId: contact.id, status: "PENDING" },
-    });
-    await sendQueue.add(
-      "send",
-      {
-        broadcastId: broadcast.id,
-        clientId: opts.clientId,
-        recipientId: rec.id,
-        to: contact.phone,
-        templateName: template.name,
-        language: template.language,
-        bodyParams: resolveBodyParams(opts.variableMap, contact),
-        headerFormat: template.headerFormat,
-        headerMediaUrl,
-        couponCode,
-        carouselCards,
-        ltoExpiryMs: ltoExpiresAt?.getTime() ?? null,
-      },
-      { jobId: sendJobId(broadcast.id, contact.id), delay: delayMs },
-    );
+    const recipientId = recipientIdByContact.get(contact.id);
+    if (!recipientId) continue; // row missing (raced deletion) — nothing to send to
+    try {
+      await sendQueue.add(
+        "send",
+        {
+          broadcastId: broadcast.id,
+          clientId: opts.clientId,
+          recipientId,
+          to: contact.phone,
+          templateName: template.name,
+          language: template.language,
+          bodyParams: resolveBodyParams(opts.variableMap, contact),
+          headerFormat: template.headerFormat,
+          headerMediaUrl,
+          couponCode,
+          carouselCards,
+          ltoExpiryMs: ltoExpiresAt?.getTime() ?? null,
+        },
+        { jobId: sendJobId(broadcast.id, contact.id), delay: delayMs },
+      );
+      queued++;
+    } catch (err) {
+      // Keep going: one rejected job shouldn't abandon the whole broadcast.
+      enqueueError ??= err instanceof Error ? err.message : "enqueue failed";
+      notQueued.push(recipientId);
+    }
   }
 
-  return { ok: true, broadcastId: broadcast.id, queued: recipients.length, scheduledAt: scheduledAt?.toISOString() ?? null };
+  if (notQueued.length > 0) {
+    await prisma.broadcastRecipient.updateMany({
+      where: { id: { in: notQueued } },
+      data: { status: "FAILED", error: `not enqueued: ${enqueueError ?? "unknown error"}` },
+    });
+    // Read back the post-increment counts; the worker may be moving them too.
+    const counts = await prisma.broadcast.update({
+      where: { id: broadcast.id },
+      data: { failedCount: { increment: notQueued.length } },
+      select: { totalCount: true, sentCount: true, failedCount: true },
+    });
+    const settled = statusAfterEnqueue({ queued, total: counts.totalCount, sent: counts.sentCount, failed: counts.failedCount });
+    if (settled) {
+      // Guarded so a COMPLETED the worker just wrote isn't clobbered.
+      await prisma.broadcast.updateMany({
+        where: { id: broadcast.id, status: { in: ["SCHEDULED", "SENDING"] } },
+        data: { status: settled, completedAt: new Date() },
+      });
+    }
+  }
+
+  if (queued === 0) {
+    return {
+      ok: false,
+      broadcastId: broadcast.id,
+      failed: notQueued.length,
+      error: `could not queue any messages: ${enqueueError ?? "unknown error"}`,
+      code: 503,
+    };
+  }
+
+  return {
+    ok: true,
+    broadcastId: broadcast.id,
+    queued,
+    scheduledAt: scheduledAt?.toISOString() ?? null,
+    ...(notQueued.length > 0
+      ? { failed: notQueued.length, warning: `${notQueued.length} recipient(s) could not be queued: ${enqueueError}` }
+      : {}),
+  };
 }

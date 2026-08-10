@@ -31,7 +31,14 @@ export async function POST(req: NextRequest) {
   void audit(req, result.scheduledAt ? "broadcast.scheduled" : "broadcast.sent", result.broadcastId, {
     templateId, listId, queued: result.queued, ...(result.scheduledAt ? { scheduledAt: result.scheduledAt } : {}),
   });
-  return NextResponse.json({ broadcastId: result.broadcastId, queued: result.queued, scheduledAt: result.scheduledAt });
+  return NextResponse.json({
+    broadcastId: result.broadcastId,
+    queued: result.queued,
+    scheduledAt: result.scheduledAt,
+    // Present only when some recipients could not be queued; they are already
+    // marked FAILED and can be re-sent from the broadcast's Retry action.
+    ...(result.failed ? { failed: result.failed, warning: result.warning } : {}),
+  });
 }
 
 /** GET /api/broadcasts — list this client's broadcasts with progress. */

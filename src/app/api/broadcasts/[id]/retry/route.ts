@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendQueue } from "@/lib/queue";
 import { sendJobId } from "@/lib/jobId";
+import { statusAfterEnqueue } from "@/lib/broadcastStatus";
 import { resolveBodyParams, type VariableMap } from "@/lib/broadcast";
 import { resolveCarouselCards } from "@/lib/carousel";
 import { getClientId } from "@/lib/users";
@@ -60,35 +61,82 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     },
   });
 
+  let requeued = 0;
+  const notQueued: string[] = [];
+  let enqueueError: string | null = null;
+
   for (const rec of retriable) {
     await prisma.broadcastRecipient.update({
       where: { id: rec.id },
       data: { status: "PENDING", error: null, wamid: null },
     });
 
-    await sendQueue.add(
-      "send",
-      {
-        broadcastId: id,
-        clientId,
-        recipientId: rec.id,
-        to: rec.contact.phone,
-        templateName: broadcast.template.name,
-        language: broadcast.template.language,
-        bodyParams: resolveBodyParams(variableMap, rec.contact),
-        headerFormat: broadcast.template.headerFormat,
-        headerMediaUrl: broadcast.headerMediaUrl,
-        couponCode: broadcast.couponCode,
-        carouselCards: resolveCarouselCards(
-          broadcast.template.cards,
-          (broadcast.cardMediaUrls as string[] | null) ?? null,
-        ),
-        ltoExpiryMs: broadcast.ltoExpiresAt?.getTime() ?? null,
-      },
-      { jobId: sendJobId(id, rec.contactId, `r${stamp}`) }, // fresh id avoids dedupe
-    );
+    try {
+      await sendQueue.add(
+        "send",
+        {
+          broadcastId: id,
+          clientId,
+          recipientId: rec.id,
+          to: rec.contact.phone,
+          templateName: broadcast.template.name,
+          language: broadcast.template.language,
+          bodyParams: resolveBodyParams(variableMap, rec.contact),
+          headerFormat: broadcast.template.headerFormat,
+          headerMediaUrl: broadcast.headerMediaUrl,
+          couponCode: broadcast.couponCode,
+          carouselCards: resolveCarouselCards(
+            broadcast.template.cards,
+            (broadcast.cardMediaUrls as string[] | null) ?? null,
+          ),
+          ltoExpiryMs: broadcast.ltoExpiresAt?.getTime() ?? null,
+        },
+        { jobId: sendJobId(id, rec.contactId, `r${stamp}`) }, // fresh id avoids dedupe
+      );
+      requeued++;
+    } catch (err) {
+      // Put it straight back to FAILED — we already reset it to PENDING and
+      // decremented failedCount, so leaving it would strand the broadcast.
+      enqueueError ??= err instanceof Error ? err.message : "enqueue failed";
+      notQueued.push(rec.id);
+    }
   }
 
-  void audit(req, "broadcast.retried", id, { retried: retriable.length });
-  return NextResponse.json({ retried: retriable.length });
+  if (notQueued.length > 0) {
+    await prisma.broadcastRecipient.updateMany({
+      where: { id: { in: notQueued } },
+      data: { status: "FAILED", error: `not enqueued: ${enqueueError ?? "unknown error"}` },
+    });
+    const counts = await prisma.broadcast.update({
+      where: { id },
+      data: { failedCount: { increment: notQueued.length } },
+      select: { totalCount: true, sentCount: true, failedCount: true },
+    });
+    const settled = statusAfterEnqueue({
+      queued: requeued,
+      total: counts.totalCount,
+      sent: counts.sentCount,
+      failed: counts.failedCount,
+    });
+    if (settled) {
+      await prisma.broadcast.updateMany({
+        where: { id, status: { in: ["SCHEDULED", "SENDING"] } },
+        data: { status: settled, completedAt: new Date() },
+      });
+    }
+  }
+
+  void audit(req, "broadcast.retried", id, { retried: requeued, failed: notQueued.length });
+  if (requeued === 0) {
+    return NextResponse.json(
+      { retried: 0, error: `could not queue any messages: ${enqueueError ?? "unknown error"}` },
+      { status: 503 },
+    );
+  }
+  return NextResponse.json({
+    retried: requeued,
+    ...(notQueued.length > 0
+      ? { failed: notQueued.length, warning: `${notQueued.length} recipient(s) could not be queued: ${enqueueError}` }
+      : {}),
+  });
 }
