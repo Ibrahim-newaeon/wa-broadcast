@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 import { useRole } from "@/lib/useRole";
+import { buildTemplatePreview } from "@/lib/templatePreview";
+import WaPreview from "@/components/WaPreview";
 
 interface Template { id: string; name: string; language: string; category: string; status: string; variableCount: number }
 interface Btn { type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER" | "COPY_CODE"; text: string; url: string; phoneNumber: string; couponExample: string }
@@ -54,6 +56,12 @@ export default function TemplatesManager() {
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
   const varCount = useMemo(() => (body.match(/\{\{\d+\}\}/g) ?? []).length, [body]);
+  const preview = useMemo(
+    () => buildTemplatePreview({
+      body, examples, footer, headerFormat, headerFile, buttons, carouselOn, cards, ltoOn, ltoText,
+    }),
+    [body, examples, footer, headerFormat, headerFile, buttons, carouselOn, cards, ltoOn, ltoText],
+  );
   const carouselInvalid =
     carouselOn && (cards.length < 2 || cards.some((c) => !c.mediaUrl.trim() || !c.body.trim()));
   // Meta rules for limited-time offers: URL button required; only copy-code + URL buttons.
@@ -339,6 +347,27 @@ export default function TemplatesManager() {
                 <button type="button" className="btn btn--ghost btn--sm" onClick={addCard}>+ Add card</button>
               )}
             </div>
+          )}
+        </div>
+
+        <div className="field">
+          <label className="label">
+            Preview <span className="muted">— how this looks in WhatsApp, before you submit it to Meta</span>
+          </label>
+          {body.trim() ? (
+            <>
+              <div data-test-id="tmpl-preview">
+                <WaPreview model={preview} headerSet={!!headerExample} />
+              </div>
+              <p className="note" style={{ marginTop: 6 }}>
+                Variables show your example values — the same ones Meta&apos;s reviewer sees.
+                {varCount > 0 && examples.slice(0, varCount).some((e) => !e?.trim())
+                  ? " Any {{n}} still showing means that example is blank."
+                  : ""}
+              </p>
+            </>
+          ) : (
+            <p className="note">Write the body above and the preview appears here.</p>
           )}
         </div>
 
