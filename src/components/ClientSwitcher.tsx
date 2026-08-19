@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
+import { useRole } from "@/lib/useRole";
 
 interface ClientRow { id: string; name: string }
 
 /** SUPERADMIN-only tenant switcher. Renders nothing for everyone else
  *  (the /api/clients endpoint 403s, so the control never appears). */
 export default function ClientSwitcher() {
+  // On a tenant subdomain the hostname decides the client, for super-admins too.
+  const { me } = useRole();
   const [clients, setClients] = useState<ClientRow[] | null>(null);
   const [active, setActive] = useState("");
   const [busy, setBusy] = useState(false);
@@ -27,6 +30,7 @@ export default function ClientSwitcher() {
     };
   }, []);
 
+  if (me?.pinned) return null;
   if (!clients || clients.length === 0) return null;
 
   async function onSwitch(clientId: string) {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RESERVED_HOST_LABELS } from "./hostTenancy";
 
 // E.164 without leading '+', 8–15 digits (covers KSA/Kuwait/Qatar/Jordan, etc.)
 export const PhoneSchema = z
@@ -208,7 +209,12 @@ export const SendTemplateMessageSchema = z.object({
 
 export const CreateClientSchema = z.object({
   name: z.string().trim().min(1, "Client name is required").max(120),
-  slug: z.string().trim().regex(/^[a-z0-9-]{2,40}$/, "Slug: 2–40 lowercase letters, numbers, or hyphens").optional(),
+  slug: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9-]{2,40}$/, "Slug: 2–40 lowercase letters, numbers, or hyphens")
+    .refine((v) => !RESERVED_HOST_LABELS.has(v), "That name is reserved for the platform")
+    .optional(),
   // Optional: provision the client's first ADMIN login alongside the tenant.
   // Blank password → the server auto-generates a strong one and returns it once.
   adminEmail: z.string().trim().email("Enter a valid admin email").optional(),

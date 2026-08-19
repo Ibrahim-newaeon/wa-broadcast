@@ -5,6 +5,7 @@ import { DEFAULT_CLIENT_ID } from "@/lib/tenancy";
 import { removeSchedule } from "@/lib/recurring";
 import { ACTING_CLIENT_COOKIE, cookieBase } from "@/lib/auth";
 import { audit } from "@/lib/audit";
+import { invalidateHostClientCache } from "@/lib/hostClient";
 
 export const runtime = "nodejs";
 
@@ -46,6 +47,7 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
   ]);
 
   // Audit rows are append-only and deliberately survive the tenant they describe.
+  invalidateHostClientCache(); // its slug no longer binds a hostname
   void audit(req, "client.deleted", client.name, { clientId: id });
 
   const res = NextResponse.json({ ok: true, deleted: client.name });

@@ -15,12 +15,18 @@ export interface AuthClaims extends JWTPayload {
   typ: "access" | "refresh";
   role?: string;          // access only: SUPERADMIN | ADMIN | MEMBER
   cid?: string;           // access only: the user's clientId (tenant)
+  slg?: string | null;    // access only: their client's subdomain slug, null if none
   ver?: number;           // refresh only: user token-version for revoke-all
   jti?: string;           // refresh only: rotation id
 }
 
-export async function signAccess(sub: string, role: string, clientId: string): Promise<string> {
-  return new SignJWT({ typ: "access", role, cid: clientId })
+export async function signAccess(
+  sub: string,
+  role: string,
+  clientId: string,
+  slug: string | null = null,
+): Promise<string> {
+  return new SignJWT({ typ: "access", role, cid: clientId, slg: slug })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(sub)
     .setIssuedAt()

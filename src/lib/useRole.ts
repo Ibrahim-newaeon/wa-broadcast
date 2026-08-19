@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "./apiFetch";
 
-export interface Me { email: string; role: string; isAdmin: boolean }
+export interface Me { email: string; role: string; isAdmin: boolean; pinned?: boolean }
 
 // Module-level cache: every component on a page shares one /api/auth/me fetch.
 let cached: Me | null = null;
