@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ContactsPage() {
   const lists = await prisma.contactList.findMany({
-    where: { clientId: await getClientIdFromCookies() },
+    where: { clientId: await getClientIdFromCookies(), archived: false },
     orderBy: { createdAt: "desc" },
     select: { id: true, name: true },
   });

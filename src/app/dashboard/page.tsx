@@ -17,7 +17,7 @@ export default async function Dashboard() {
       prisma.contact.count({ where: { clientId } }),
       prisma.contact.count({ where: { clientId, optedOut: true } }),
       prisma.contactList.findMany({
-        where: { clientId },
+        where: { clientId, archived: false },
         orderBy: { createdAt: "desc" },
         include: { _count: { select: { memberships: true } } },
       }),

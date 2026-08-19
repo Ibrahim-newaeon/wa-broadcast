@@ -8,9 +8,11 @@ import { audit } from "@/lib/audit";
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
+  // Archived lists are hidden unless asked for — they stay out of every picker.
+  const includeArchived = req.nextUrl.searchParams.get("includeArchived") === "1";
   const lists = await prisma.contactList.findMany({
-    where: { clientId: await getClientId(req) },
-    orderBy: { createdAt: "desc" },
+    where: { clientId: await getClientId(req), ...(includeArchived ? {} : { archived: false }) },
+    orderBy: [{ archived: "asc" }, { createdAt: "desc" }],
     include: { _count: { select: { memberships: true } } },
   });
   return NextResponse.json({ lists });

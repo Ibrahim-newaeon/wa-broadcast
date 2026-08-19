@@ -44,6 +44,9 @@ model ContactList {
   id        String   @id @default(cuid())
   clientId  String   @default("default")
   name      String
+  // Hidden from pickers and the Lists page, but its broadcasts keep their
+  // history. The way to retire a list that has already been sent to.
+  archived  Boolean  @default(false)
   createdAt DateTime @default(now())
 
   memberships ContactListMembership[]

@@ -1,11 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getClientId, requireAdmin } from "@/lib/users";
 import { audit } from "@/lib/audit";
 import { listDeleteBlockReason } from "@/lib/listDeletion";
 
 export const runtime = "nodejs";
+
+const UpdateListSchema = z.object({ archived: z.boolean() });
+
+/**
+ * PATCH /api/lists/:id — archive or restore a list (ADMIN only).
+ *
+ * Archiving is how a list that has already been broadcast to is retired: it
+ * leaves every picker and the Lists page, its broadcasts keep their history,
+ * and nothing is destroyed. Restoring puts it back.
+ */
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!(await requireAdmin(req))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+
+  const parsed = UpdateListSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: "archived must be true or false" }, { status: 400 });
+
+  const { id } = await ctx.params;
+  const clientId = await getClientId(req);
+  const list = await prisma.contactList.findFirst({ where: { id, clientId }, select: { name: true } });
+  if (!list) return NextResponse.json({ error: "list not found" }, { status: 404 });
+
+  const { archived } = parsed.data;
+  await prisma.contactList.update({ where: { id }, data: { archived } });
+  void audit(req, archived ? "list.archived" : "list.restored", list.name);
+
+  return NextResponse.json({ ok: true, archived });
+}
 
 /**
  * DELETE /api/lists/:id (ADMIN only, scoped to the caller's client).
