@@ -3,6 +3,7 @@ import UsersManager from "@/components/UsersManager";
 import ChangePasswordForm from "@/components/ChangePasswordForm";
 import WhatsAppSetup from "@/components/WhatsAppSetup";
 import ClientsManager from "@/components/ClientsManager";
+import RedirectsManager from "@/components/RedirectsManager";
 import AuditLogViewer from "@/components/AuditLogViewer";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,8 @@ export default function SettingsPage() {
         <div className="grid-forms">
           <ChangePasswordForm />
         </div>
-        {/* ADMIN-only; renders nothing (including its heading) for members. */}
+        {/* Both ADMIN-only; render nothing (including their headings) for members. */}
+        <RedirectsManager />
         <AuditLogViewer />
       </main>
     </>

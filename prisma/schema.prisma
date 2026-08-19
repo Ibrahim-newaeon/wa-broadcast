@@ -310,3 +310,22 @@ model OptOut {
   @@unique([clientId, phone])
   @@index([clientId])
 }
+
+/// A destination for /go/<slug>, owned by one client.
+///
+/// `slug` is globally unique, not unique-per-client, because /go is served on
+/// the apex (massegat.com/go/…) which is deliberately not tied to a tenant —
+/// so the slug alone has to identify the destination. Namespace by convention
+/// instead: `bia-instagram`. Keeping the apex matters because a template's URL
+/// button costs a Meta re-review to change, so the host in it must outlive any
+/// subdomain or rename.
+model RedirectLink {
+  id        String   @id @default(cuid())
+  clientId  String   @default("default")
+  slug      String   @unique
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+}
