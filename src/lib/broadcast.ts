@@ -51,6 +51,15 @@ export async function createAndEnqueueBroadcast(opts: {
   // client's template/list/contacts.
   const template = await prisma.template.findFirst({ where: { id: opts.templateId, clientId: opts.clientId } });
   if (!template) return { ok: false, error: "template not found", code: 404 };
+
+  // An archived list is retired: no new sends, including from the recurring
+  // scheduler, until someone restores it.
+  const list = await prisma.contactList.findFirst({
+    where: { id: opts.listId, clientId: opts.clientId },
+    select: { archived: true },
+  });
+  if (!list) return { ok: false, error: "list not found", code: 404 };
+  if (list.archived) return { ok: false, error: "that list is archived — restore it before sending to it", code: 422 };
   if (template.status !== "APPROVED") return { ok: false, error: "template not approved by Meta", code: 422 };
 
   // A media-header template needs the media supplied for this send.

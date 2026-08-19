@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const campaigns = await prisma.recurringCampaign.findMany({ where: { clientId }, orderBy: { createdAt: "desc" } });
   const [templates, lists] = await Promise.all([
     prisma.template.findMany({ where: { clientId }, select: { id: true, name: true } }),
-    prisma.contactList.findMany({ where: { clientId }, select: { id: true, name: true } }),
+    prisma.contactList.findMany({ where: { clientId, archived: false }, select: { id: true, name: true } }),
   ]);
   const tName = new Map(templates.map((t) => [t.id, t.name]));
   const lName = new Map(lists.map((l) => [l.id, l.name]));
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "template not approved" }, { status: 422 });
   }
 
-  const list = await prisma.contactList.findFirst({ where: { id: listId, clientId }, select: { id: true } });
+  const list = await prisma.contactList.findFirst({ where: { id: listId, clientId, archived: false }, select: { id: true } });
   if (!list) return NextResponse.json({ error: "list not found" }, { status: 404 });
 
   const campaign = await prisma.recurringCampaign.create({

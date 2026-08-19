@@ -18,5 +18,5 @@ export function listDeleteBlockReason(name: string, refs: ListReferences): strin
   if (refs.broadcasts > 0) parts.push(`${refs.broadcasts} broadcast${refs.broadcasts === 1 ? "" : "s"}`);
   if (refs.campaigns > 0) parts.push(`${refs.campaigns} recurring campaign${refs.campaigns === 1 ? "" : "s"}`);
   if (parts.length === 0) return null;
-  return `“${name}” is still used by ${parts.join(" and ")}. Delete ${parts.length > 1 || refs.broadcasts > 1 || refs.campaigns > 1 ? "those" : "that"} first — send history keeps a reference to the list.`;
+  return `“${name}” is still used by ${parts.join(" and ")}, which keep it in their history. Archive it instead — it disappears from every picker and the list page, and the history stays intact.`;
 }

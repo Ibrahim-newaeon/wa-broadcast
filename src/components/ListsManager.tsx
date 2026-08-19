@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 import { useRole } from "@/lib/useRole";
 
-interface List { id: string; name: string; _count: { memberships: number } }
+interface List { id: string; name: string; archived: boolean; _count: { memberships: number } }
 interface Snapshot { id: string; listName: string; memberCount: number; reason: string; createdAt: string }
 
 export default function ListsManager() {
@@ -13,6 +13,7 @@ export default function ListsManager() {
   const [snaps, setSnaps] = useState<Record<string, Snapshot[]>>({});
   const [open, setOpen] = useState<Set<string>>(new Set());
   const [newName, setNewName] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [msgError, setMsgError] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -21,9 +22,9 @@ export default function ListsManager() {
   function fail(text: string) { setMsg(text); setMsgError(true); }
 
   const loadLists = useCallback(async () => {
-    const res = await apiFetch("/api/lists");
+    const res = await apiFetch(`/api/lists${showArchived ? "?includeArchived=1" : ""}`);
     if (res.ok) setLists((await res.json()).lists ?? []);
-  }, []);
+  }, [showArchived]);
   useEffect(() => { void loadLists(); }, [loadLists]);
 
   const loadSnaps = useCallback(async (listId: string) => {
@@ -77,6 +78,22 @@ export default function ListsManager() {
     } else fail(j.error ?? "Restore failed");
   }
 
+  async function setArchived(list: List, archived: boolean) {
+    setBusy(`arch:${list.id}`); setMsg(null);
+    const res = await apiFetch(`/api/lists/${list.id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ archived }),
+    });
+    const j = await res.json().catch(() => ({}));
+    setBusy(null);
+    if (res.ok) {
+      say(archived
+        ? `Archived “${list.name}” — it is out of the pickers, its broadcasts keep their history.`
+        : `Restored “${list.name}”.`);
+      await loadLists();
+    } else fail(j.error ?? "Could not update the list");
+  }
+
   async function removeList(list: List) {
     const members = list._count.memberships;
     const warning =
@@ -104,6 +121,11 @@ export default function ListsManager() {
         <input className="input" style={{ maxWidth: 320 }} value={newName}
           onChange={(e) => setNewName(e.target.value)} placeholder="New list name" maxLength={120} />
         <button className="btn btn--sm" type="submit" disabled={!newName.trim()}>Create list</button>
+        <label className="note row" style={{ gap: 6, cursor: "pointer" }}>
+          <input type="checkbox" data-test-id="show-archived" checked={showArchived}
+            onChange={(e) => setShowArchived(e.target.checked)} />
+          Show archived
+        </label>
         {msg && (
           <span className="note" data-test-id="lists-msg"
             style={{ color: msgError ? "var(--danger)" : "var(--green)" }}>{msg}</span>
@@ -117,6 +139,7 @@ export default function ListsManager() {
               <div>
                 <strong>{l.name}</strong>
                 <span className="muted"> · {l._count.memberships} member{l._count.memberships === 1 ? "" : "s"}</span>
+                {l.archived && <span className="badge badge--PENDING" style={{ marginInlineStart: 8 }}>archived</span>}
               </div>
               <div className="row">
                 <button className="btn btn--ghost btn--sm" onClick={() => snapshotNow(l.id)}
@@ -126,6 +149,14 @@ export default function ListsManager() {
                 <button className="btn btn--ghost btn--sm" onClick={() => toggle(l.id)}>
                   {open.has(l.id) ? "Hide snapshots" : "Snapshots"}
                 </button>
+                {isAdmin && (
+                  <button className="btn btn--ghost btn--sm" data-test-id="archive-list"
+                    onClick={() => setArchived(l, !l.archived)}
+                    disabled={busy === `arch:${l.id}`} aria-busy={busy === `arch:${l.id}`}
+                    title={l.archived ? "Put this list back in the pickers" : "Retire this list without touching its broadcast history"}>
+                    {busy === `arch:${l.id}` ? "Saving…" : l.archived ? "Restore" : "Archive"}
+                  </button>
+                )}
                 {isAdmin && (
                   <button className="btn btn--ghost btn--sm" data-test-id="delete-list"
                     onClick={() => removeList(l)} disabled={busy === `del:${l.id}`} aria-busy={busy === `del:${l.id}`}
