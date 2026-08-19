@@ -38,6 +38,9 @@ export default function Nav() {
         {LINKS.map(([href, label]) => (
           <Link key={href} href={href} onClick={() => setOpen(false)}>{label}</Link>
         ))}
+        <Link href="/settings#my-account" data-test-id="nav-change-password" onClick={() => setOpen(false)}>
+          Change password
+        </Link>
         <ClientSwitcher />
         <LogoutButton />
       </div>

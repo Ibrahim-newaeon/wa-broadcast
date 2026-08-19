@@ -19,7 +19,7 @@ export default function SettingsPage() {
         <WhatsAppSetup />
         <h2 style={{ marginTop: 32 }}>Team members</h2>
         <UsersManager />
-        <h2 style={{ marginTop: 32 }}>My account</h2>
+        <h2 id="my-account" className="anchor-target" style={{ marginTop: 32 }}>My account</h2>
         <div className="grid-forms">
           <ChangePasswordForm />
         </div>
