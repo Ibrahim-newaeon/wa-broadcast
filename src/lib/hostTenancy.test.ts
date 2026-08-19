@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { hostTenantSlug, consoleHostFor, tenantHostFor, resolveHostAccess, type HostAccessInput } from "./hostTenancy";
+import { hostTenantSlug, consoleHostFor, tenantHostFor, baseDomainFor, resolveHostAccess, type HostAccessInput } from "./hostTenancy";
 
 describe("hostTenantSlug", () => {
   it("reads the tenant label off a subdomain", () => {
@@ -44,6 +44,13 @@ describe("host name helpers", () => {
 
   it("derives a tenant host from the current host", () => {
     expect(tenantHostFor("app.massegat.com", "acme")).toBe("acme.massegat.com");
+  });
+
+  it("derives the platform domain, whichever host was used", () => {
+    expect(baseDomainFor("bia.massegat.com")).toBe("massegat.com");
+    expect(baseDomainFor("app.massegat.com")).toBe("massegat.com");
+    expect(baseDomainFor("massegat.com")).toBe("massegat.com");
+    expect(baseDomainFor("localhost:3000")).toBe("localhost");
   });
 });
 

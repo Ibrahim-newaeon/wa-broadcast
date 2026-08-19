@@ -16,8 +16,12 @@ datasource db {
 model Client {
   id        String   @id @default(cuid())
   name      String
-  slug      String?  @unique
-  createdAt DateTime @default(now())
+  // Subdomain label: `bia` → bia.massegat.com. Only binds the hostname to this
+  // client once `slugActive` is set, which happens after the address is proven
+  // to resolve — see /api/clients/[id]/verify-host.
+  slug       String?  @unique
+  slugActive Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }
 
 model Contact {

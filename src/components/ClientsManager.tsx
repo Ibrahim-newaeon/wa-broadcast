@@ -3,7 +3,15 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 
-interface Client { id: string; name: string; slug: string | null; contacts: number; users: number }
+interface Client {
+  id: string;
+  name: string;
+  slug: string | null;
+  slugActive: boolean;
+  host: string | null;
+  contacts: number;
+  users: number;
+}
 
 /** SUPERADMIN-only tenant management. Hidden (renders null) for everyone else. */
 export default function ClientsManager() {
@@ -17,12 +25,23 @@ export default function ClientsManager() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [creds, setCreds] = useState<{ client: string; email: string; password: string; generated: boolean } | null>(null);
+  // Subdomain provisioning: the platform domain + the A record's target.
+  const [domain, setDomain] = useState("");
+  const [platformIp, setPlatformIp] = useState<string | null>(null);
+  const [openSub, setOpenSub] = useState<string | null>(null);
+  const [draftSlug, setDraftSlug] = useState("");
+  const [rowBusy, setRowBusy] = useState<string | null>(null);
 
   async function refresh() {
     const r = await apiFetch("/api/clients");
     if (r.status === 403) { setAllowed(false); return; }
     const j = await r.json().catch(() => null);
-    if (j) { setClients(j.clients); setActive(j.activeClientId); }
+    if (j) {
+      setClients(j.clients);
+      setActive(j.activeClientId);
+      setDomain(j.domain ?? "");
+      setPlatformIp(j.platformIp ?? null);
+    }
   }
   useEffect(() => { refresh(); }, []);
 
@@ -64,6 +83,31 @@ export default function ClientsManager() {
     if (res.ok) window.location.reload();
   }
 
+  async function saveSubdomain(c: Client) {
+    setRowBusy(c.id); setMsg(null);
+    const res = await apiFetch(`/api/clients/${c.id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug: draftSlug.trim().toLowerCase() }),
+    });
+    const j = await res.json().catch(() => ({}));
+    setRowBusy(null);
+    if (res.ok) {
+      setMsg(j.client.slug
+        ? `Saved. Add the DNS record below, then Verify to switch ${j.client.slug}.${domain} on.`
+        : `${c.name} is back on the console host.`);
+      refresh();
+    } else setMsg(j.error ?? "Could not save the subdomain");
+  }
+
+  async function verifyHost(c: Client) {
+    setRowBusy(c.id); setMsg(null);
+    const res = await apiFetch(`/api/clients/${c.id}/verify-host`, { method: "POST" });
+    const j = await res.json().catch(() => ({}));
+    setRowBusy(null);
+    if (res.ok) { setMsg(`${j.host} is live. ${c.name} signs in there now.`); refresh(); }
+    else setMsg(j.error ?? "Could not reach that address yet");
+  }
+
   async function remove(c: Client) {
     if (!window.confirm(`Permanently delete “${c.name}” and ALL of its contacts, lists, templates, and broadcasts? This cannot be undone.`)) return;
     const res = await apiFetch(`/api/clients/${c.id}`, { method: "DELETE" });
@@ -87,28 +131,92 @@ export default function ClientsManager() {
 
       <table className="table" style={{ marginBottom: 16 }}>
         <thead>
-          <tr><th>Client</th><th>Contacts</th><th>Team</th><th></th></tr>
+          <tr><th>Client</th><th>Address</th><th>Contacts</th><th>Team</th><th></th></tr>
         </thead>
         <tbody>
-          {clients.map((c) => (
+          {clients.map((c) => [
             <tr key={c.id}>
               <td>
                 {c.name}
-                {c.slug && <span className="muted"> · {c.slug}</span>}
                 {c.id === active && <span className="badge badge--READ" style={{ marginInlineStart: 8 }}>active</span>}
+              </td>
+              <td style={{ whiteSpace: "nowrap" }}>
+                {c.host ? (
+                  <>
+                    <span className="muted">{c.host}</span>
+                    <span className={`badge badge--${c.slugActive ? "READ" : "PENDING"}`} style={{ marginInlineStart: 8 }}>
+                      {c.slugActive ? "live" : "pending DNS"}
+                    </span>
+                  </>
+                ) : (
+                  <span className="muted">app.{domain || "…"}</span>
+                )}
               </td>
               <td>{c.contacts}</td>
               <td>{c.users}</td>
               <td style={{ textAlign: "end", whiteSpace: "nowrap" }}>
+                <button type="button" className="btn btn--ghost btn--sm"
+                  onClick={() => { setOpenSub(openSub === c.id ? null : c.id); setDraftSlug(c.slug ?? ""); setMsg(null); }}>
+                  Subdomain
+                </button>
                 {c.id !== active && (
-                  <button type="button" className="btn btn--ghost btn--sm" onClick={() => switchTo(c.id)}>Switch to</button>
+                  <button type="button" className="btn btn--ghost btn--sm" style={{ marginInlineStart: 8 }} onClick={() => switchTo(c.id)}>Switch to</button>
                 )}
                 {c.id !== "default" && (
                   <button type="button" className="btn btn--danger btn--sm" style={{ marginInlineStart: 8 }} onClick={() => remove(c)}>Delete</button>
                 )}
               </td>
-            </tr>
-          ))}
+            </tr>,
+            (openSub === c.id || (c.slug && !c.slugActive)) ? (
+              <tr key={`${c.id}-sub`}>
+                <td colSpan={5}>
+                  <div className="row" style={{ gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+                    <label className="label" htmlFor={`sub-${c.id}`} style={{ margin: 0 }}>Subdomain</label>
+                    <input id={`sub-${c.id}`} className="input" style={{ maxWidth: 180 }}
+                      value={openSub === c.id ? draftSlug : (c.slug ?? "")}
+                      onFocus={() => { if (openSub !== c.id) { setOpenSub(c.id); setDraftSlug(c.slug ?? ""); } }}
+                      onChange={(e) => setDraftSlug(e.target.value.toLowerCase())} placeholder="acme" />
+                    <span className="muted">.{domain}</span>
+                    <button type="button" className="btn btn--sm" disabled={rowBusy === c.id} aria-busy={rowBusy === c.id}
+                      onClick={() => saveSubdomain(c)}>{rowBusy === c.id ? "Saving…" : "Save"}</button>
+                    {c.slug && !c.slugActive && (
+                      <button type="button" className="btn btn--ghost btn--sm" data-test-id="verify-host"
+                        disabled={rowBusy === c.id} onClick={() => verifyHost(c)}>Verify</button>
+                    )}
+                  </div>
+                  {c.slug && !c.slugActive && (
+                    <div className="note">
+                      <p style={{ margin: "0 0 6px" }}>
+                        <strong>1. Cloudflare &rarr; DNS &rarr; Add record</strong> on <code>{domain}</code>:
+                      </p>
+                      <table className="table" style={{ margin: "0 0 10px", maxWidth: 560 }}>
+                        <tbody>
+                          <tr><td>Type</td><td><code>A</code></td></tr>
+                          <tr><td>Name</td><td><code>{c.slug}</code></td></tr>
+                          <tr><td>IPv4 address</td><td><code>{platformIp ?? "this server's IP"}</code></td></tr>
+                          <tr>
+                            <td>Proxy status</td>
+                            <td>
+                              <code>DNS only</code>{" "}
+                              <span className="muted">(grey cloud &mdash; proxying breaks certificate issuance)</span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <p style={{ margin: "0 0 6px" }}>
+                        <strong>2. Serve the hostname</strong> &mdash; the server needs a block for <code>{c.host}</code> and a
+                        reload before a certificate can be issued.
+                      </p>
+                      <p style={{ margin: 0 }}>
+                        <strong>3. Verify</strong> &mdash; until <code>https://{c.host}/api/health</code> answers this stays
+                        inactive, and the team keeps signing in at <code>app.{domain}</code>.
+                      </p>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ) : null,
+          ])}
         </tbody>
       </table>
 
@@ -118,8 +226,14 @@ export default function ClientsManager() {
           <input id="cl-name" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme Cafe" required />
         </div>
         <div className="field">
-          <label className="label" htmlFor="cl-slug">Slug <span className="muted">(optional)</span></label>
-          <input id="cl-slug" className="input" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="acme-cafe" />
+          <label className="label" htmlFor="cl-slug">
+            Subdomain <span className="muted">(optional &mdash; {slug ? `${slug}.${domain}` : `acme.${domain || "…"}`})</span>
+          </label>
+          <input id="cl-slug" className="input" value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase())} placeholder="acme" />
+          <p className="note" style={{ marginTop: 6 }}>
+            Leave it blank and the client works at <code>app.{domain || "…"}</code>. Give it one and the exact Cloudflare
+            record appears in the table above &mdash; it only takes effect once that address answers.
+          </p>
         </div>
         <div className="field">
           <label className="label" htmlFor="cl-email">Admin login email <span className="muted">(optional — creates the client&rsquo;s ADMIN account)</span></label>

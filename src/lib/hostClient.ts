@@ -12,7 +12,7 @@ let cache: Cached | null = null;
 async function load(): Promise<Cached> {
   if (cache && Date.now() - cache.at < TTL_MS) return cache;
   const rows = await prisma.client.findMany({
-    where: { slug: { not: null } },
+    where: { slug: { not: null }, slugActive: true },
     select: { id: true, slug: true },
   });
   const bySlug = new Map<string, string>();

@@ -48,6 +48,13 @@ export function consoleHostFor(host: string | null | undefined): string {
   return base ? `app.${base}` : "the main address";
 }
 
+/** The registrable domain the app is served under — `bia.massegat.com` → `massegat.com`. */
+export function baseDomainFor(host: string | null | undefined): string {
+  const clean = normalizeHost(host ?? "");
+  const labels = clean.split(".");
+  return labels.length >= 3 ? labels.slice(1).join(".") : clean;
+}
+
 /** The hostname a client with `slug` is served at, relative to the current host. */
 export function tenantHostFor(host: string | null | undefined, slug: string): string {
   const clean = normalizeHost(host ?? "");
