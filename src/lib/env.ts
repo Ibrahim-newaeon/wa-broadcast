@@ -24,6 +24,12 @@ const EnvSchema = z.object({
   REFRESH_TOKEN_TTL: z.string().default("7d"),
   LOGIN_RATE_MAX: z.coerce.number().int().positive().default(5), // attempts
   LOGIN_RATE_WINDOW: z.coerce.number().int().positive().default(300), // seconds
+
+  // ─── Platform ───────────────────────────────────────────────────
+  // Public IPv4 of this server, shown in the DNS instructions when a
+  // super-admin gives a client its own subdomain. Optional: without it the
+  // instructions just say to reuse the existing hostname's record.
+  PLATFORM_IPV4: z.string().default(""),
 });
 
 // Strict at boot, but skippable at build time (e.g. `next build` in a Docker

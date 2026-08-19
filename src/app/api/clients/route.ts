@@ -4,6 +4,8 @@ import { CreateClientSchema } from "@/lib/validation";
 import { requireSuperAdmin, getClientId, createUser, generatePassword } from "@/lib/users";
 import { audit } from "@/lib/audit";
 import { invalidateHostClientCache } from "@/lib/hostClient";
+import { baseDomainFor } from "@/lib/hostTenancy";
+import { env } from "@/lib/env";
 
 export const runtime = "nodejs";
 
@@ -20,12 +22,20 @@ export async function GET(req: NextRequest) {
   const cMap = new Map(contacts.map((c) => [c.clientId, c._count._all]));
   const uMap = new Map(users.map((u) => [u.clientId, u._count._all]));
 
+  // Everything the UI needs to print the exact DNS record to create.
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
+  const domain = baseDomainFor(host);
+
   return NextResponse.json({
     activeClientId: await getClientId(req),
+    domain,
+    platformIp: env.PLATFORM_IPV4 || null,
     clients: clients.map((c) => ({
       id: c.id,
       name: c.name,
       slug: c.slug,
+      slugActive: c.slugActive,
+      host: c.slug ? `${c.slug}.${domain}` : null,
       createdAt: c.createdAt,
       contacts: cMap.get(c.id) ?? 0,
       users: uMap.get(c.id) ?? 0,
@@ -55,7 +65,8 @@ export async function POST(req: NextRequest) {
     if (taken) return NextResponse.json({ error: "That admin email is already in use." }, { status: 409 });
   }
 
-  const client = await prisma.client.create({ data: { name, slug: slug ?? null } });
+  // The subdomain is recorded but inert until /verify-host proves it resolves.
+  const client = await prisma.client.create({ data: { name, slug: slug ?? null, slugActive: false } });
   // Give the new tenant a blank WhatsApp config row so settings can be saved.
   await prisma.whatsAppConfig.create({ data: { clientId: client.id } });
 
@@ -71,7 +82,7 @@ export async function POST(req: NextRequest) {
   invalidateHostClientCache(); // a new slug may now bind a hostname
   void audit(req, "client.created", client.name, adminEmail ? { adminEmail: adminEmail.toLowerCase() } : undefined);
   return NextResponse.json(
-    { client: { id: client.id, name: client.name, slug: client.slug }, admin },
+    { client: { id: client.id, name: client.name, slug: client.slug, slugActive: false }, admin },
     { status: 201 },
   );
 }
