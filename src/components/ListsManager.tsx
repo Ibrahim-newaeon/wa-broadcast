@@ -8,13 +8,17 @@ interface List { id: string; name: string; _count: { memberships: number } }
 interface Snapshot { id: string; listName: string; memberCount: number; reason: string; createdAt: string }
 
 export default function ListsManager() {
-  const { isAdmin } = useRole(); // restoring a snapshot (overwrite) is admin-only
+  const { isAdmin } = useRole(); // restoring a snapshot (overwrite) and deleting a list are admin-only
   const [lists, setLists] = useState<List[]>([]);
   const [snaps, setSnaps] = useState<Record<string, Snapshot[]>>({});
   const [open, setOpen] = useState<Set<string>>(new Set());
   const [newName, setNewName] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [msgError, setMsgError] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+
+  function say(text: string) { setMsg(text); setMsgError(false); }
+  function fail(text: string) { setMsg(text); setMsgError(true); }
 
   const loadLists = useCallback(async () => {
     const res = await apiFetch("/api/lists");
@@ -38,7 +42,7 @@ export default function ListsManager() {
       body: JSON.stringify({ name: newName.trim() }),
     });
     if (res.ok) { setNewName(""); await loadLists(); }
-    else { const j = await res.json().catch(() => ({})); setMsg(j.error ?? "Could not create list"); }
+    else { const j = await res.json().catch(() => ({})); fail(j.error ?? "Could not create list"); }
   }
 
   function toggle(listId: string) {
@@ -56,9 +60,9 @@ export default function ListsManager() {
     const j = await res.json().catch(() => ({}));
     setBusy(null);
     if (res.ok) {
-      setMsg(`Snapshot saved (${j.memberCount} member${j.memberCount === 1 ? "" : "s"}).`);
+      say(`Snapshot saved (${j.memberCount} member${j.memberCount === 1 ? "" : "s"}).`);
       if (!open.has(listId)) toggle(listId); else void loadSnaps(listId);
-    } else setMsg(j.error ?? "Snapshot failed");
+    } else fail(j.error ?? "Snapshot failed");
   }
 
   async function restore(listId: string, snapshotId: string) {
@@ -68,9 +72,30 @@ export default function ListsManager() {
     const j = await res.json().catch(() => ({}));
     setBusy(null);
     if (res.ok) {
-      setMsg(`Restored ${j.restored} member(s)${j.missing > 0 ? ` · ${j.missing} skipped (deleted contacts)` : ""}.`);
+      say(`Restored ${j.restored} member(s)${j.missing > 0 ? ` · ${j.missing} skipped (deleted contacts)` : ""}.`);
       await loadLists();
-    } else setMsg(j.error ?? "Restore failed");
+    } else fail(j.error ?? "Restore failed");
+  }
+
+  async function removeList(list: List) {
+    const members = list._count.memberships;
+    const warning =
+      `Delete the list “${list.name}”?\n\n` +
+      (members > 0
+        ? `Its ${members} member${members === 1 ? "" : "s"} stay in Contacts — only the list and its snapshots are removed.`
+        : "Its snapshots are removed too.") +
+      "\n\nThis cannot be undone.";
+    if (!confirm(warning)) return;
+    setBusy(`del:${list.id}`); setMsg(null);
+    const res = await apiFetch(`/api/lists/${list.id}`, { method: "DELETE" });
+    const j = await res.json().catch(() => ({}));
+    setBusy(null);
+    if (res.ok) {
+      say(`Deleted “${list.name}”.`);
+      setOpen((prev) => { const next = new Set(prev); next.delete(list.id); return next; });
+      setSnaps((prev) => { const next = { ...prev }; delete next[list.id]; return next; });
+      await loadLists();
+    } else fail(j.error ?? "Delete failed");
   }
 
   return (
@@ -79,7 +104,10 @@ export default function ListsManager() {
         <input className="input" style={{ maxWidth: 320 }} value={newName}
           onChange={(e) => setNewName(e.target.value)} placeholder="New list name" maxLength={120} />
         <button className="btn btn--sm" type="submit" disabled={!newName.trim()}>Create list</button>
-        {msg && <span className="note" data-test-id="lists-msg" style={{ color: "var(--green)" }}>{msg}</span>}
+        {msg && (
+          <span className="note" data-test-id="lists-msg"
+            style={{ color: msgError ? "var(--danger)" : "var(--green)" }}>{msg}</span>
+        )}
       </form>
 
       <div className="grid-forms" style={{ gridTemplateColumns: "1fr" }}>
@@ -98,6 +126,13 @@ export default function ListsManager() {
                 <button className="btn btn--ghost btn--sm" onClick={() => toggle(l.id)}>
                   {open.has(l.id) ? "Hide snapshots" : "Snapshots"}
                 </button>
+                {isAdmin && (
+                  <button className="btn btn--ghost btn--sm" data-test-id="delete-list"
+                    onClick={() => removeList(l)} disabled={busy === `del:${l.id}`} aria-busy={busy === `del:${l.id}`}
+                    style={{ color: "var(--danger)" }} title="Delete this list — its contacts are kept">
+                    {busy === `del:${l.id}` ? "Deleting…" : "Delete"}
+                  </button>
+                )}
               </div>
             </div>
 

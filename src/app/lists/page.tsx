@@ -11,7 +11,8 @@ export default function ListsPage() {
         <h1>Contact lists</h1>
         <p className="note" style={{ marginBottom: 16 }}>
           Each list keeps restorable snapshots of its membership. A snapshot is taken automatically before a
-          CSV import, and you can take one anytime — then roll back with one click.
+          CSV import, and you can take one anytime — then roll back with one click. Deleting a list removes its
+          snapshots but keeps every contact in your address book.
         </p>
         <ListsManager />
       </main>
