@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { RESERVED_HOST_LABELS } from "./hostTenancy";
+import { parseSlug, isAllowedDestination } from "./links";
 
 // E.164 without leading '+', 8–15 digits (covers KSA/Kuwait/Qatar/Jordan, etc.)
 export const PhoneSchema = z
@@ -84,6 +85,31 @@ export const LoginSchema = z.object({
 
 export const CreateListSchema = z.object({
   name: z.string().trim().min(1).max(120),
+});
+
+// A /go/<slug> destination. The rules live in lib/links.ts and are reused here
+// so the write path and the bouncer can never disagree about what is valid.
+export const CreateRedirectSchema = z.object({
+  slug: z
+    .string()
+    .trim()
+    .refine((s) => parseSlug(s) !== null, "Slug: 2–64 lowercase letters, numbers, or inner hyphens")
+    .transform((s) => parseSlug(s)!),
+  url: z
+    .string()
+    .trim()
+    .refine(isAllowedDestination, "Destination must be a full http:// or https:// address"),
+});
+
+// Only the destination is editable. The slug is deliberately immutable: it is
+// printed inside approved WhatsApp templates, and changing it there costs a
+// Meta re-review plus a 24h edit window. Being able to repoint a permanent slug
+// is the entire reason the bouncer exists.
+export const UpdateRedirectSchema = z.object({
+  url: z
+    .string()
+    .trim()
+    .refine(isAllowedDestination, "Destination must be a full http:// or https:// address"),
 });
 
 // Create a WhatsApp template and submit it to Meta for approval.

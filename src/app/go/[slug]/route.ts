@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { resolveRedirect } from "@/lib/links";
+import { prisma } from "@/lib/db";
+import { parseSlug, isAllowedDestination } from "@/lib/links";
 
 export const runtime = "nodejs";
 
@@ -13,9 +14,16 @@ export const runtime = "nodejs";
  * by the scraper straight to the destination. See lib/links.ts.
  */
 export async function GET(_req: Request, ctx: { params: Promise<{ slug: string }> }) {
-  const { slug } = await ctx.params;
-  const dest = resolveRedirect(slug);
-  if (!dest) return new NextResponse("Not found", { status: 404 });
+  const { slug: raw } = await ctx.params;
+  const slug = parseSlug(raw);
+  if (!slug) return new NextResponse("Not found", { status: 404 });
+
+  const link = await prisma.redirectLink.findUnique({ where: { slug }, select: { url: true } });
+  // Re-check the scheme at render time even though the API validates on write:
+  // this value is about to be interpolated into an <a href>, and a row could
+  // predate the check or have been written by hand.
+  if (!link || !isAllowedDestination(link.url)) return new NextResponse("Not found", { status: 404 });
+  const dest = link.url;
 
   const js = JSON.stringify(dest); // safe inside <script>
   const href = dest.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");

@@ -1,5 +1,5 @@
 /**
- * Allowlisted outbound links for /go/<slug>.
+ * Outbound link bouncer for /go/<slug>.
  *
  * Why this exists: WhatsApp scrapes the destination of a template's URL button
  * and renders an Open Graph card above the message body. There is no Cloud API
@@ -11,22 +11,37 @@
  * The redirect itself must happen in the browser, not as a 301/302: the scraper
  * follows HTTP redirects and would just end up scraping the destination.
  *
- * This is an allowlist, never an open redirect — taking the destination from a
- * query string would turn the app into a phishing relay.
+ * Destinations live in the RedirectLink table, one row per client — never taken
+ * from a query string, which would turn the app into a phishing relay.
  */
-export const REDIRECT_LINKS: Record<string, string> = {
-  instagram: "https://www.instagram.com/britishinternational",
-};
+
+/** 2–64 chars, lowercase alphanumeric, inner hyphens only. */
+const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$/;
 
 /**
- * Resolve a /go/<slug> to its destination, or null when the slug is unknown.
+ * Normalise a slug and confirm it is well-formed, or null.
  *
- * Own-property check, not a bare lookup: "constructor" and "toString" would
- * otherwise resolve to inherited Object members instead of 404ing.
+ * Rejecting anything with a scheme, slash or space is what keeps /go from
+ * being talked into an open redirect by a crafted path.
  */
-export function resolveRedirect(slug: string): string | null {
-  const key = slug.trim().toLowerCase();
-  if (!Object.hasOwn(REDIRECT_LINKS, key)) return null;
-  const dest = REDIRECT_LINKS[key];
-  return typeof dest === "string" ? dest : null;
+export function parseSlug(raw: string): string | null {
+  const slug = raw.trim().toLowerCase();
+  return SLUG_PATTERN.test(slug) ? slug : null;
+}
+
+/**
+ * May this URL be used as a /go destination?
+ *
+ * Destinations come from admin input now, and /go renders one into an <a href>.
+ * A `javascript:` or `data:` URL there is stored XSS against every recipient who
+ * taps the button, so the scheme allowlist is a security control, not a nicety.
+ */
+export function isAllowedDestination(url: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url.trim());
+  } catch {
+    return false; // relative, schemeless or unparseable
+  }
+  return parsed.protocol === "http:" || parsed.protocol === "https:";
 }
