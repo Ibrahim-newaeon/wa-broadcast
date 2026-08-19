@@ -16,7 +16,11 @@ export default async function Dashboard() {
     await Promise.all([
       prisma.contact.count({ where: { clientId } }),
       prisma.contact.count({ where: { clientId, optedOut: true } }),
-      prisma.contactList.findMany({ where: { clientId }, orderBy: { createdAt: "desc" } }),
+      prisma.contactList.findMany({
+        where: { clientId },
+        orderBy: { createdAt: "desc" },
+        include: { _count: { select: { memberships: true } } },
+      }),
       prisma.template.findMany({ where: { clientId, status: "APPROVED" }, orderBy: { name: "asc" } }),
       prisma.broadcast.findMany({
         where: { clientId },
@@ -181,7 +185,7 @@ export default async function Dashboard() {
           <h2>Build a list, import contacts, send</h2>
         </section>
         <section className="grid-forms reveal d3">
-          <NewListForm />
+          <NewListForm lists={lists} />
           <UploadForm lists={lists} />
           <BroadcastForm lists={lists} templates={templates} />
         </section>

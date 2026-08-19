@@ -1,5 +1,6 @@
 import Nav from "@/components/Nav";
 import UsersManager from "@/components/UsersManager";
+import ChangePasswordForm from "@/components/ChangePasswordForm";
 import WhatsAppSetup from "@/components/WhatsAppSetup";
 import ClientsManager from "@/components/ClientsManager";
 import AuditLogViewer from "@/components/AuditLogViewer";
@@ -18,6 +19,10 @@ export default function SettingsPage() {
         <WhatsAppSetup />
         <h2 style={{ marginTop: 32 }}>Team members</h2>
         <UsersManager />
+        <h2 style={{ marginTop: 32 }}>My account</h2>
+        <div className="grid-forms">
+          <ChangePasswordForm />
+        </div>
         {/* ADMIN-only; renders nothing (including its heading) for members. */}
         <AuditLogViewer />
       </main>
