@@ -6,6 +6,8 @@ import {
 } from "@/lib/auth";
 import { getVersion, isJtiActive, registerJti, revokeJti, bumpVersion } from "@/lib/tokenStore";
 import { getUserAuth } from "@/lib/users";
+import { hostTenantSlug, resolveHostAccess } from "@/lib/hostTenancy";
+import { clientIdBySlug } from "@/lib/hostClient";
 
 export const runtime = "nodejs";
 
@@ -36,10 +38,21 @@ export async function POST(req: NextRequest) {
   await revokeJti(claims.jti);
   const newJti = crypto.randomUUID();
   await registerJti(newJti);
-  const { role, clientId } = await getUserAuth(claims.sub);
+  const { role, clientId, slug } = await getUserAuth(claims.sub);
+
+  // Same host rule as login. Without this a session on the wrong hostname would
+  // refresh successfully, be redirected by the middleware, and loop.
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
+  const hostSlug = hostTenantSlug(host);
+  const hostClientId = hostSlug ? await clientIdBySlug(hostSlug) : null;
+  const allowed = resolveHostAccess(
+    { hostSlug, hostClientId, role, ownClientId: clientId, ownSlug: slug },
+    host,
+  );
+  if (!allowed.ok) return unauthorized();
 
   const [access, refresh] = await Promise.all([
-    signAccess(claims.sub, role, clientId),
+    signAccess(claims.sub, role, clientId, slug),
     signRefresh(claims.sub, currentVer, newJti),
   ]);
 

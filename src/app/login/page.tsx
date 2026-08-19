@@ -7,16 +7,29 @@ function nextUrl() {
   return new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
 }
 
+/** Set when the middleware bounced a session off a hostname that doesn't serve it. */
+function wrongHost() {
+  return new URLSearchParams(window.location.search).get("e") === "host";
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [hostNote, setHostNote] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Bounced here for using the wrong address: show the form, never retry
+      // the silent refresh — it would redirect straight back here.
+      if (wrongHost()) {
+        setHostNote(true);
+        setChecking(false);
+        return;
+      }
       try {
         const res = await fetch("/api/auth/refresh", { method: "POST" });
         if (!cancelled && res.ok) {
@@ -93,6 +106,12 @@ export default function LoginPage() {
             <input id="password" data-test-id="login-password" className="input" type="password" value={password}
               onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
           </div>
+          {hostNote && (
+            <p className="note" data-test-id="login-host-note" style={{ marginBottom: 10 }}>
+              This address serves a single workspace. Sign in with an account for it, or use your own
+              workspace address — signing in below will tell you which one that is.
+            </p>
+          )}
           {error && <p data-test-id="login-error" className="error-text">{error}</p>}
           <button data-test-id="login-submit" className="btn" type="submit" disabled={loading}
             aria-busy={loading} style={{ width: "100%", marginTop: 6 }}>

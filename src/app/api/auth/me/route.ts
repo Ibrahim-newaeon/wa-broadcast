@@ -8,5 +8,12 @@ export const runtime = "nodejs";
 export async function GET(req: NextRequest) {
   const ctx = await getAuthContext(req);
   if (!ctx) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
-  return NextResponse.json({ email: ctx.email, role: ctx.role, clientId: ctx.clientId, isAdmin: isAdminRole(ctx.role) });
+  return NextResponse.json({
+    email: ctx.email,
+    role: ctx.role,
+    clientId: ctx.clientId,
+    isAdmin: isAdminRole(ctx.role),
+    // Host-bound (or non-super) sessions must not be offered the switcher.
+    pinned: ctx.pinned,
+  });
 }

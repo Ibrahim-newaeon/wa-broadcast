@@ -8,6 +8,8 @@ import {
 } from "@/lib/auth";
 import { getVersion, registerJti } from "@/lib/tokenStore";
 import { verifyCredentials } from "@/lib/users";
+import { hostTenantSlug, resolveHostAccess } from "@/lib/hostTenancy";
+import { clientIdBySlug, slugByClientId } from "@/lib/hostClient";
 import { rateLimit } from "@/lib/ratelimit";
 import { prisma } from "@/lib/db";
 
@@ -25,13 +27,26 @@ export async function POST(req: NextRequest) {
   const user = await verifyCredentials(email, password);
   if (!user) return NextResponse.json({ error: "invalid credentials" }, { status: 401 });
 
+  // Which workspace does this hostname serve, and may this user sign in here?
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
+  const hostSlug = hostTenantSlug(host);
+  const [hostClientId, ownSlug] = await Promise.all([
+    hostSlug ? clientIdBySlug(hostSlug) : Promise.resolve(null),
+    slugByClientId(user.clientId),
+  ]);
+  const access_ = resolveHostAccess(
+    { hostSlug, hostClientId, role: user.role, ownClientId: user.clientId, ownSlug },
+    host,
+  );
+  if (!access_.ok) return NextResponse.json({ error: access_.error }, { status: 403 });
+
   const sub = user.email;
   const ver = await getVersion(sub);
   const jti = crypto.randomUUID();
   await registerJti(jti);
 
   const [access, refresh] = await Promise.all([
-    signAccess(sub, user.role, user.clientId),
+    signAccess(sub, user.role, user.clientId, ownSlug),
     signRefresh(sub, ver, jti),
   ]);
 

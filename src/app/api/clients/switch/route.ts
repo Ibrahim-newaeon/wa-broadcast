@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { requireSuperAdmin } from "@/lib/users";
+import { requireSuperAdmin, getAuthContext } from "@/lib/users";
 import { ACTING_CLIENT_COOKIE, cookieBase, ACCESS_MAX_AGE } from "@/lib/auth";
 
 export const runtime = "nodejs";
@@ -11,6 +11,16 @@ const Schema = z.object({ clientId: z.string().min(1) });
 /** POST /api/clients/switch — a SUPERADMIN sets the tenant they act as. */
 export async function POST(req: NextRequest) {
   if (!(await requireSuperAdmin(req))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+
+  // On a tenant subdomain the hostname fixes the client — switching there would
+  // silently contradict the address bar.
+  const ctx = await getAuthContext(req);
+  if (ctx?.pinned) {
+    return NextResponse.json(
+      { error: "this address serves one workspace — switch clients on the console host" },
+      { status: 409 },
+    );
+  }
 
   const parsed = Schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "invalid" }, { status: 400 });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken, ACCESS_COOKIE } from "@/lib/auth";
+import { hostTenantSlug } from "@/lib/hostTenancy";
 
 // Public paths that must NOT require auth.
 const PUBLIC_PREFIXES = [
@@ -24,7 +25,29 @@ export async function middleware(req: NextRequest) {
   if (PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) return NextResponse.next();
 
   const claims = await verifyToken(req.cookies.get(ACCESS_COOKIE)?.value, "access");
-  if (claims) return NextResponse.next();
+  if (claims) {
+    // Host ↔ tenant. A tenant subdomain serves exactly one client; the console
+    // host serves everyone who has no subdomain of their own. Super-admins pass
+    // everywhere (they are pinned to the host's tenant in the Node layer).
+    // Tokens minted before this claim existed carry `slg: undefined` — let them
+    // through here; getAuthContext re-checks against the database.
+    const hostSlug = hostTenantSlug(req.headers.get("host"));
+    const own = claims.slg;
+    const mismatched =
+      claims.role !== "SUPERADMIN" && own !== undefined &&
+      (hostSlug ? own !== hostSlug : own !== null);
+    if (mismatched) {
+      if (pathname.startsWith("/api")) {
+        return NextResponse.json({ error: "this address does not serve your workspace" }, { status: 403 });
+      }
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      url.search = "";
+      url.searchParams.set("e", "host");
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
+  }
 
   if (pathname.startsWith("/api")) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
