@@ -1,5 +1,78 @@
 import { describe, it, expect } from "vitest";
-import { PhoneSchema, ContactRowSchema, CreateContactSchema, composeName, CreateClientSchema, CreateTemplateSchema, LeadSchema, TemplatePhoneSchema } from "./validation";
+import { PhoneSchema, ContactRowSchema, CreateContactSchema, composeName, CreateClientSchema, CreateTemplateSchema, LeadSchema, TemplatePhoneSchema, ListIdsSchema, BulkAddToListSchema, diffListMembership } from "./validation";
+
+describe("diffListMembership", () => {
+  const offered = ["a", "b", "c"];
+
+  it("adds the newly ticked lists", () => {
+    expect(diffListMembership(["a"], ["a", "b"], offered)).toEqual({ add: ["b"], remove: [] });
+  });
+
+  it("removes the unticked ones", () => {
+    expect(diffListMembership(["a", "b"], ["a"], offered)).toEqual({ add: [], remove: ["b"] });
+  });
+
+  it("does nothing when the selection is unchanged", () => {
+    expect(diffListMembership(["a", "b"], ["b", "a"], offered)).toEqual({ add: [], remove: [] });
+  });
+
+  it("clears every offered list when nothing is ticked", () => {
+    expect(diffListMembership(["a", "b"], [], offered)).toEqual({ add: [], remove: ["a", "b"] });
+  });
+
+  // The reason this function exists. An archived list is not in the picker, so an
+  // unticked box must never be read as "remove me from it".
+  it("leaves a membership the picker never offered alone", () => {
+    expect(diffListMembership(["a", "archived"], ["a"], offered)).toEqual({ add: [], remove: [] });
+  });
+
+  it("ignores a desired list that was not on offer", () => {
+    expect(diffListMembership([], ["a", "someone-elses"], offered)).toEqual({ add: ["a"], remove: [] });
+  });
+
+  it("is a no-op when nothing is selectable", () => {
+    expect(diffListMembership(["a"], ["b"], [])).toEqual({ add: [], remove: [] });
+  });
+});
+
+describe("ListIdsSchema", () => {
+  it("collapses duplicates from the checkboxes", () => {
+    expect(ListIdsSchema.parse(["a", "b", "a"])).toEqual(["a", "b"]);
+  });
+
+  it("accepts the empty array, which means no lists", () => {
+    expect(ListIdsSchema.parse([])).toEqual([]);
+  });
+
+  it("rejects a non-array and blank ids", () => {
+    expect(ListIdsSchema.safeParse("a").success).toBe(false);
+    expect(ListIdsSchema.safeParse([""]).success).toBe(false);
+  });
+});
+
+describe("BulkAddToListSchema", () => {
+  it("accepts ids plus a list", () => {
+    const r = BulkAddToListSchema.parse({ ids: ["c1", "c2"], listId: "l1" });
+    expect(r.ids).toHaveLength(2);
+  });
+
+  it("rejects an empty selection or a missing list", () => {
+    expect(BulkAddToListSchema.safeParse({ ids: [], listId: "l1" }).success).toBe(false);
+    expect(BulkAddToListSchema.safeParse({ ids: ["c1"], listId: "" }).success).toBe(false);
+  });
+});
+
+describe("CreateContactSchema — lists", () => {
+  it("accepts several lists", () => {
+    const r = CreateContactSchema.parse({ firstName: "Ahmed", phone: "+962798960079", listIds: ["a", "b"] });
+    expect(r.listIds).toEqual(["a", "b"]);
+  });
+
+  it("still accepts the CSV importer's single listId", () => {
+    const r = CreateContactSchema.parse({ firstName: "Ahmed", phone: "+962798960079", listId: "a" });
+    expect(r.listId).toBe("a");
+  });
+});
 
 describe("TemplatePhoneSchema", () => {
   it("keeps a number that is already E.164", () => {

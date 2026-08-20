@@ -11,9 +11,17 @@ export default function AddContactForm({ lists }: { lists: List[] }) {
   const [lastName, setLastName] = useState("");
   const [countryCode, setCountryCode] = useState(COUNTRY_CODES[0]!.code);
   const [national, setNational] = useState("");
-  const [listId, setListId] = useState("");
+  const [listIds, setListIds] = useState<Set<string>>(new Set());
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+
+  function toggleList(id: string) {
+    setListIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
 
   // Live E.164 preview so the country code is never a surprise.
   const e164 = national.trim() ? toE164(countryCode, national) : "";
@@ -29,7 +37,7 @@ export default function AddContactForm({ lists }: { lists: List[] }) {
         firstName,
         lastName: lastName.trim() || undefined,
         phone: e164,
-        listId: listId || undefined,
+        listIds: [...listIds],
       }),
     });
     const j = await res.json().catch(() => ({}));
@@ -82,12 +90,20 @@ export default function AddContactForm({ lists }: { lists: List[] }) {
       </div>
 
       <div className="field">
-        <label className="label" htmlFor="add-list">Add to list <span className="muted">(optional)</span></label>
-        <select id="add-list" data-test-id="add-list" className="input" value={listId}
-          onChange={(e) => setListId(e.target.value)}>
-          <option value="">— none —</option>
-          {lists.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-        </select>
+        <span className="label" id="add-lists-lbl">Add to lists <span className="muted">(optional — pick any number)</span></span>
+        {lists.length === 0 ? (
+          <p className="note">No lists yet. Create one on the Lists page first.</p>
+        ) : (
+          <div className="ct-lists" role="group" aria-labelledby="add-lists-lbl" data-test-id="add-lists">
+            {lists.map((l) => (
+              <label key={l.id} className="ct-lists__opt">
+                <input type="checkbox" data-test-id="add-list-option"
+                  checked={listIds.has(l.id)} onChange={() => toggleList(l.id)} />
+                {l.name}
+              </label>
+            ))}
+          </div>
+        )}
       </div>
 
       <button data-test-id="add-submit" className="btn" type="submit" disabled={busy || !firstName || !national} aria-busy={busy}>

@@ -906,9 +906,27 @@ html[dir="rtl"] .flow__arrow{ transform:scaleX(-1); }
       <div data-lang="ar">للمسؤولين فقط. يطلب تأكيدًا مباشرًا. راجع التنبيه أدناه.</div>
     </div>
     <div class="kv__row">
+      <div data-lang="en">Lists</div><div data-lang="ar">القوائم</div>
+      <div data-lang="en">Every list the contact belongs to, shown as chips. Press <strong>Edit</strong> and the chips become checkboxes — tick to add, untick to remove.</div>
+      <div data-lang="ar">كل قائمة تنتمي إليها جهة الاتصال، معروضة كوسوم. اضغط <strong>تعديل</strong> فتتحوّل الوسوم إلى مربّعات اختيار — حدّد للإضافة، وألغِ التحديد للإزالة.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Add selected to list</div><div data-lang="ar">إضافة المحدّد إلى قائمة</div>
+      <div data-lang="en">Tick several contacts, choose a list from the dropdown that appears, then press <strong>Add</strong>. Anyone already in that list is left as they are.</div>
+      <div data-lang="ar">حدّد عدّة جهات اتصال، واختر قائمة من القائمة المنسدلة التي تظهر، ثم اضغط <strong>إضافة</strong>. ومن كان موجودًا في تلك القائمة يبقى كما هو.</div>
+    </div>
+    <div class="kv__row">
       <div data-lang="en">Bulk delete</div><div data-lang="ar">حذف جماعي</div>
       <div data-lang="en">Tick the checkboxes, then <strong>Delete selected</strong> and <strong>Confirm</strong>. Admins only.</div>
       <div data-lang="ar">حدّد المربّعات، ثم اضغط <strong>حذف المحدّد</strong> ثم <strong>تأكيد</strong>. للمسؤولين فقط.</div>
+    </div>
+  </div>
+
+  <div class="callout callout--tip">
+    <div class="callout__ico" aria-hidden="true">💡</div>
+    <div>
+      <p data-lang="en">The checkboxes only offer lists you can still send to. If a contact is in an <em>archived</em> list, that shows in the row as a greyed chip and is left untouched when you save — so tidying someone's live lists can never quietly pull them out of an archived one.</p>
+      <p data-lang="ar">لا تعرض مربّعات الاختيار سوى القوائم التي ما زال بإمكانك الإرسال إليها. وإذا كانت جهة الاتصال ضمن قائمة <em>مؤرشفة</em>، فتظهر في الصف كوسم باهت ولا تتأثّر عند الحفظ — فترتيب قوائمها النشطة لا يمكن أن يُخرجها من قائمة مؤرشفة دون أن تدري.</p>
     </div>
   </div>
 
@@ -936,11 +954,13 @@ html[dir="rtl"] .flow__arrow{ transform:scaleX(-1); }
   <p data-lang="ar">اكتب اسمًا في الحقل أعلى صفحة <strong>القوائم</strong> واضغط <strong>إنشاء قائمة</strong>. ويجب أن تكون الأسماء فريدة. اختر أسماءً تبقى مفهومة بعد ستة أشهر — فاسم <em>«أولياء أمور — الصف الخامس — ٢٠٢٦»</em> أفضل من <em>«قائمة جديدة ٢»</em>.</p>
 
   <h3><span data-lang="en">Filling a list</span><span data-lang="ar">تعبئة القائمة</span></h3>
-  <p data-lang="en">There are two ways:</p>
-  <p data-lang="ar">هناك طريقتان:</p>
+  <p data-lang="en">There are four ways, and you are never stuck with your first choice — membership can be changed at any time from the Contacts page.</p>
+  <p data-lang="ar">هناك أربع طرق، ولست مقيّدًا باختيارك الأول — إذ يمكن تغيير العضوية في أي وقت من صفحة جهات الاتصال.</p>
   <ul>
-    <li><span data-lang="en">Choose the list in <strong>Add to list</strong> when adding a single contact, on the <strong>Contacts</strong> page.</span><span data-lang="ar">اختر القائمة من <strong>إضافة إلى قائمة</strong> عند إضافة جهة اتصال واحدة، في صفحة <strong>جهات الاتصال</strong>.</span></li>
+    <li><span data-lang="en">Tick the lists under <strong>Add to lists</strong> when adding a single contact, on the <strong>Contacts</strong> page. You can pick more than one.</span><span data-lang="ar">حدّد القوائم تحت <strong>إضافة إلى قوائم</strong> عند إضافة جهة اتصال واحدة، في صفحة <strong>جهات الاتصال</strong>. ويمكنك اختيار أكثر من واحدة.</span></li>
     <li><span data-lang="en">Choose the list in <strong>Add to list</strong> when uploading a CSV, on the <strong>Dashboard</strong> — every row in the file joins it.</span><span data-lang="ar">اختر القائمة من <strong>إضافة إلى قائمة</strong> عند رفع ملف CSV، في <strong>لوحة التحكم</strong> — وسينضم إليها كل صف في الملف.</span></li>
+    <li><span data-lang="en">Press <strong>Edit</strong> on any contact row and tick or untick its lists.</span><span data-lang="ar">اضغط <strong>تعديل</strong> على أي صف جهة اتصال وحدّد قوائمها أو ألغِ تحديدها.</span></li>
+    <li><span data-lang="en">Tick several contacts, then use <strong>Add to list</strong> in the toolbar to move them all in at once.</span><span data-lang="ar">حدّد عدّة جهات اتصال، ثم استخدم <strong>إضافة إلى قائمة</strong> في شريط الأدوات لإضافتها جميعًا دفعة واحدة.</span></li>
   </ul>
 
   <h3><span data-lang="en">Snapshots — your undo button</span><span data-lang="ar">النسخ المحفوظة — زرّ التراجع لديك</span></h3>

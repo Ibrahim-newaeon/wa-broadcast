@@ -50,15 +50,55 @@ export function composeName(first?: string | null, last?: string | null): string
 
 // Add a single contact via the UI. The phone is expected as E.164 digits (the
 // form composes country code + national number); PhoneSchema re-validates it.
+// A set of list ids. Duplicates are collapsed so the caller can send whatever the
+// checkboxes produced; the empty array is meaningful and means "no lists".
+export const ListIdsSchema = z
+  .array(z.string().min(1))
+  .max(200)
+  .transform((ids) => [...new Set(ids)]);
+
 export const CreateContactSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required").max(60),
   lastName: z.string().trim().max(60).optional(),
   phone: PhoneSchema,
+  // `listId` predates multi-list membership and is still what the CSV importer
+  // sends; `listIds` is the form's. Both are honoured and merged.
   listId: z.string().min(1).optional(),
+  listIds: ListIdsSchema.optional(),
   // extra key/value template variables
   attributes: z.record(z.string()).default({}),
 });
 export type CreateContactInput = z.infer<typeof CreateContactSchema>;
+
+// Add many contacts to one list in a single request.
+export const BulkAddToListSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1, "Select at least one contact").max(500),
+  listId: z.string().min(1, "Choose a list"),
+});
+
+/**
+ * Work out the membership changes for a contact, given the lists it is in now
+ * and the ones the operator ticked.
+ *
+ * `selectable` is the set of lists the picker actually offered — non-archived
+ * lists owned by this client. Anything outside it is left strictly alone, so
+ * saving the form can never quietly drop a contact out of an archived list it
+ * still belongs to, and cannot touch another client's list.
+ */
+export function diffListMembership(
+  current: readonly string[],
+  desired: readonly string[],
+  selectable: readonly string[],
+): { add: string[]; remove: string[] } {
+  const offered = new Set(selectable);
+  const want = new Set(desired.filter((id) => offered.has(id)));
+  const have = new Set(current);
+
+  return {
+    add: [...want].filter((id) => !have.has(id)),
+    remove: [...have].filter((id) => offered.has(id) && !want.has(id)),
+  };
+}
 
 export const CreateBroadcastSchema = z.object({
   templateId: z.string().min(1),

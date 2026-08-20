@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/apiFetch";
 import { useRole } from "@/lib/useRole";
 
-interface Contact { id: string; phone: string; name: string | null; optedOut: boolean }
+interface ListRef { id: string; name: string; archived: boolean }
+interface Contact { id: string; phone: string; name: string | null; optedOut: boolean; lists: ListRef[] }
 const PAGE = 50;
 
 export default function ContactsTable() {
@@ -16,12 +17,20 @@ export default function ContactsTable() {
   const [busy, setBusy] = useState(false);
   const offsetRef = useRef(0);
 
+  // Every non-archived list, for the edit checkboxes and the bulk picker.
+  const [lists, setLists] = useState<ListRef[]>([]);
+
   // Multi-select + inline edit state.
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
+  const [editLists, setEditLists] = useState<Set<string>>(new Set());
   const [editErr, setEditErr] = useState<string | null>(null);
+
+  // Bulk "add to list".
+  const [bulkListId, setBulkListId] = useState("");
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   // Inline confirmation state (replaces native confirm()/alert()).
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
@@ -49,6 +58,17 @@ export default function ContactsTable() {
     const t = setTimeout(() => { offsetRef.current = 0; void load("replace"); }, 250);
     return () => clearTimeout(t);
   }, [load]);
+
+  // Lists change rarely — fetch once. Archived ones are excluded by the API, so
+  // the pickers here only ever offer lists you can actually send to.
+  useEffect(() => {
+    void (async () => {
+      const res = await apiFetch("/api/lists");
+      if (!res.ok) return;
+      const j = await res.json().catch(() => null);
+      if (j?.lists) setLists(j.lists.map((l: ListRef) => ({ id: l.id, name: l.name, archived: !!l.archived })));
+    })();
+  }, []);
 
   function toggleSelect(id: string) {
     setSelected((prev) => {
@@ -108,21 +128,59 @@ export default function ContactsTable() {
     setEditingId(c.id);
     setEditName(c.name ?? "");
     setEditPhone(c.phone);
+    setEditLists(new Set(c.lists.map((l) => l.id)));
     setEditErr(null);
   }
   function cancelEdit() { setEditingId(null); setEditErr(null); }
+
+  function toggleEditList(listId: string) {
+    setEditLists((prev) => {
+      const next = new Set(prev);
+      next.has(listId) ? next.delete(listId) : next.add(listId);
+      return next;
+    });
+  }
 
   async function saveEdit(c: Contact) {
     setEditErr(null);
     const res = await apiFetch(`/api/contacts/${c.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: editName.trim(), phone: editPhone.trim() }),
+      body: JSON.stringify({ name: editName.trim(), phone: editPhone.trim(), listIds: [...editLists] }),
     });
     const j = await res.json().catch(() => ({}));
     if (!res.ok) { setEditErr(j.error ?? `Error ${res.status}`); return; }
-    setContacts((prev) => prev.map((x) => (x.id === c.id ? { ...x, name: j.contact.name, phone: j.contact.phone } : x)));
+    setContacts((prev) =>
+      prev.map((x) =>
+        x.id === c.id
+          ? { ...x, name: j.contact.name, phone: j.contact.phone, lists: j.contact.lists ?? x.lists }
+          : x,
+      ),
+    );
     setEditingId(null);
+  }
+
+  async function bulkAddToList() {
+    if (!bulkListId || selected.size === 0) return;
+    setBulkBusy(true);
+    setNotice(null);
+    const res = await apiFetch("/api/contacts/bulk-list", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: [...selected], listId: bulkListId }),
+    });
+    const j = await res.json().catch(() => ({}));
+    setBulkBusy(false);
+    if (!res.ok) { setNotice(j.error ?? `Error ${res.status}`); return; }
+    setNotice(
+      `Added ${j.added} to “${j.listName}”.` +
+        (j.alreadyIn > 0 ? ` ${j.alreadyIn} already there.` : "") +
+        (j.skipped > 0 ? ` ${j.skipped} skipped.` : ""),
+    );
+    setBulkListId("");
+    // Membership changed for a whole page of rows — refetch rather than patch.
+    offsetRef.current = 0;
+    await load("replace");
   }
 
   return (
@@ -139,6 +197,20 @@ export default function ContactsTable() {
           </button>
         ))}
         <span className="spacer" />
+        {selected.size > 0 && lists.length > 0 && (
+          <span className="row" style={{ gap: 6 }}>
+            <select aria-label="Add selected contacts to list" data-test-id="bulk-list-select"
+              className="input input--sm" style={{ maxWidth: 200 }} value={bulkListId}
+              onChange={(e) => setBulkListId(e.target.value)}>
+              <option value="">— add to list —</option>
+              {lists.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+            </select>
+            <button className="btn btn--sm" data-test-id="bulk-list-add" disabled={!bulkListId || bulkBusy}
+              onClick={bulkAddToList} aria-busy={bulkBusy}>
+              {bulkBusy ? "Adding…" : `Add ${selected.size}`}
+            </button>
+          </span>
+        )}
         {isAdmin && selected.size > 0 && (
           confirmBulk ? (
             <span className="row" style={{ gap: 8 }}>
@@ -164,7 +236,7 @@ export default function ContactsTable() {
               <input type="checkbox" aria-label="Select all" data-test-id="select-all"
                 checked={allSelected} onChange={toggleSelectAll} />
             </th>
-            <th>Phone</th><th>Name</th><th>Status</th><th style={{ textAlign: "end" }}>Actions</th>
+            <th>Phone</th><th>Name</th><th>Lists</th><th>Status</th><th style={{ textAlign: "end" }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -187,6 +259,39 @@ export default function ContactsTable() {
                         onChange={(e) => setEditName(e.target.value)} />
                     : (c.name ?? "—")}
                   {editing && editErr && <div className="error-text">{editErr}</div>}
+                </td>
+                <td>
+                  {editing ? (
+                    lists.length === 0 ? (
+                      <span className="muted">No lists yet</span>
+                    ) : (
+                      <div className="ct-lists" role="group" aria-label={`Lists for ${c.phone}`}>
+                        {lists.map((l) => (
+                          <label key={l.id} className="ct-lists__opt">
+                            <input type="checkbox" data-test-id="edit-list-option"
+                              checked={editLists.has(l.id)} onChange={() => toggleEditList(l.id)} />
+                            {l.name}
+                          </label>
+                        ))}
+                        {/* An archived list the contact is still in cannot be
+                            unticked here — it is not on offer — so say so
+                            rather than letting the row look incomplete. */}
+                        {c.lists.filter((l) => l.archived).map((l) => (
+                          <span key={l.id} className="note">{l.name} (archived)</span>
+                        ))}
+                      </div>
+                    )
+                  ) : c.lists.length === 0 ? (
+                    <span className="muted">—</span>
+                  ) : (
+                    <span className="ct-chips">
+                      {c.lists.map((l) => (
+                        <span key={l.id} className={`badge badge--${l.archived ? "PENDING" : "ACTIVE"}`}>
+                          {l.name}{l.archived ? " (archived)" : ""}
+                        </span>
+                      ))}
+                    </span>
+                  )}
                 </td>
                 <td>
                   <span className={`badge badge--${c.optedOut ? "OPTEDOUT" : "ACTIVE"}`}>
@@ -226,7 +331,7 @@ export default function ContactsTable() {
           })}
           {contacts.length === 0 && !busy && (
             <tr>
-              <td colSpan={5}>
+              <td colSpan={6}>
                 <div className="dash-empty">
                   <strong>{query.trim() || optFilter !== "all" ? "No matches" : "No contacts yet"}</strong>
                   {query.trim() || optFilter !== "all"
