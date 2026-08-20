@@ -9,6 +9,31 @@ export const PhoneSchema = z
   .transform((s) => s.replace(/[^\d]/g, "")) // strip +, spaces, dashes
   .pipe(z.string().regex(/^\d{8,15}$/, "Phone must be 8–15 digits in E.164"));
 
+// A template "Call" button carries a number Meta dials from anywhere, so it has to
+// be a full international one. Meta rejects a national number — a leading 0, or no
+// country code — with error #192, but only after the template has round-tripped
+// through review, which makes the mistake an expensive one to leave uncaught.
+// Normalise what people actually type (spaces, dashes, brackets, a 00 international
+// prefix) and require what is left to be E.164: '+', a country code, 7–15 digits in
+// total. Country codes never begin with 0, which is what makes the common
+// "+962 079…" slip catchable here rather than at Meta.
+export const TemplatePhoneSchema = z
+  .string()
+  .trim()
+  .transform((s) => {
+    const cleaned = s.replace(/[^\d+]/g, "");
+    if (cleaned.startsWith("00")) return `+${cleaned.slice(2)}`;
+    return cleaned.startsWith("+") ? cleaned : `+${cleaned}`;
+  })
+  .pipe(
+    z
+      .string()
+      .regex(
+        /^\+[1-9]\d{6,14}$/,
+        "Use the full international number with country code, e.g. +962798960079 (drop the leading 0)",
+      ),
+  );
+
 export const ContactRowSchema = z.object({
   phone: PhoneSchema,
   name: z.string().trim().max(120).optional(),
@@ -135,7 +160,7 @@ export const CreateTemplateSchema = z
           type: z.enum(["QUICK_REPLY", "URL", "PHONE_NUMBER", "COPY_CODE"]),
           text: z.string().trim().min(1).max(25),
           url: z.string().url().optional(),
-          phoneNumber: z.string().trim().regex(/^\+?[0-9]{6,20}$/, "Use digits, optional leading +").optional(),
+          phoneNumber: TemplatePhoneSchema.optional(),
           couponExample: z.string().trim().min(1).max(15).optional(),
         }),
       )

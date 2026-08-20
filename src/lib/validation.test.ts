@@ -1,5 +1,65 @@
 import { describe, it, expect } from "vitest";
-import { PhoneSchema, ContactRowSchema, CreateContactSchema, composeName, CreateClientSchema, CreateTemplateSchema, LeadSchema } from "./validation";
+import { PhoneSchema, ContactRowSchema, CreateContactSchema, composeName, CreateClientSchema, CreateTemplateSchema, LeadSchema, TemplatePhoneSchema } from "./validation";
+
+describe("TemplatePhoneSchema", () => {
+  it("keeps a number that is already E.164", () => {
+    expect(TemplatePhoneSchema.parse("+962798960079")).toBe("+962798960079");
+  });
+
+  it("strips the spaces, dashes and brackets people type", () => {
+    expect(TemplatePhoneSchema.parse(" +962 (79) 896-0079 ")).toBe("+962798960079");
+  });
+
+  it("adds the + when only the country code is given", () => {
+    expect(TemplatePhoneSchema.parse("962798960079")).toBe("+962798960079");
+  });
+
+  it("converts a 00 international prefix to +", () => {
+    expect(TemplatePhoneSchema.parse("00962798960079")).toBe("+962798960079");
+  });
+
+  // The whole point: Meta answers each of these with error #192, and only after review.
+  it("rejects a national number with a leading 0 and no country code", () => {
+    expect(TemplatePhoneSchema.safeParse("0798960079").success).toBe(false);
+  });
+
+  it("rejects a leading 0 after the +, which no country code has", () => {
+    expect(TemplatePhoneSchema.safeParse("+0798960079").success).toBe(false);
+  });
+
+  it("rejects a number too short or too long for E.164", () => {
+    expect(TemplatePhoneSchema.safeParse("+96279").success).toBe(false);
+    expect(TemplatePhoneSchema.safeParse("+9627989600791234").success).toBe(false);
+  });
+
+  it("rejects letters and empty input", () => {
+    expect(TemplatePhoneSchema.safeParse("+962CALLME").success).toBe(false);
+    expect(TemplatePhoneSchema.safeParse("").success).toBe(false);
+  });
+
+  it("normalizes the number a Call button submits", () => {
+    const t = CreateTemplateSchema.parse({
+      name: "call_us",
+      language: "ar",
+      category: "MARKETING",
+      body: "Tap to call",
+      buttons: [{ type: "PHONE_NUMBER", text: "Call us", phoneNumber: "00962 79 896 0079" }],
+    });
+    expect(t.buttons[0]?.phoneNumber).toBe("+962798960079");
+  });
+
+  it("rejects a template whose Call button carries a national number", () => {
+    expect(
+      CreateTemplateSchema.safeParse({
+        name: "call_us",
+        language: "ar",
+        category: "MARKETING",
+        body: "Tap to call",
+        buttons: [{ type: "PHONE_NUMBER", text: "Call us", phoneNumber: "0798960079" }],
+      }).success,
+    ).toBe(false);
+  });
+});
 
 describe("PhoneSchema", () => {
   it("normalizes +966 50 000 0000 → 966500000000", () => {
