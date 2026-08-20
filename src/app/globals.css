@@ -594,3 +594,18 @@ html[lang="ar"] .dk-h1 { letter-spacing:normal; line-height:1.15; }
   border:1px solid currentColor; white-space:nowrap; }
 .thread__window--open { color:var(--green); }
 .thread__window--closed { color:var(--st-scheduled); }
+
+/* ============================================================
+   Contacts — list membership. A contact belongs to any number of
+   lists, so the row shows chips and the editor shows checkboxes.
+   ============================================================ */
+.ct-chips { display:flex; flex-wrap:wrap; gap:5px; }
+.ct-lists {
+  display:flex; flex-wrap:wrap; gap:4px 14px; max-width:340px;
+  max-height:132px; overflow-y:auto; padding:2px 0;
+}
+.ct-lists__opt {
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:13.5px; line-height:1.5; cursor:pointer; white-space:nowrap;
+}
+.ct-lists__opt input { cursor:pointer; flex:none; }

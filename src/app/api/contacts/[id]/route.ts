@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { PhoneSchema } from "@/lib/validation";
+import { PhoneSchema, ListIdsSchema, diffListMembership } from "@/lib/validation";
 import { getClientId, requireAdmin } from "@/lib/users";
 import { audit } from "@/lib/audit";
 
@@ -14,10 +14,18 @@ const PatchSchema = z
     optedOut: z.boolean().optional(),
     name: z.string().trim().max(120).optional(),
     phone: PhoneSchema.optional(),
+    // The lists the operator ticked. Reconciled only against the lists the
+    // picker could have offered — see the membership block below.
+    listIds: ListIdsSchema.optional(),
   })
-  .refine((o) => o.optedOut !== undefined || o.name !== undefined || o.phone !== undefined, {
-    message: "Nothing to update",
-  });
+  .refine(
+    (o) =>
+      o.optedOut !== undefined ||
+      o.name !== undefined ||
+      o.phone !== undefined ||
+      o.listIds !== undefined,
+    { message: "Nothing to update" },
+  );
 
 /**
  * PATCH /api/contacts/:id — edit a contact (name/phone) and/or toggle opt-out.
@@ -34,7 +42,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   const contact = await prisma.contact.findFirst({ where: { id, clientId } });
   if (!contact) return NextResponse.json({ error: "not found" }, { status: 404 });
 
-  const { optedOut, name, phone } = parsed.data;
+  const { optedOut, name, phone, listIds } = parsed.data;
 
   // Reject a phone change that would collide with another contact (same client).
   if (phone !== undefined && phone !== contact.phone) {
@@ -65,14 +73,59 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     }
   }
 
+  // Membership. The picker only ever offers this client's non-archived lists,
+  // so reconcile strictly within that set: a list the operator could not see —
+  // an archived one it still belongs to, or another tenant's — is left alone
+  // rather than being removed by an unticked box it never had.
+  let membershipChange: { add: string[]; remove: string[] } | null = null;
+  if (listIds !== undefined) {
+    const [selectable, current] = await Promise.all([
+      prisma.contactList.findMany({ where: { clientId, archived: false }, select: { id: true } }),
+      prisma.contactListMembership.findMany({ where: { contactId: id }, select: { listId: true } }),
+    ]);
+
+    const { add, remove } = diffListMembership(
+      current.map((m) => m.listId),
+      listIds,
+      selectable.map((l) => l.id),
+    );
+
+    if (remove.length > 0) {
+      await prisma.contactListMembership.deleteMany({
+        where: { contactId: id, listId: { in: remove } },
+      });
+    }
+    if (add.length > 0) {
+      await prisma.contactListMembership.createMany({
+        data: add.map((listId) => ({ contactId: id, listId })),
+        skipDuplicates: true,
+      });
+    }
+    if (add.length > 0 || remove.length > 0) membershipChange = { add, remove };
+  }
+
   void audit(req, "contact.updated", updated.phone, {
+    ...(membershipChange ? { lists: membershipChange } : {}),
     ...(name !== undefined ? { name: updated.name } : {}),
     ...(phone !== undefined ? { previousPhone: contact.phone } : {}),
     ...(optedOut !== undefined ? { optedOut } : {}),
   });
+  // Return the memberships as they now stand so the row can re-render from the
+  // server's view rather than the client guessing what it just changed.
+  const lists = await prisma.contactListMembership.findMany({
+    where: { contactId: id },
+    include: { list: { select: { id: true, name: true, archived: true } } },
+  });
+
   return NextResponse.json({
     ok: true,
-    contact: { id: updated.id, phone: updated.phone, name: updated.name, optedOut: updated.optedOut },
+    contact: {
+      id: updated.id,
+      phone: updated.phone,
+      name: updated.name,
+      optedOut: updated.optedOut,
+      lists: lists.map((m) => ({ id: m.list.id, name: m.list.name, archived: m.list.archived })),
+    },
   });
 }
 

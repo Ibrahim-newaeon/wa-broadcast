@@ -27,7 +27,17 @@ export async function GET(req: NextRequest) {
   };
 
   const [contacts, total] = await Promise.all([
-    prisma.contact.findMany({ where, orderBy: { createdAt: "desc" }, skip: offset, take: limit }),
+    prisma.contact.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: offset,
+      take: limit,
+      include: {
+        memberships: {
+          include: { list: { select: { id: true, name: true, archived: true } } },
+        },
+      },
+    }),
     prisma.contact.count({ where }),
   ]);
 
@@ -36,6 +46,12 @@ export async function GET(req: NextRequest) {
     contacts: contacts.map((c) => ({
       id: c.id, phone: c.phone, name: c.name, optedOut: c.optedOut,
       attributes: c.attributes, createdAt: c.createdAt,
+      // Which lists the contact is in, so the table can show and edit them.
+      // Archived lists are included — they are part of the truth, and omitting
+      // them would make a row look emptier than it is.
+      lists: c.memberships.map((m) => ({
+        id: m.list.id, name: m.list.name, archived: m.list.archived,
+      })),
     })),
   });
 }
@@ -55,8 +71,10 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const { firstName, lastName, phone, listId, attributes } = parsed.data;
+  const { firstName, lastName, phone, listId, listIds, attributes } = parsed.data;
   const clientId = await getClientId(req);
+  // `listId` (CSV importer) and `listIds` (the form) mean the same thing here.
+  const wantedListIds = [...new Set([...(listIds ?? []), ...(listId ? [listId] : [])])];
 
   // Reject duplicates explicitly so the single-add UI can show a clear message.
   const existing = await prisma.contact.findFirst({ where: { phone, clientId }, select: { id: true } });
@@ -67,10 +85,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Validate the list up front so a bad id is a 400, not a 500.
-  if (listId) {
-    const list = await prisma.contactList.findFirst({ where: { id: listId, clientId }, select: { id: true } });
-    if (!list) return NextResponse.json({ error: "List not found" }, { status: 400 });
+  // Validate the lists up front so a bad id is a 400, not a 500. Scoping the
+  // lookup to the client is also what stops a caller adding a contact to
+  // another tenant's list by guessing an id.
+  if (wantedListIds.length > 0) {
+    const owned = await prisma.contactList.findMany({
+      where: { id: { in: wantedListIds }, clientId },
+      select: { id: true },
+    });
+    if (owned.length !== wantedListIds.length) {
+      return NextResponse.json({ error: "List not found" }, { status: 400 });
+    }
   }
 
   const mergedAttributes: Record<string, string> = {
@@ -88,11 +113,14 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  if (listId) {
-    await prisma.contactListMembership.create({ data: { contactId: contact.id, listId } });
+  if (wantedListIds.length > 0) {
+    await prisma.contactListMembership.createMany({
+      data: wantedListIds.map((id) => ({ contactId: contact.id, listId: id })),
+      skipDuplicates: true,
+    });
   }
 
-  void audit(req, "contact.created", contact.phone, listId ? { listId } : undefined);
+  void audit(req, "contact.created", contact.phone, wantedListIds.length > 0 ? { listIds: wantedListIds } : undefined);
   return NextResponse.json(
     { ok: true, contact: { id: contact.id, phone: contact.phone, name: contact.name } },
     { status: 201 },
