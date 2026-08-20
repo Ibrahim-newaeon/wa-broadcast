@@ -272,9 +272,16 @@ export default function TemplatesManager() {
                   onChange={(e) => updateButton(i, { url: e.target.value })} />
               )}
               {b.type === "PHONE_NUMBER" && (
-                <input className="input input--sm" style={{ flex: 1 }} value={b.phoneNumber} placeholder="+15551234567"
-                  aria-label={`Button ${i + 1} phone number`}
-                  onChange={(e) => updateButton(i, { phoneNumber: e.target.value })} />
+                <span style={{ flex: 1 }}>
+                  <input className="input input--sm" style={{ width: "100%" }} value={b.phoneNumber}
+                    placeholder="+962798960079"
+                    aria-label={`Button ${i + 1} phone number`}
+                    aria-describedby={`btn-phone-hint-${i}`}
+                    onChange={(e) => updateButton(i, { phoneNumber: e.target.value })} />
+                  <span id={`btn-phone-hint-${i}`} className="note">
+                    Country code required, and drop the leading 0 — <code>079…</code> becomes <code>+96279…</code>.
+                  </span>
+                </span>
               )}
               {b.type === "COPY_CODE" && (
                 <input className="input input--sm" style={{ flex: 1 }} value={b.couponExample} placeholder="Sample code e.g. SAVE20"
