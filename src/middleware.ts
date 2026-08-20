@@ -11,7 +11,12 @@ const PUBLIC_PREFIXES = [
   "/privacy-policy", "/terms-and-conditions", "/data-deletion",
 ];
 // Public exact paths (prefix match would over-match, e.g. "/" matches everything).
-const PUBLIC_EXACT = new Set(["/", "/contacts-template.csv", "/tutorial.html"]);
+const PUBLIC_EXACT = new Set([
+  "/", "/contacts-template.csv", "/tutorial.html",
+  // Bilingual user guide + its printable editions. Operators are often sent the
+  // link before their account exists, so these must resolve without a session.
+  "/guide.html", "/broadcast-hub-guide-en.pdf", "/broadcast-hub-guide-ar.pdf",
+]);
 
 // Edge runtime: verifies ONLY the short-lived (15m) access token. No Redis here,
 // so refresh/rotation/revocation live in /api/auth/refresh (Node). When the

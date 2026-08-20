@@ -1,0 +1,2121 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Broadcast Hub — Complete User Guide / الدليل الكامل</title>
+<meta name="description" content="The complete user guide to Broadcast Hub on bia.massegat.com — every screen, every feature, in plain English and Arabic.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;500;600;700;800&family=Schibsted+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Broadcast Hub — user guide
+   Palette mirrors src/app/globals.css so the guide reads as
+   part of the product. Print rules flip it to ink-on-paper.
+   ============================================================ */
+:root{
+  --bg:#06140d; --bg2:#04100a; --card:#0c1f16; --card2:#11291d;
+  --line:#1c3b2b; --line2:#275038;
+  --ink:#eafff4; --muted:#8fb1a1;
+  --teal:#25d366; --teal-hover:#3fe07f; --teal-soft:rgba(37,211,102,.12);
+  --green:#46e08a; --orange:#fb7a1e; --danger:#ff6b6b; --btn-text:#04140c;
+  --grad:linear-gradient(120deg,#25d366,#0fae8b);
+  --st-pending:#90a6b4; --st-sent:#5ac8ff; --st-delivered:#2dd4c4;
+  --st-read:#46e08a; --st-failed:#ff6b6b; --st-scheduled:#c9a227;
+  --r:14px; --r-sm:10px; --r-pill:999px;
+  --font-en:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-ar:"Cairo","Segoe UI Arabic","Tahoma",sans-serif;
+  --font-display:"Schibsted Grotesk","Inter",system-ui,sans-serif;
+  --font:var(--font-en);
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+html[data-theme="light"]{
+  --bg:#eef6f1; --bg2:#e2eee7; --card:#ffffff; --card2:#f2f8f4;
+  --line:#cfe3d7; --line2:#b6d6c3;
+  --ink:#08251a; --muted:#4d6f5e;
+  --teal:#12a150; --teal-hover:#0d8a43; --teal-soft:rgba(18,161,80,.10);
+  --green:#15a05a; --orange:#d9620a; --danger:#dc4a4c; --btn-text:#ffffff;
+  --shadow:0 8px 24px rgba(9,45,30,.10);
+}
+html[lang="ar"]{ --font:var(--font-ar); --font-display:var(--font-ar); }
+
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; scroll-padding-top:24px; }
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-family:var(--font);
+  font-size:16px; line-height:1.7; -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(900px 460px at 82% -8%, rgba(37,211,102,.10), transparent 62%),
+    radial-gradient(680px 380px at 4% 4%, rgba(15,174,139,.08), transparent 60%);
+}
+
+/* ---------- language switching ---------- */
+html[lang="en"] [data-lang="ar"], html[lang="ar"] [data-lang="en"]{ display:none !important; }
+
+/* ---------- controls ---------- */
+.controls{
+  position:fixed; inset-block-start:14px; inset-inline-end:14px; z-index:50;
+  display:flex; gap:8px;
+}
+.controls button{
+  min-width:42px; height:42px; padding:0 12px; border-radius:var(--r-pill);
+  border:1px solid var(--line2); background:var(--card); color:var(--ink);
+  font-family:var(--font); font-weight:600; font-size:14px; cursor:pointer;
+  box-shadow:var(--shadow); transition:border-color .15s, transform .15s;
+}
+.controls button:hover{ border-color:var(--teal); transform:translateY(-1px); }
+.controls button:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+
+/* ---------- cover ---------- */
+.cover{
+  max-width:1180px; margin:0 auto; padding:92px 24px 40px; text-align:start;
+}
+.brandmark{
+  display:inline-flex; align-items:center; gap:10px; margin-bottom:22px;
+  font-family:var(--font-display); font-weight:800; font-size:19px; letter-spacing:-.02em;
+}
+.brandmark .dot{
+  width:26px; height:26px; border-radius:7px; background:var(--grad); flex:none;
+  box-shadow:0 0 0 4px var(--teal-soft);
+}
+.brandmark .b1{ color:var(--ink); }
+.brandmark .b2{ color:var(--teal); }
+.cover h1{
+  font-family:var(--font-display); font-weight:800; letter-spacing:-.03em;
+  font-size:clamp(32px,6vw,58px); line-height:1.08; margin:0 0 16px;
+}
+html[lang="ar"] .cover h1{ letter-spacing:normal; line-height:1.25; }
+.cover .lede{ font-size:clamp(17px,2.2vw,21px); color:var(--muted); max-width:60ch; margin:0 0 24px; }
+.cover .meta{
+  display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;
+}
+.cover .meta span{
+  border:1px solid var(--line2); border-radius:var(--r-pill); padding:6px 14px;
+  font-size:13px; color:var(--muted); background:var(--card);
+}
+.cover .url{ color:var(--teal); font-weight:700; }
+
+/* ---------- layout ---------- */
+.layout{
+  max-width:1180px; margin:0 auto; padding:0 24px 100px;
+  display:grid; grid-template-columns:246px minmax(0,1fr); gap:44px; align-items:start;
+}
+@media (max-width:960px){ .layout{ grid-template-columns:1fr; gap:20px; } }
+
+.toc{ position:sticky; top:24px; }
+@media (max-width:960px){
+  .toc{ position:static; border:1px solid var(--line); border-radius:var(--r); background:var(--card); padding:14px 16px; }
+}
+.toc h2{
+  font-size:11px; text-transform:uppercase; letter-spacing:.16em; color:var(--muted);
+  margin:0 0 12px; font-weight:700; font-family:var(--font);
+}
+html[lang="ar"] .toc h2{ letter-spacing:normal; }
+.toc ol{ list-style:none; margin:0; padding:0; }
+.toc li{ margin:0; }
+.toc a{
+  display:block; padding:6px 10px; border-radius:8px; text-decoration:none;
+  color:var(--muted); font-size:14px; line-height:1.45;
+  border-inline-start:2px solid transparent;
+}
+.toc a:hover{ color:var(--ink); background:var(--card); }
+.toc a.is-active{ color:var(--teal); border-inline-start-color:var(--teal); background:var(--teal-soft); font-weight:600; }
+.toc .toc__part{
+  margin:18px 0 6px; padding-inline-start:10px; font-size:11px; font-weight:700;
+  text-transform:uppercase; letter-spacing:.14em; color:var(--teal); list-style:none;
+}
+html[lang="ar"] .toc .toc__part{ letter-spacing:normal; }
+.toc .toc__part:first-child{ margin-top:0; }
+
+/* ---------- chapters ---------- */
+.chapter{ margin:0 0 64px; scroll-margin-top:24px; }
+.chapter__num{
+  display:inline-grid; place-items:center; width:34px; height:34px; flex:none;
+  border-radius:10px; background:var(--grad); color:var(--btn-text);
+  font-weight:800; font-size:16px; font-family:var(--font-display);
+}
+.chapter > h2{
+  display:flex; align-items:center; gap:14px;
+  font-family:var(--font-display); font-weight:800; letter-spacing:-.02em;
+  font-size:clamp(23px,3.4vw,32px); line-height:1.2; margin:0 0 8px;
+  padding-block-start:26px; border-block-start:1px solid var(--line);
+}
+html[lang="ar"] .chapter > h2{ letter-spacing:normal; line-height:1.4; }
+.chapter > .sub{ color:var(--muted); margin:0 0 24px; font-size:16.5px; max-width:70ch; }
+.chapter h3{
+  font-size:19px; font-weight:700; margin:34px 0 10px; color:var(--ink);
+  font-family:var(--font-display); letter-spacing:-.01em;
+}
+html[lang="ar"] .chapter h3{ letter-spacing:normal; }
+.chapter h4{ font-size:16px; font-weight:700; margin:22px 0 8px; }
+.chapter p{ margin:0 0 14px; max-width:74ch; }
+.chapter ul, .chapter ol{ margin:0 0 16px; padding-inline-start:22px; max-width:74ch; }
+.chapter li{ margin:0 0 7px; }
+.chapter a{ color:var(--teal); }
+
+code{
+  font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  font-size:.88em; background:var(--card2); border:1px solid var(--line);
+  border-radius:6px; padding:1.5px 6px; color:var(--ink); direction:ltr; unicode-bidi:embed;
+  display:inline-block;
+}
+strong{ font-weight:700; color:var(--ink); }
+
+/* ---------- cards & callouts ---------- */
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+  padding:20px 22px; margin:0 0 20px; box-shadow:var(--shadow);
+}
+.card > :last-child{ margin-bottom:0; }
+.card > h3:first-child, .card > h4:first-child{ margin-top:0; }
+
+.callout{
+  border:1px solid var(--line2); border-radius:var(--r-sm); padding:14px 18px;
+  margin:0 0 18px; background:var(--card2); display:flex; gap:13px; align-items:flex-start;
+  max-width:74ch;
+}
+.callout__ico{ font-size:18px; line-height:1.5; flex:none; }
+.callout > div > :last-child{ margin-bottom:0; }
+.callout p{ margin:0 0 8px; }
+.callout--tip{ border-color:rgba(37,211,102,.42); background:var(--teal-soft); }
+.callout--warn{ border-color:rgba(251,122,30,.45); background:rgba(251,122,30,.09); }
+.callout--stop{ border-color:rgba(255,107,107,.45); background:rgba(255,107,107,.09); }
+
+/* ---------- numbered steps ---------- */
+.steps{ counter-reset:step; list-style:none; padding:0; margin:0 0 20px; max-width:74ch; }
+.steps > li{
+  counter-increment:step; position:relative; padding-inline-start:44px; margin:0 0 16px;
+  min-height:30px;
+}
+.steps > li::before{
+  content:counter(step); position:absolute; inset-inline-start:0; inset-block-start:0;
+  width:29px; height:29px; border-radius:50%; display:grid; place-items:center;
+  background:var(--teal-soft); border:1px solid var(--teal); color:var(--teal);
+  font-weight:700; font-size:13.5px; font-family:var(--font-en);
+}
+.steps > li > :last-child{ margin-bottom:0; }
+
+/* ---------- tables ---------- */
+.tablewrap{ overflow-x:auto; margin:0 0 20px; border:1px solid var(--line); border-radius:var(--r); background:var(--card); }
+table{ width:100%; border-collapse:collapse; font-size:14.5px; min-width:460px; }
+th, td{ text-align:start; padding:11px 15px; border-block-end:1px solid var(--line); vertical-align:top; }
+th{ color:var(--muted); font-weight:600; font-size:12.5px; text-transform:uppercase; letter-spacing:.07em; background:var(--card2); }
+html[lang="ar"] th{ letter-spacing:normal; text-transform:none; font-size:13.5px; }
+tr:last-child td{ border-block-end:0; }
+
+/* ---------- status chips ---------- */
+.chip{
+  display:inline-block; border-radius:var(--r-pill); padding:2px 11px; font-size:12.5px;
+  font-weight:700; border:1px solid currentColor; white-space:nowrap;
+  font-family:var(--font-en); letter-spacing:.02em;
+}
+.chip--pending{ color:var(--st-pending); }
+.chip--sent{ color:var(--st-sent); }
+.chip--delivered{ color:var(--st-delivered); }
+.chip--read{ color:var(--st-read); }
+.chip--failed{ color:var(--st-failed); }
+.chip--scheduled{ color:var(--st-scheduled); }
+.chip--approved{ color:var(--green); }
+
+/* ---------- UI mockups ---------- */
+.mock{
+  border:1px solid var(--line2); border-radius:var(--r); overflow:hidden;
+  background:var(--bg2); margin:0 0 20px; box-shadow:var(--shadow); font-size:13.5px;
+  direction:ltr;
+}
+.mock__cap{
+  font-size:12.5px; color:var(--muted); margin:-12px 0 20px; padding-inline-start:2px;
+  max-width:74ch;
+}
+.mock__nav{
+  display:flex; align-items:center; gap:16px; padding:11px 15px;
+  border-block-end:1px solid var(--line); background:var(--card); flex-wrap:wrap;
+}
+.mock__nav .m-brand{ font-family:var(--font-display); font-weight:800; font-size:14px; }
+.mock__nav .m-brand .b2{ color:var(--teal); }
+.mock__nav a{ color:var(--muted); text-decoration:none; font-size:13px; }
+.mock__nav a.on{ color:var(--teal); font-weight:700; }
+.mock__body{ padding:16px 18px; }
+.mock__row{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:9px 0; border-block-end:1px dashed var(--line);
+}
+.mock__row:last-child{ border-block-end:0; }
+.mock__label{ font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin:0 0 5px; }
+.mock__field{
+  border:1px solid var(--line2); background:var(--card2); border-radius:9px;
+  padding:9px 12px; color:var(--muted); margin:0 0 12px;
+}
+.mock__btn{
+  display:inline-block; background:var(--grad); color:var(--btn-text); border-radius:var(--r-pill);
+  padding:9px 20px; font-weight:700; font-size:13px;
+}
+.mock__stat{ display:flex; gap:26px; flex-wrap:wrap; }
+.mock__stat div span{ display:block; font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--muted); }
+.mock__stat div strong{ font-size:23px; font-family:var(--font-display); }
+
+/* WhatsApp-style bubble */
+.bubble{
+  max-width:330px; background:linear-gradient(180deg,#12352a,#0e2b22);
+  border:1px solid var(--line2); border-radius:12px 12px 12px 4px; padding:11px 13px;
+  font-size:14px; line-height:1.55; color:#eafff4; direction:ltr;
+}
+html[data-theme="light"] .bubble{ background:#dcf8c6; color:#08251a; border-color:#bfe6a8; }
+.bubble__hdr{ background:rgba(255,255,255,.07); border-radius:7px; padding:22px 12px; text-align:center; color:var(--muted); font-size:12px; margin:0 0 9px; }
+.bubble__ftr{ font-size:11.5px; color:var(--muted); margin-top:7px; }
+.bubble__btn{ display:block; text-align:center; margin-top:7px; padding:8px; border-block-start:1px solid rgba(255,255,255,.14); color:#53bdeb; font-size:13.5px; font-weight:600; }
+html[data-theme="light"] .bubble__btn{ color:#1a7fbd; border-block-start-color:rgba(0,0,0,.10); }
+.bubble__time{ font-size:10.5px; color:var(--muted); text-align:end; margin-top:5px; }
+
+/* flow diagram */
+.flow{
+  display:flex; flex-wrap:wrap; align-items:stretch; gap:10px; margin:0 0 20px;
+}
+.flow__step{
+  flex:1 1 148px; background:var(--card); border:1px solid var(--line2); border-radius:var(--r-sm);
+  padding:13px 15px; min-width:130px;
+}
+.flow__step b{ display:block; font-size:14.5px; margin-bottom:3px; }
+.flow__step span{ font-size:12.5px; color:var(--muted); line-height:1.5; display:block; }
+.flow__arrow{ align-self:center; color:var(--teal); font-size:19px; flex:none; }
+html[dir="rtl"] .flow__arrow{ transform:scaleX(-1); }
+
+/* two-column grid */
+.grid2{ display:grid; grid-template-columns:repeat(auto-fit,minmax(268px,1fr)); gap:18px; margin:0 0 20px; }
+
+/* key-value definition rows */
+.kv{ margin:0 0 20px; }
+.kv__row{ display:grid; grid-template-columns:180px minmax(0,1fr); gap:16px; padding:11px 0; border-block-end:1px solid var(--line); }
+.kv__row:last-child{ border-block-end:0; }
+.kv__row > div:first-child{ font-weight:700; font-size:14.5px; }
+.kv__row > div:last-child{ color:var(--muted); font-size:14.5px; }
+@media (max-width:620px){ .kv__row{ grid-template-columns:1fr; gap:3px; } }
+
+/* end matter */
+.endnote{
+  border:1px solid var(--line2); border-radius:var(--r); padding:26px 28px;
+  background:var(--card); text-align:center; box-shadow:var(--shadow);
+}
+.endnote h2{ font-family:var(--font-display); margin:0 0 10px; font-size:24px; }
+.endnote p{ color:var(--muted); margin:0 auto; max-width:56ch; }
+
+/* ============================================================
+   PRINT / PDF — ink on paper, one chapter per page
+   ============================================================ */
+@page{ size:A4; margin:17mm 15mm 18mm; }
+@media print{
+  :root{
+    --bg:#ffffff; --bg2:#ffffff; --card:#ffffff; --card2:#f4f8f5;
+    --line:#d3e2d8; --line2:#bcd4c4;
+    --ink:#0a1f16; --muted:#4a6357;
+    --teal:#0e7c3f; --green:#0e7c3f; --danger:#b32626; --orange:#b45309;
+    --teal-soft:#eef8f1; --btn-text:#ffffff;
+    --grad:#0e7c3f; --shadow:none;
+    --st-pending:#5c6b73; --st-sent:#0b6f9c; --st-delivered:#0a6f68;
+    --st-read:#0e7c3f; --st-failed:#b32626; --st-scheduled:#8a6d0b;
+  }
+  body{ background:#fff; font-size:10.5pt; line-height:1.62; }
+  body::before, .controls, .toc, .printhide{ display:none !important; }
+  .layout{ display:block; padding:0; max-width:none; }
+  .cover{ padding:0 0 8mm; max-width:none; break-after:page; }
+  .cover h1{ font-size:30pt; }
+  .cover .lede{ font-size:12.5pt; }
+  .chapter{ break-before:page; margin:0 0 8mm; }
+  .chapter:first-of-type{ break-before:avoid; }
+  .chapter > h2{ border-block-start:0; padding-block-start:0; font-size:18pt; break-after:avoid; }
+  .chapter h3{ break-after:avoid; margin-top:7mm; font-size:12.5pt; }
+  .chapter h4{ break-after:avoid; font-size:11pt; }
+  .card, .callout, .mock, .tablewrap, .flow, .steps > li, .kv__row{ break-inside:avoid; }
+  .card, .mock, .tablewrap, .callout{ box-shadow:none; }
+  table{ font-size:9.5pt; min-width:0; }
+  th{ background:#f4f8f5; }
+  a{ color:#0e7c3f; text-decoration:none; }
+  .chapter p, .chapter ul, .chapter ol, .callout, .kv, .mock__cap{ max-width:none; }
+  .endnote{ break-inside:avoid; }
+  .bubble{ background:#f0f7f1 !important; color:#0a1f16 !important; border-color:#cfe3d7 !important; }
+  .bubble__btn{ color:#0b6f9c !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="controls printhide">
+  <button type="button" id="langBtn" onclick="toggleLang()" aria-label="Switch language">العربية</button>
+  <button type="button" id="themeBtn" onclick="toggleTheme()" aria-label="Toggle theme">🌞</button>
+  <button type="button" onclick="window.print()" aria-label="Print or save as PDF">⎙</button>
+</div>
+
+<header class="cover">
+  <div class="brandmark"><span class="dot" aria-hidden="true"></span><span><span class="b1">broadcast</span><span class="b2">hub</span></span></div>
+  <h1>
+    <span data-lang="en">Everything you can do in Broadcast Hub</span>
+    <span data-lang="ar">كل ما يمكنك فعله في مركز البث</span>
+  </h1>
+  <p class="lede">
+    <span data-lang="en">A complete, plain-language guide to the portal at <span class="url">bia.massegat.com</span>. Read it once from front to back and you will know every screen, every button, and every rule WhatsApp expects you to follow.</span>
+    <span data-lang="ar">دليل كامل ومبسّط للبوّابة على <span class="url">bia.massegat.com</span>. اقرأه مرّة واحدة من البداية إلى النهاية، وستعرف كل شاشة، وكل زر، وكل قاعدة يفرضها واتساب عليك.</span>
+  </p>
+  <div class="meta">
+    <span data-lang="en">📖 15 chapters + reference</span>
+    <span data-lang="ar">📖 ١٥ فصلًا + مرجع</span>
+    <span data-lang="en">🌍 English &amp; العربية</span>
+    <span data-lang="ar">🌍 العربية والإنجليزية</span>
+    <span data-lang="en">⏱ About 35 minutes to read</span>
+    <span data-lang="ar">⏱ نحو ٣٥ دقيقة للقراءة</span>
+  </div>
+</header>
+
+<div class="layout">
+<aside class="toc printhide">
+  <h2><span data-lang="en">Contents</span><span data-lang="ar">المحتويات</span></h2>
+  <ol id="tocList"></ol>
+</aside>
+
+<main>
+<!-- ============================================================
+     PART 1 — START HERE
+     ============================================================ -->
+
+<section class="chapter" id="how-it-works"
+  data-part-en="Start here" data-part-ar="ابدأ من هنا"
+  data-toc-en="How it works" data-toc-ar="كيف يعمل النظام">
+  <h2><span class="chapter__num">1</span>
+    <span data-lang="en">How Broadcast Hub works</span>
+    <span data-lang="ar">كيف يعمل مركز البث</span>
+  </h2>
+  <p class="sub" data-lang="en">Before any button makes sense, you need the shape of the thing. It is simpler than it looks.</p>
+  <p class="sub" data-lang="ar">قبل أن يصبح أي زر مفهومًا، عليك أن تعرف الصورة العامة. الأمر أبسط ممّا يبدو.</p>
+
+  <p data-lang="en">Broadcast Hub sends WhatsApp messages to a lot of people at once, and collects their replies in one place. It is connected to an official <strong>WhatsApp Business</strong> phone number, so messages arrive as normal WhatsApp messages — not SMS, and not from a random number.</p>
+  <p data-lang="ar">يرسل مركز البث رسائل واتساب إلى عدد كبير من الأشخاص دفعة واحدة، ويجمع ردودهم في مكان واحد. وهو مرتبط برقم <strong>واتساب للأعمال</strong> رسمي، لذا تصل الرسائل كرسائل واتساب عادية — لا رسائل SMS، ولا من رقم مجهول.</p>
+
+  <p data-lang="en">Everything you do follows the same five steps:</p>
+  <p data-lang="ar">كل ما تقوم به يتبع الخطوات الخمس نفسها:</p>
+
+  <div class="flow">
+    <div class="flow__step">
+      <b data-lang="en">1 · Contacts</b><b data-lang="ar">١ · جهات الاتصال</b>
+      <span data-lang="en">Add phone numbers, one at a time or by uploading a file.</span>
+      <span data-lang="ar">أضِف أرقام الهواتف، واحدًا تلو الآخر أو برفع ملف.</span>
+    </div>
+    <div class="flow__arrow" aria-hidden="true">→</div>
+    <div class="flow__step">
+      <b data-lang="en">2 · List</b><b data-lang="ar">٢ · القائمة</b>
+      <span data-lang="en">Group those contacts, e.g. "Parents — Grade 5".</span>
+      <span data-lang="ar">اجمع جهات الاتصال في مجموعة، مثل «أولياء أمور — الصف الخامس».</span>
+    </div>
+    <div class="flow__arrow" aria-hidden="true">→</div>
+    <div class="flow__step">
+      <b data-lang="en">3 · Template</b><b data-lang="ar">٣ · القالب</b>
+      <span data-lang="en">Write the message and get it approved by WhatsApp.</span>
+      <span data-lang="ar">اكتب الرسالة واحصل على موافقة واتساب عليها.</span>
+    </div>
+    <div class="flow__arrow" aria-hidden="true">→</div>
+    <div class="flow__step">
+      <b data-lang="en">4 · Broadcast</b><b data-lang="ar">٤ · البث</b>
+      <span data-lang="en">Send that template to that list, now or later.</span>
+      <span data-lang="ar">أرسِل ذلك القالب إلى تلك القائمة، الآن أو لاحقًا.</span>
+    </div>
+    <div class="flow__arrow" aria-hidden="true">→</div>
+    <div class="flow__step">
+      <b data-lang="en">5 · Inbox</b><b data-lang="ar">٥ · صندوق الوارد</b>
+      <span data-lang="en">Watch delivery, and reply to whoever answers.</span>
+      <span data-lang="ar">تابِع التسليم، وردّ على من يجيب.</span>
+    </div>
+  </div>
+
+  <p data-lang="en">The menu at the top of the portal is arranged in almost exactly that order — Dashboard, Inbox, Contacts, Lists, Templates, Campaigns, Settings — so if you ever get lost, walk the menu left to right.</p>
+  <p data-lang="ar">القائمة العلوية في البوّابة مرتّبة بالترتيب نفسه تقريبًا — لوحة التحكم، صندوق الوارد، جهات الاتصال، القوائم، القوالب، الحملات، الإعدادات — فإذا تُهت في أي وقت، تنقّل في القائمة بالترتيب.</p>
+
+  <h3><span data-lang="en">The three WhatsApp rules you cannot break</span><span data-lang="ar">قواعد واتساب الثلاث التي لا يمكن كسرها</span></h3>
+  <p data-lang="en">Almost everything that confuses people about this portal traces back to one of these three rules. They come from WhatsApp itself, not from us — the portal simply keeps you on the right side of them.</p>
+  <p data-lang="ar">كل ما يُربك المستخدمين في هذه البوّابة تقريبًا يعود إلى واحدة من هذه القواعد الثلاث. وهي صادرة عن واتساب نفسه، لا عنّا — والبوّابة تحرص فقط على أن تبقى ملتزمًا بها.</p>
+
+  <div class="callout callout--stop">
+    <div class="callout__ico" aria-hidden="true">1️⃣</div>
+    <div>
+      <p data-lang="en"><strong>You cannot message someone first with free text.</strong> If a person has not written to you in the last 24 hours, the only thing you are allowed to send them is a <strong>template</strong> that WhatsApp has already reviewed and approved. This is why you cannot just type a message and blast it out.</p>
+      <p data-lang="ar"><strong>لا يمكنك مراسلة شخص أولًا بنصّ حر.</strong> إذا لم يراسلك الشخص خلال آخر ٢٤ ساعة، فالشيء الوحيد المسموح بإرساله إليه هو <strong>قالب</strong> راجعه واتساب ووافق عليه مسبقًا. لهذا السبب لا يمكنك ببساطة كتابة رسالة وإرسالها للجميع.</p>
+    </div>
+  </div>
+
+  <div class="callout callout--warn">
+    <div class="callout__ico" aria-hidden="true">2️⃣</div>
+    <div>
+      <p data-lang="en"><strong>When someone writes to you, a 24-hour window opens.</strong> During those 24 hours you can reply freely — any text, any photo, any file, as many messages as you like. When the window closes, you are back to templates only. The Inbox shows you clearly whether the window is open or closed.</p>
+      <p data-lang="ar"><strong>عندما يراسلك شخص، تُفتح نافذة مدّتها ٢٤ ساعة.</strong> خلال هذه الساعات يمكنك الردّ بحرّية — أي نص، أي صورة، أي ملف، وبأي عدد من الرسائل. وعند إغلاق النافذة تعود إلى القوالب فقط. ويوضّح لك صندوق الوارد بجلاء ما إذا كانت النافذة مفتوحة أم مغلقة.</p>
+    </div>
+  </div>
+
+  <div class="callout callout--stop">
+    <div class="callout__ico" aria-hidden="true">3️⃣</div>
+    <div>
+      <p data-lang="en"><strong>"STOP" means stop, permanently.</strong> If a contact replies <code>STOP</code> or <code>UNSUBSCRIBE</code>, the portal marks them opted out automatically and will never include them in another broadcast. Do not try to work around it — repeatedly messaging people who opted out is the fastest way to get your WhatsApp number blocked by Meta.</p>
+      <p data-lang="ar"><strong>كلمة «STOP» تعني التوقّف نهائيًا.</strong> إذا ردّ أحد جهات الاتصال بكلمة <code>STOP</code> أو <code>UNSUBSCRIBE</code>، تضع البوّابة علامة «ملغى الاشتراك» عليه تلقائيًا ولن تُدرجه في أي بثّ آخر. لا تحاول الالتفاف على ذلك — فمراسلة من ألغوا اشتراكهم بشكل متكرّر هي أسرع طريقة لحظر رقم واتساب الخاص بك من قِبل ميتا.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Words you will keep seeing</span><span data-lang="ar">مصطلحات ستتكرّر أمامك</span></h3>
+  <div class="kv">
+    <div class="kv__row">
+      <div data-lang="en">Template</div><div data-lang="ar">القالب</div>
+      <div data-lang="en">A pre-written message approved by WhatsApp. The only way to start a conversation.</div>
+      <div data-lang="ar">رسالة مكتوبة مسبقًا وموافَق عليها من واتساب. وهي الطريقة الوحيدة لبدء محادثة.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Variable</div><div data-lang="ar">المتغيّر</div>
+      <div data-lang="en">A blank inside a template, written <code>{{1}}</code>, that gets filled per person — usually their name.</div>
+      <div data-lang="ar">فراغ داخل القالب يُكتب هكذا <code>{{1}}</code>، ويُملأ لكل شخص على حدة — غالبًا باسمه.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">List</div><div data-lang="ar">القائمة</div>
+      <div data-lang="en">A named group of contacts. You always send to a list, never to individuals.</div>
+      <div data-lang="ar">مجموعة مسمّاة من جهات الاتصال. أنت ترسل دائمًا إلى قائمة، لا إلى أفراد.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Broadcast</div><div data-lang="ar">البث</div>
+      <div data-lang="en">One send: this template, to this list, at this time.</div>
+      <div data-lang="ar">عملية إرسال واحدة: هذا القالب، إلى هذه القائمة، في هذا الوقت.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Opt-out</div><div data-lang="ar">إلغاء الاشتراك</div>
+      <div data-lang="en">A contact who asked to stop receiving messages. Permanently excluded from broadcasts.</div>
+      <div data-lang="ar">جهة اتصال طلبت التوقّف عن استقبال الرسائل. تُستبعد نهائيًا من عمليات البث.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">24-hour window</div><div data-lang="ar">نافذة الـ٢٤ ساعة</div>
+      <div data-lang="en">The period after a contact messages you, during which you may reply with free text.</div>
+      <div data-lang="ar">الفترة التي تلي مراسلة جهة الاتصال لك، ويمكنك خلالها الردّ بنصّ حر.</div>
+    </div>
+  </div>
+</section>
+
+
+<section class="chapter" id="signing-in"
+  data-toc-en="Signing in &amp; getting around" data-toc-ar="تسجيل الدخول والتنقّل">
+  <h2><span class="chapter__num">2</span>
+    <span data-lang="en">Signing in and getting around</span>
+    <span data-lang="ar">تسجيل الدخول والتنقّل</span>
+  </h2>
+  <p class="sub" data-lang="en">Your account, the menu, the language switch, and how to leave safely.</p>
+  <p class="sub" data-lang="ar">حسابك، والقائمة، وتبديل اللغة، وكيفية الخروج بأمان.</p>
+
+  <h3><span data-lang="en">Signing in</span><span data-lang="ar">تسجيل الدخول</span></h3>
+  <ol class="steps">
+    <li>
+      <p data-lang="en">Open <strong>bia.massegat.com</strong> in any browser — phone, tablet or computer all work.</p>
+      <p data-lang="ar">افتح <strong>bia.massegat.com</strong> في أي متصفّح — الهاتف أو الجهاز اللوحي أو الحاسوب، جميعها تعمل.</p>
+    </li>
+    <li>
+      <p data-lang="en">Enter the email address and password you were given, then press <strong>Sign in</strong>.</p>
+      <p data-lang="ar">أدخِل البريد الإلكتروني وكلمة المرور اللذين استلمتهما، ثم اضغط <strong>تسجيل الدخول</strong>.</p>
+    </li>
+    <li>
+      <p data-lang="en">You land on the <strong>Dashboard</strong>. If you were given a temporary password, change it now — see <a href="#account">Chapter 13</a>.</p>
+      <p data-lang="ar">ستصل إلى <strong>لوحة التحكم</strong>. وإذا كانت كلمة المرور مؤقّتة، فغيّرها الآن — راجع <a href="#account">الفصل ١٣</a>.</p>
+    </li>
+  </ol>
+
+  <div class="callout callout--tip">
+    <div class="callout__ico" aria-hidden="true">💡</div>
+    <div>
+      <p data-lang="en">The portal keeps you signed in and refreshes your session quietly in the background. You will only be asked to sign in again after a long period of inactivity, or if an administrator signs you out.</p>
+      <p data-lang="ar">تُبقيك البوّابة مسجّل الدخول وتُجدّد جلستك تلقائيًا في الخلفية. ولن يُطلب منك تسجيل الدخول مجددًا إلا بعد فترة طويلة من عدم الاستخدام، أو إذا سجّل المسؤول خروجك.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">The menu</span><span data-lang="ar">القائمة</span></h3>
+
+  <div class="mock">
+    <div class="mock__nav">
+      <span class="m-brand"><span class="b1">broadcast</span><span class="b2">hub</span></span>
+      <a href="#dashboard" class="on">Dashboard</a>
+      <a href="#inbox">Inbox</a>
+      <a href="#contacts">Contacts</a>
+      <a href="#lists">Lists</a>
+      <a href="#templates">Templates</a>
+      <a href="#campaigns">Campaigns</a>
+      <a href="#connect">Settings</a>
+    </div>
+  </div>
+  <p class="mock__cap" data-lang="en">The top menu. On a phone it collapses into a ☰ button — tap it to see the same links.</p>
+  <p class="mock__cap" data-lang="ar">القائمة العلوية. على الهاتف تنطوي إلى زر ☰ — اضغط عليه لرؤية الروابط نفسها.</p>
+
+  <div class="kv">
+    <div class="kv__row">
+      <div>Dashboard</div>
+      <div data-lang="en">Your daily overview: how many messages got through, what is sending right now, recent broadcasts.</div>
+      <div data-lang="ar">نظرتك اليومية العامة: كم رسالة وصلت، وما الذي يُرسَل الآن، وآخر عمليات البث.</div>
+    </div>
+    <div class="kv__row">
+      <div>Inbox</div>
+      <div data-lang="en">Two-way conversations. Read what people replied and answer them.</div>
+      <div data-lang="ar">المحادثات ثنائية الاتجاه. اقرأ ردود الناس وأجبهم.</div>
+    </div>
+    <div class="kv__row">
+      <div>Contacts</div>
+      <div data-lang="en">Every phone number you hold, with search, editing and opt-out control.</div>
+      <div data-lang="ar">كل رقم هاتف لديك، مع البحث والتعديل والتحكّم في إلغاء الاشتراك.</div>
+    </div>
+    <div class="kv__row">
+      <div>Lists</div>
+      <div data-lang="en">Groups of contacts, plus saved snapshots you can roll back to.</div>
+      <div data-lang="ar">مجموعات جهات الاتصال، إضافة إلى نسخ محفوظة يمكنك الرجوع إليها.</div>
+    </div>
+    <div class="kv__row">
+      <div>Templates</div>
+      <div data-lang="en">Write messages and send them to WhatsApp for approval.</div>
+      <div data-lang="ar">اكتب الرسائل وأرسلها إلى واتساب للموافقة عليها.</div>
+    </div>
+    <div class="kv__row">
+      <div>Campaigns</div>
+      <div data-lang="en">Repeating sends — the same message every Monday, for example.</div>
+      <div data-lang="ar">عمليات إرسال متكرّرة — الرسالة نفسها كل يوم اثنين مثلًا.</div>
+    </div>
+    <div class="kv__row">
+      <div>Settings</div>
+      <div data-lang="en">WhatsApp connection, team members, your password, and the activity log.</div>
+      <div data-lang="ar">اتصال واتساب، وأعضاء الفريق، وكلمة مرورك، وسجلّ النشاط.</div>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Who can do what</span><span data-lang="ar">من يستطيع فعل ماذا</span></h3>
+  <p data-lang="en">Every account has a role. If a button described in this guide is missing from your screen, your role is almost certainly the reason.</p>
+  <p data-lang="ar">لكل حساب دور. وإذا كان زرٌّ موصوف في هذا الدليل غير ظاهر على شاشتك، فالسبب على الأرجح هو دورك.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th><span data-lang="en">Role</span><span data-lang="ar">الدور</span></th>
+          <th><span data-lang="en">Can do</span><span data-lang="ar">يستطيع</span></th>
+          <th><span data-lang="en">Cannot do</span><span data-lang="ar">لا يستطيع</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Member</strong></td>
+          <td>
+            <span data-lang="en">Everything day-to-day: add contacts, build lists, send broadcasts, reply in the Inbox, view analytics.</span>
+            <span data-lang="ar">كل الأعمال اليومية: إضافة جهات اتصال، وبناء القوائم، وإرسال عمليات البث، والردّ في صندوق الوارد، وعرض التحليلات.</span>
+          </td>
+          <td>
+            <span data-lang="en">Submit templates to WhatsApp, delete contacts, restore list snapshots, create recurring campaigns, or touch Settings.</span>
+            <span data-lang="ar">إرسال القوالب إلى واتساب، أو حذف جهات الاتصال، أو استعادة نسخ القوائم، أو إنشاء حملات متكرّرة، أو تعديل الإعدادات.</span>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Admin</strong></td>
+          <td>
+            <span data-lang="en">Everything a Member can, plus templates, deletions, recurring campaigns, the WhatsApp connection, the team, and the activity log.</span>
+            <span data-lang="ar">كل ما يستطيعه العضو، إضافة إلى القوالب، وعمليات الحذف، والحملات المتكرّرة، واتصال واتساب، والفريق، وسجلّ النشاط.</span>
+          </td>
+          <td>
+            <span data-lang="en">See or manage other client accounts.</span>
+            <span data-lang="ar">الاطّلاع على حسابات العملاء الآخرين أو إدارتها.</span>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Super-admin</strong></td>
+          <td>
+            <span data-lang="en">Everything, across every client account, plus creating and switching between clients.</span>
+            <span data-lang="ar">كل شيء، عبر كل حسابات العملاء، إضافة إلى إنشاء العملاء والتنقّل بينهم.</span>
+          </td>
+          <td><span data-lang="en">—</span><span data-lang="ar">—</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span data-lang="en">Language and theme</span><span data-lang="ar">اللغة والمظهر</span></h3>
+  <p data-lang="en">The <strong>public front page</strong> and the <strong>sign-in screen</strong> carry two small buttons: <strong>ع / EN</strong> switches between Arabic and English — flipping the whole layout right-to-left for Arabic — and <strong>☀ / ☾</strong> switches between the dark and light appearance. Both choices are remembered on your device.</p>
+  <p data-lang="ar">تحمل <strong>الصفحة الرئيسية العامة</strong> و<strong>شاشة تسجيل الدخول</strong> زرّين صغيرين: زر <strong>ع / EN</strong> يبدّل بين العربية والإنجليزية — فيقلب التخطيط بالكامل من اليمين إلى اليسار في العربية — وزر <strong>☀ / ☾</strong> يبدّل بين المظهر الداكن والفاتح. ويُحفَظ الخياران على جهازك.</p>
+
+  <div class="callout callout--tip">
+    <div class="callout__ico" aria-hidden="true">🌐</div>
+    <div>
+      <p data-lang="en"><strong>Inside the portal itself the screens are in English</strong>, in the dark theme. There is no language button on the Dashboard, Inbox or Settings pages — so if you are looking for one there, it is not hidden, it simply is not there. This guide is bilingual precisely so that Arabic-speaking operators can follow along.</p>
+      <p data-lang="ar"><strong>أمّا داخل البوّابة نفسها فالشاشات بالإنجليزية</strong>، وبالمظهر الداكن. ولا يوجد زر لغة في صفحات لوحة التحكم أو صندوق الوارد أو الإعدادات — فإذا كنت تبحث عنه هناك، فهو ليس مخفيًا، بل غير موجود أصلًا. وهذا الدليل ثنائي اللغة تحديدًا كي يتمكّن المشغّلون الناطقون بالعربية من متابعته.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Signing out</span><span data-lang="ar">تسجيل الخروج</span></h3>
+  <p data-lang="en">The <strong>Sign out</strong> link at the end of the menu ends your session on this device. In <strong>Settings → My account</strong> there is also a <strong>Sign out everywhere</strong> option, which ends your session on every device you have ever used. Use it if you think someone else has your password, or if you signed in on a shared computer and forgot to sign out.</p>
+  <p data-lang="ar">رابط <strong>تسجيل الخروج</strong> في نهاية القائمة يُنهي جلستك على هذا الجهاز. وفي <strong>الإعدادات ← حسابي</strong> يوجد أيضًا خيار <strong>تسجيل الخروج من كل الأجهزة</strong>، وهو يُنهي جلستك على كل جهاز استخدمته. استخدمه إذا ظننت أن شخصًا آخر يعرف كلمة مرورك، أو إذا سجّلت الدخول على حاسوب مشترك ونسيت الخروج.</p>
+</section>
+
+
+<!-- ============================================================
+     PART 2 — EVERYDAY USE
+     ============================================================ -->
+
+<section class="chapter" id="dashboard"
+  data-part-en="Everyday use" data-part-ar="الاستخدام اليومي"
+  data-toc-en="Dashboard" data-toc-ar="لوحة التحكم">
+  <h2><span class="chapter__num">3</span>
+    <span data-lang="en">Dashboard</span>
+    <span data-lang="ar">لوحة التحكم</span>
+  </h2>
+  <p class="sub" data-lang="en">The first screen after you sign in. It answers one question: is everything working?</p>
+  <p class="sub" data-lang="ar">أول شاشة بعد تسجيل الدخول. وهي تجيب عن سؤال واحد: هل كل شيء يعمل؟</p>
+
+  <div class="mock">
+    <div class="mock__body">
+      <div class="mock__label">Deliverability</div>
+      <div class="mock__stat" style="margin-bottom:16px">
+        <div><strong style="color:var(--st-delivered)">98%</strong><span>Reached the phone</span></div>
+        <div><strong style="color:var(--st-read)">71%</strong><span>Opened &amp; read</span></div>
+        <div><strong style="color:var(--muted)">2%</strong><span>Failed</span></div>
+      </div>
+      <div class="mock__row"><span>Contacts</span><strong>1,284</strong></div>
+      <div class="mock__row"><span>Lists</span><strong>6</strong></div>
+      <div class="mock__row"><span>Approved templates</span><strong>4</strong></div>
+    </div>
+  </div>
+  <p class="mock__cap" data-lang="en">The top of the Dashboard: three headline rates, then your audience at a glance.</p>
+  <p class="mock__cap" data-lang="ar">أعلى لوحة التحكم: ثلاث نسب رئيسية، ثم لمحة سريعة عن جمهورك.</p>
+
+  <h3><span data-lang="en">Deliverability — the three numbers that matter</span><span data-lang="ar">جودة التسليم — الأرقام الثلاثة المهمّة</span></h3>
+  <div class="kv">
+    <div class="kv__row">
+      <div data-lang="en">Reached the phone</div><div data-lang="ar">وصلت إلى الهاتف</div>
+      <div data-lang="en">Of the messages that left the system, the share that actually arrived on a handset. Healthy is above 90%. A low number usually means bad phone numbers, not a broken system.</div>
+      <div data-lang="ar">من الرسائل التي غادرت النظام، نسبة ما وصل فعليًا إلى جهاز المستلم. النسبة الجيدة تتجاوز ٩٠٪. وانخفاضها يعني عادةً وجود أرقام خاطئة، لا عطلًا في النظام.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Opened &amp; read</div><div data-lang="ar">فُتحت وقُرئت</div>
+      <div data-lang="en">Of the messages that arrived, the share the recipient actually opened. This is your real measure of interest.</div>
+      <div data-lang="ar">من الرسائل التي وصلت، نسبة ما فتحه المستلم فعليًا. وهذا هو المقياس الحقيقي للاهتمام.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Failed</div><div data-lang="ar">فشلت</div>
+      <div data-lang="en">Messages WhatsApp refused or could not deliver. When this is zero the number is dimmed. If it climbs, open the broadcast and read the error column.</div>
+      <div data-lang="ar">رسائل رفضها واتساب أو تعذّر تسليمها. وعندما تكون صفرًا يظهر الرقم باهتًا. وإذا ارتفعت، افتح البث واقرأ عمود الخطأ.</div>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Live now</span><span data-lang="ar">يُرسَل الآن</span></h3>
+  <p data-lang="en">If a broadcast is sending at this moment, it appears here with a progress bar that updates on its own. If nothing is sending you will see <em>"Nothing sending right now — all quiet."</em> That is a good thing, not an error.</p>
+  <p data-lang="ar">إذا كان هناك بثّ قيد الإرسال في هذه اللحظة، فسيظهر هنا مع شريط تقدّم يتحدّث تلقائيًا. وإذا لم يكن هناك إرسال، فسترى <em>«لا يوجد إرسال الآن — كل شيء هادئ»</em>. وهذا أمر جيد وليس خطأً.</p>
+
+  <h3><span data-lang="en">Recent broadcasts</span><span data-lang="ar">آخر عمليات البث</span></h3>
+  <p data-lang="en">A table of what you sent lately — template, list, status, delivery count, failures and when. <strong>Click any row</strong> to open that broadcast's full detail page, which is covered in <a href="#watching">Chapter 8</a>.</p>
+  <p data-lang="ar">جدول بما أرسلته مؤخرًا — القالب، والقائمة، والحالة، وعدد الرسائل المسلَّمة، وحالات الفشل، والوقت. <strong>اضغط على أي صف</strong> لفتح صفحة التفاصيل الكاملة لذلك البث، وهي موضّحة في <a href="#watching">الفصل ٨</a>.</p>
+
+  <div class="callout callout--tip">
+    <div class="callout__ico" aria-hidden="true">💡</div>
+    <div>
+      <p data-lang="en">The Dashboard also has a shortcut panel for creating a list and jumping straight to importing contacts — handy on your first day, and easy to ignore afterwards.</p>
+      <p data-lang="ar">تحتوي لوحة التحكم أيضًا على لوحة اختصارات لإنشاء قائمة والانتقال مباشرة إلى استيراد جهات الاتصال — مفيدة في يومك الأول، ويسهل تجاهلها بعد ذلك.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="chapter" id="contacts"
+  data-toc-en="Contacts" data-toc-ar="جهات الاتصال">
+  <h2><span class="chapter__num">4</span>
+    <span data-lang="en">Contacts</span>
+    <span data-lang="ar">جهات الاتصال</span>
+  </h2>
+  <p class="sub" data-lang="en">Every phone number you can message. Get this right and everything downstream is easy.</p>
+  <p class="sub" data-lang="ar">كل رقم هاتف يمكنك مراسلته. أتقِن هذه الخطوة وسيصبح كل ما بعدها سهلًا.</p>
+
+  <h3><span data-lang="en">Adding one contact</span><span data-lang="ar">إضافة جهة اتصال واحدة</span></h3>
+  <p data-lang="en">Use the <strong>Add a contact</strong> card at the top of the page when you have a single number to add.</p>
+  <p data-lang="ar">استخدم بطاقة <strong>إضافة جهة اتصال</strong> أعلى الصفحة عندما يكون لديك رقم واحد لإضافته.</p>
+
+  <div class="mock">
+    <div class="mock__body">
+      <div class="mock__label">First name</div>
+      <div class="mock__field">Ahmed</div>
+      <div class="mock__label">Last name (optional)</div>
+      <div class="mock__field">Al-Saud</div>
+      <div class="mock__label">Phone number</div>
+      <div style="display:flex; gap:8px">
+        <div class="mock__field" style="flex:0 0 auto">🇸🇦 +966 ▾</div>
+        <div class="mock__field" style="flex:1">50 000 0001</div>
+      </div>
+      <div style="font-size:12px; color:var(--muted); margin:-4px 0 14px">
+        Will be saved as <code>966500000001</code> (E.164, no “+”).
+      </div>
+      <span class="mock__btn">Add contact</span>
+    </div>
+  </div>
+
+  <ol class="steps">
+    <li>
+      <p data-lang="en">Type the <strong>first name</strong>. This is what the <code>{{1}}</code> variable in your templates will usually be filled with, so spell it the way you want it to appear in the message.</p>
+      <p data-lang="ar">اكتب <strong>الاسم الأول</strong>. هذا ما سيُملأ به عادةً المتغيّر <code>{{1}}</code> في قوالبك، لذا اكتبه بالصيغة التي تريد ظهورها في الرسالة.</p>
+    </li>
+    <li>
+      <p data-lang="en">Add a <strong>last name</strong> if you want. It is optional.</p>
+      <p data-lang="ar">أضِف <strong>اسم العائلة</strong> إن أردت. وهو اختياري.</p>
+    </li>
+    <li>
+      <p data-lang="en">Pick the <strong>country</strong> from the dropdown, then type the local number without the country code. A leading zero is removed for you automatically.</p>
+      <p data-lang="ar">اختر <strong>الدولة</strong> من القائمة المنسدلة، ثم اكتب الرقم المحلي بدون رمز الدولة. ويُحذف الصفر في البداية تلقائيًا.</p>
+    </li>
+    <li>
+      <p data-lang="en">Watch the grey line underneath. It shows exactly how the number will be stored. If that preview looks wrong, fix it before saving — a wrong number simply never receives anything.</p>
+      <p data-lang="ar">راقب السطر الرمادي أسفل الحقل. فهو يوضّح بدقة كيف سيُحفَظ الرقم. وإذا بدت المعاينة خاطئة، صحّحها قبل الحفظ — فالرقم الخاطئ لن يستقبل شيئًا ببساطة.</p>
+    </li>
+    <li>
+      <p data-lang="en">Optionally choose a <strong>list</strong> to drop them into straight away, then press <strong>Add contact</strong>.</p>
+      <p data-lang="ar">يمكنك اختيار <strong>قائمة</strong> لإضافته إليها مباشرة، ثم اضغط <strong>إضافة جهة اتصال</strong>.</p>
+    </li>
+  </ol>
+
+  <h3><span data-lang="en">Importing many contacts from a CSV file</span><span data-lang="ar">استيراد جهات اتصال كثيرة من ملف CSV</span></h3>
+  <div class="callout callout--warn">
+    <div class="callout__ico" aria-hidden="true">📍</div>
+    <div>
+      <p data-lang="en"><strong>The CSV upload card is on the Dashboard, not on the Contacts page.</strong> Look for the <em>Compose</em> panel near the bottom of the Dashboard, where you will find "Upload contacts (CSV)" alongside the new-list and new-broadcast forms.</p>
+      <p data-lang="ar"><strong>بطاقة رفع ملف CSV موجودة في لوحة التحكم، لا في صفحة جهات الاتصال.</strong> ابحث عن لوحة <em>الإنشاء</em> قرب أسفل لوحة التحكم، حيث تجد «رفع جهات الاتصال (CSV)» إلى جانب نموذجَي القائمة الجديدة والبثّ الجديد.</p>
+    </div>
+  </div>
+  <p data-lang="en">A CSV is a simple spreadsheet file. Excel, Numbers and Google Sheets can all save one with <em>File → Save as → CSV</em>.</p>
+  <p data-lang="ar">ملف CSV هو ملف جدول بيانات بسيط. ويمكن لبرامج Excel وNumbers وGoogle Sheets حفظه عبر <em>ملف ← حفظ باسم ← CSV</em>.</p>
+
+  <div class="callout callout--tip">
+    <div class="callout__ico" aria-hidden="true">⬇</div>
+    <div>
+      <p data-lang="en">There is a <strong>Download CSV template</strong> link right on the upload card. Download it, replace the example rows with your own, and you cannot get the format wrong.</p>
+      <p data-lang="ar">يوجد رابط <strong>تنزيل قالب CSV</strong> على بطاقة الرفع مباشرة. نزّله، واستبدل الصفوف النموذجية ببياناتك، ولن تُخطئ في التنسيق.</p>
+    </div>
+  </div>
+
+  <h4><span data-lang="en">The columns</span><span data-lang="ar">الأعمدة</span></h4>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th><span data-lang="en">Column</span><span data-lang="ar">العمود</span></th>
+          <th><span data-lang="en">Required?</span><span data-lang="ar">إلزامي؟</span></th>
+          <th><span data-lang="en">What it does</span><span data-lang="ar">وظيفته</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>phone</code></td>
+          <td><strong data-lang="en">Yes</strong><strong data-lang="ar">نعم</strong></td>
+          <td>
+            <span data-lang="en">The number, with country code. Spaces, dashes and a leading <code>+</code> are all fine — they get cleaned up.</span>
+            <span data-lang="ar">الرقم مع رمز الدولة. المسافات والشرطات وعلامة <code>+</code> في البداية كلها مقبولة — وتُنظَّف تلقائيًا.</span>
+          </td>
+        </tr>
+        <tr>
+          <td><code>firstName</code></td>
+          <td><span data-lang="en">No</span><span data-lang="ar">لا</span></td>
+          <td><span data-lang="en">Given name.</span><span data-lang="ar">الاسم الأول.</span></td>
+        </tr>
+        <tr>
+          <td><code>lastName</code></td>
+          <td><span data-lang="en">No</span><span data-lang="ar">لا</span></td>
+          <td><span data-lang="en">Family name. Joined to the first name to form the display name.</span><span data-lang="ar">اسم العائلة. ويُدمج مع الاسم الأول لتكوين الاسم الظاهر.</span></td>
+        </tr>
+        <tr>
+          <td><em data-lang="en">anything else</em><em data-lang="ar">أي عمود آخر</em></td>
+          <td><span data-lang="en">No</span><span data-lang="ar">لا</span></td>
+          <td>
+            <span data-lang="en"><strong>Becomes a template variable.</strong> A <code>city</code> column lets you write <code>field:city</code> when sending, and each person sees their own city.</span>
+            <span data-lang="ar"><strong>يصبح متغيّرًا في القالب.</strong> فعمود <code>city</code> يتيح لك كتابة <code>field:city</code> عند الإرسال، فيرى كل شخص مدينته.</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4><span data-lang="en">What a good file looks like</span><span data-lang="ar">كيف يبدو الملف الصحيح</span></h4>
+  <div class="card">
+<pre style="margin:0; overflow-x:auto; font-size:13px; direction:ltr; line-height:1.75"><code style="border:0; background:none; padding:0; display:block">phone,firstName,lastName,city
++966500000001,Ahmed,Al-Saud,Riyadh
++965500000002,Sara,Al-Sabah,Kuwait City
++971500000003,Khalid,Al-Maktoum,Dubai</code></pre>
+  </div>
+
+  <div class="callout callout--warn">
+    <div class="callout__ico" aria-hidden="true">⚠</div>
+    <div>
+      <p data-lang="en"><strong>The country code is not optional.</strong> <code>0500000001</code> is not a valid number — the system has no way to know which country it belongs to. Write <code>+966500000001</code>. Numbers must come out to between 8 and 15 digits once the symbols are stripped.</p>
+      <p data-lang="ar"><strong>رمز الدولة ليس اختياريًا.</strong> الرقم <code>0500000001</code> غير صالح — إذ لا سبيل للنظام لمعرفة الدولة التي ينتمي إليها. اكتب <code>+966500000001</code>. ويجب أن يتراوح الرقم بين ٨ و١٥ خانة بعد إزالة الرموز.</p>
+    </div>
+  </div>
+
+  <ol class="steps">
+    <li>
+      <p data-lang="en">Press <strong>Choose file</strong> and pick your CSV.</p>
+      <p data-lang="ar">اضغط <strong>اختيار ملف</strong> واختر ملف CSV.</p>
+    </li>
+    <li>
+      <p data-lang="en">Optionally choose a list under <strong>Add to list</strong> — every imported contact joins it. This saves a lot of clicking later.</p>
+      <p data-lang="ar">يمكنك اختيار قائمة من <strong>إضافة إلى قائمة</strong> — وستنضم إليها كل جهة اتصال مستوردة. وهذا يوفّر عليك الكثير من العمل لاحقًا.</p>
+    </li>
+    <li>
+      <p data-lang="en">Press <strong>Upload</strong>. You get a result line like <em>"Imported 240, rejected 3."</em></p>
+      <p data-lang="ar">اضغط <strong>رفع</strong>. وستحصل على سطر نتيجة مثل <em>«تم استيراد ٢٤٠، ورُفض ٣»</em>.</p>
+    </li>
+  </ol>
+
+  <p data-lang="en">Rejected rows are almost always malformed phone numbers. Fix them in your spreadsheet and upload the file again — contacts that already exist are updated rather than duplicated, so re-uploading is safe.</p>
+  <p data-lang="ar">الصفوف المرفوضة تكون دائمًا تقريبًا بسبب أرقام هواتف غير صحيحة. صحّحها في جدول البيانات وارفع الملف مجددًا — فجهات الاتصال الموجودة مسبقًا تُحدَّث بدل أن تتكرّر، لذا فإعادة الرفع آمنة.</p>
+
+  <h3><span data-lang="en">The contacts table</span><span data-lang="ar">جدول جهات الاتصال</span></h3>
+
+  <div class="mock">
+    <div class="mock__body">
+      <div class="mock__field" style="margin-bottom:14px">🔍 Search phone or name…</div>
+      <table style="min-width:0">
+        <thead><tr><th>Phone</th><th>Name</th><th>Status</th><th style="text-align:end">Actions</th></tr></thead>
+        <tbody>
+          <tr><td>966500000001</td><td>Ahmed Al-Saud</td><td><span class="chip chip--read">Active</span></td><td style="text-align:end; color:var(--muted)">Edit · Opt out · Delete</td></tr>
+          <tr><td>965500000002</td><td>Sara Al-Sabah</td><td><span class="chip chip--failed">Opted out</span></td><td style="text-align:end; color:var(--muted)">Edit · Re-subscribe · Delete</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="kv">
+    <div class="kv__row">
+      <div data-lang="en">Search</div><div data-lang="ar">البحث</div>
+      <div data-lang="en">Type any part of a name or number. Results narrow as you type.</div>
+      <div data-lang="ar">اكتب أي جزء من الاسم أو الرقم. وتتقلّص النتائج أثناء الكتابة.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">All / Active / Opted out</div><div data-lang="ar">الكل / نشط / ملغى الاشتراك</div>
+      <div data-lang="en">Three filter pills beside the search box. <strong>Opted out</strong> is the quick way to see exactly who has asked you to stop.</div>
+      <div data-lang="ar">ثلاثة أزرار تصفية بجوار حقل البحث. و<strong>ملغى الاشتراك</strong> هو الطريق السريع لمعرفة من طلب منك التوقّف بالضبط.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Edit</div><div data-lang="ar">تعديل</div>
+      <div data-lang="en">Correct a name in place. Press <strong>Save</strong> to keep it or <strong>Cancel</strong> to back out.</div>
+      <div data-lang="ar">صحّح الاسم في مكانه. اضغط <strong>حفظ</strong> للإبقاء عليه أو <strong>إلغاء</strong> للتراجع.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Opt out / Re-subscribe</div><div data-lang="ar">إلغاء الاشتراك / إعادة الاشتراك</div>
+      <div data-lang="en">Manually stop or resume messaging this person. Use it when someone asks you to stop by phone or in person rather than by replying STOP.</div>
+      <div data-lang="ar">إيقاف أو استئناف مراسلة هذا الشخص يدويًا. استخدمه عندما يطلب أحدهم التوقّف هاتفيًا أو شخصيًا بدلًا من الردّ بكلمة STOP.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Delete</div><div data-lang="ar">حذف</div>
+      <div data-lang="en">Admins only. Asks for confirmation inline. See the warning below.</div>
+      <div data-lang="ar">للمسؤولين فقط. يطلب تأكيدًا مباشرًا. راجع التنبيه أدناه.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Bulk delete</div><div data-lang="ar">حذف جماعي</div>
+      <div data-lang="en">Tick the checkboxes, then <strong>Delete selected</strong> and <strong>Confirm</strong>. Admins only.</div>
+      <div data-lang="ar">حدّد المربّعات، ثم اضغط <strong>حذف المحدّد</strong> ثم <strong>تأكيد</strong>. للمسؤولين فقط.</div>
+    </div>
+  </div>
+
+  <div class="callout callout--warn">
+    <div class="callout__ico" aria-hidden="true">⚠</div>
+    <div>
+      <p data-lang="en"><strong>Deleting is not the same as opting out.</strong> A contact who has ever been part of a broadcast cannot be deleted — their delivery history depends on them. If you need them to stop receiving messages, use <strong>Opt out</strong>. That is the correct tool, and it is reversible.</p>
+      <p data-lang="ar"><strong>الحذف ليس كإلغاء الاشتراك.</strong> جهة الاتصال التي شاركت في أي بثّ سابق لا يمكن حذفها — لأن سجلّ التسليم يعتمد عليها. وإذا أردت إيقاف الرسائل عنها، فاستخدم <strong>إلغاء الاشتراك</strong>. فهو الأداة الصحيحة، وقابل للتراجع.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="chapter" id="lists"
+  data-toc-en="Lists" data-toc-ar="القوائم">
+  <h2><span class="chapter__num">5</span>
+    <span data-lang="en">Lists</span>
+    <span data-lang="ar">القوائم</span>
+  </h2>
+  <p class="sub" data-lang="en">A list is who you are sending to. You never send to individuals — always to a list.</p>
+  <p class="sub" data-lang="ar">القائمة هي الجهة التي ترسل إليها. أنت لا ترسل إلى أفراد أبدًا — بل إلى قائمة دائمًا.</p>
+
+  <h3><span data-lang="en">Creating a list</span><span data-lang="ar">إنشاء قائمة</span></h3>
+  <p data-lang="en">Type a name into the box at the top of the <strong>Lists</strong> page and press <strong>Create list</strong>. Names must be unique. Give them names that will still make sense in six months — <em>"Parents — Grade 5 — 2026"</em> beats <em>"New list 2"</em>.</p>
+  <p data-lang="ar">اكتب اسمًا في الحقل أعلى صفحة <strong>القوائم</strong> واضغط <strong>إنشاء قائمة</strong>. ويجب أن تكون الأسماء فريدة. اختر أسماءً تبقى مفهومة بعد ستة أشهر — فاسم <em>«أولياء أمور — الصف الخامس — ٢٠٢٦»</em> أفضل من <em>«قائمة جديدة ٢»</em>.</p>
+
+  <h3><span data-lang="en">Filling a list</span><span data-lang="ar">تعبئة القائمة</span></h3>
+  <p data-lang="en">There are two ways:</p>
+  <p data-lang="ar">هناك طريقتان:</p>
+  <ul>
+    <li><span data-lang="en">Choose the list in <strong>Add to list</strong> when adding a single contact, on the <strong>Contacts</strong> page.</span><span data-lang="ar">اختر القائمة من <strong>إضافة إلى قائمة</strong> عند إضافة جهة اتصال واحدة، في صفحة <strong>جهات الاتصال</strong>.</span></li>
+    <li><span data-lang="en">Choose the list in <strong>Add to list</strong> when uploading a CSV, on the <strong>Dashboard</strong> — every row in the file joins it.</span><span data-lang="ar">اختر القائمة من <strong>إضافة إلى قائمة</strong> عند رفع ملف CSV، في <strong>لوحة التحكم</strong> — وسينضم إليها كل صف في الملف.</span></li>
+  </ul>
+
+  <h3><span data-lang="en">Snapshots — your undo button</span><span data-lang="ar">النسخ المحفوظة — زرّ التراجع لديك</span></h3>
+  <p data-lang="en">A snapshot records exactly who is in a list at this moment. If a later import adds the wrong people, or someone removes members by mistake, you can restore the list to how it was.</p>
+  <p data-lang="ar">تسجّل النسخة المحفوظة بدقّة من هم أعضاء القائمة في هذه اللحظة. وإذا أضاف استيراد لاحق أشخاصًا خاطئين، أو أزال أحدهم أعضاء بالخطأ، يمكنك إعادة القائمة إلى ما كانت عليه.</p>
+
+  <ol class="steps">
+    <li>
+      <p data-lang="en">Press <strong>Snapshot now</strong> next to the list <em>before</em> you do anything risky — a big import, a bulk delete, a cleanup.</p>
+      <p data-lang="ar">اضغط <strong>حفظ نسخة الآن</strong> بجوار القائمة <em>قبل</em> أن تقوم بأي إجراء محفوف بالمخاطر — استيراد كبير، أو حذف جماعي، أو تنظيف.</p>
+    </li>
+    <li>
+      <p data-lang="en">Press the list name to expand it and see all its saved snapshots, with the date and how many members each one holds.</p>
+      <p data-lang="ar">اضغط على اسم القائمة لتوسيعها ورؤية كل النسخ المحفوظة، مع التاريخ وعدد الأعضاء في كل نسخة.</p>
+    </li>
+    <li>
+      <p data-lang="en">Press <strong>Restore</strong> on the snapshot you want. Confirm the warning — the current members are replaced by the snapshot's members.</p>
+      <p data-lang="ar">اضغط <strong>استعادة</strong> على النسخة التي تريدها. وأكِّد التحذير — إذ سيُستبدل الأعضاء الحاليون بأعضاء النسخة المحفوظة.</p>
+    </li>
+  </ol>
+
+  <div class="callout callout--tip">
+    <div class="callout__ico" aria-hidden="true">💡</div>
+    <div>
+      <p data-lang="en">If a contact was deleted from the system entirely after the snapshot was taken, restoring skips them and tells you how many were skipped. Restoring is an Admin action.</p>
+      <p data-lang="ar">إذا حُذفت جهة اتصال من النظام كليًا بعد أخذ النسخة، فستتخطّاها الاستعادة وتخبرك بعدد المتخطّى. والاستعادة إجراء خاص بالمسؤولين.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Archiving a list — retire it without losing it</span><span data-lang="ar">أرشفة القائمة — إخراجها من الخدمة دون فقدانها</span></h3>
+  <p data-lang="en">When a list has served its purpose — last year&rsquo;s intake, a finished campaign — <strong>Archive</strong> it rather than deleting it. An archived list disappears from the template and broadcast pickers, so nobody sends to it by accident, but every broadcast it was ever used for keeps its full history.</p>
+  <p data-lang="ar">عندما تنتهي مهمّة القائمة — دفعة العام الماضي، أو حملة منتهية — اختر <strong>الأرشفة</strong> بدلًا من الحذف. فالقائمة المؤرشفة تختفي من قوائم اختيار القوالب وعمليات البثّ، فلا يرسل إليها أحد بالخطأ، لكن كل بثّ استُخدمت فيه يحتفظ بسجلّه الكامل.</p>
+  <ul>
+    <li><span data-lang="en">Tick <strong>Show archived</strong> above the list table to bring archived lists back into view. Each one carries an <em>archived</em> badge.</span><span data-lang="ar">حدّد <strong>إظهار المؤرشفة</strong> أعلى جدول القوائم لإعادة القوائم المؤرشفة إلى العرض. وتحمل كل واحدة شارة <em>مؤرشفة</em>.</span></li>
+    <li><span data-lang="en">Press <strong>Restore</strong> on an archived list to put it back into circulation.</span><span data-lang="ar">اضغط <strong>استعادة</strong> على قائمة مؤرشفة لإعادتها إلى الخدمة.</span></li>
+  </ul>
+  <div class="callout callout--tip">
+    <div class="callout__ico" aria-hidden="true">💡</div>
+    <div>
+      <p data-lang="en"><strong>Archive is almost always the right choice.</strong> Reach for Delete only when a list was created by mistake and has never been used.</p>
+      <p data-lang="ar"><strong>الأرشفة هي الخيار الصحيح في أغلب الحالات.</strong> ولا تلجأ إلى الحذف إلا إذا أُنشئت القائمة بالخطأ ولم تُستخدم قط.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Deleting a list</span><span data-lang="ar">حذف قائمة</span></h3>
+  <p data-lang="en">Press the red <strong>Delete</strong> next to a list. This removes the list and its snapshots. <strong>The contacts themselves are kept</strong> — they simply no longer belong to this group. The confirmation message tells you how many members are affected.</p>
+  <p data-lang="ar">اضغط <strong>حذف</strong> الأحمر بجوار القائمة. وهذا يزيل القائمة ونسخها المحفوظة. <strong>أمّا جهات الاتصال نفسها فتبقى</strong> — وتكفّ فقط عن الانتماء إلى هذه المجموعة. وتخبرك رسالة التأكيد بعدد الأعضاء المتأثّرين.</p>
+</section>
+
+
+<section class="chapter" id="templates"
+  data-toc-en="Templates" data-toc-ar="القوالب">
+  <h2><span class="chapter__num">6</span>
+    <span data-lang="en">Templates</span>
+    <span data-lang="ar">القوالب</span>
+  </h2>
+  <p class="sub" data-lang="en">The messages themselves. This is the one chapter worth reading twice.</p>
+  <p class="sub" data-lang="ar">الرسائل نفسها. وهذا هو الفصل الوحيد الجدير بقراءته مرّتين.</p>
+
+  <p data-lang="en">A template is a message you write once, send to WhatsApp for review, and then reuse forever. WhatsApp reviews it to make sure businesses are not spamming people. Review usually takes a few minutes, sometimes up to 24 hours.</p>
+  <p data-lang="ar">القالب رسالة تكتبها مرّة واحدة، وترسلها إلى واتساب للمراجعة، ثم تعيد استخدامها إلى الأبد. ويراجعها واتساب للتأكّد من أن الشركات لا تُزعج الناس. وتستغرق المراجعة عادةً دقائق، وقد تصل إلى ٢٤ ساعة.</p>
+
+  <h3><span data-lang="en">Creating a template, field by field</span><span data-lang="ar">إنشاء قالب، حقلًا بحقل</span></h3>
+
+  <div class="kv">
+    <div class="kv__row">
+      <div data-lang="en">Name</div><div data-lang="ar">الاسم</div>
+      <div data-lang="en">Lowercase letters, numbers and underscores only — <code>exam_reminder</code>, not <code>Exam Reminder</code>. This is an internal label; recipients never see it.</div>
+      <div data-lang="ar">أحرف إنجليزية صغيرة وأرقام وشرطات سفلية فقط — <code>exam_reminder</code> وليس <code>Exam Reminder</code>. وهو تصنيف داخلي لا يراه المستلمون.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Language</div><div data-lang="ar">اللغة</div>
+      <div data-lang="en">The language the message is written in. To message the same people in two languages, create two templates.</div>
+      <div data-lang="ar">لغة كتابة الرسالة. ولمراسلة الأشخاص أنفسهم بلغتين، أنشئ قالبين.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Category</div><div data-lang="ar">الفئة</div>
+      <div data-lang="en"><strong>MARKETING</strong> for offers and news. <strong>UTILITY</strong> for confirmations, reminders and updates about something the person already did. <strong>AUTHENTICATION</strong> for one-time codes. Choosing wrongly is a common rejection reason.</div>
+      <div data-lang="ar"><strong>MARKETING</strong> للعروض والأخبار. و<strong>UTILITY</strong> للتأكيدات والتذكيرات والتحديثات المتعلّقة بشيء قام به الشخص فعلًا. و<strong>AUTHENTICATION</strong> لرموز التحقّق. واختيار الفئة الخاطئة سبب شائع للرفض.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Header attachment</div><div data-lang="ar">مرفق الرأس</div>
+      <div data-lang="en">Optional image, PDF or video shown above the text. Upload a sample file here; you supply the real one each time you send.</div>
+      <div data-lang="ar">صورة أو ملف PDF أو فيديو اختياري يظهر فوق النص. ارفع ملفًا نموذجيًا هنا؛ وتقدّم الملف الحقيقي في كل مرة ترسل فيها.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Body</div><div data-lang="ar">النص</div>
+      <div data-lang="en">The message. Up to 1024 characters. Use <code>{{1}}</code>, <code>{{2}}</code> for blanks that change per person.</div>
+      <div data-lang="ar">الرسالة. حتى ١٠٢٤ حرفًا. استخدم <code>{{1}}</code> و<code>{{2}}</code> للفراغات التي تتغيّر لكل شخص.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Example values</div><div data-lang="ar">القيم النموذجية</div>
+      <div data-lang="en">One realistic example per variable. WhatsApp requires these so the reviewer can see what the finished message reads like.</div>
+      <div data-lang="ar">مثال واقعي واحد لكل متغيّر. ويطلبها واتساب ليتمكّن المراجع من رؤية الشكل النهائي للرسالة.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Footer</div><div data-lang="ar">التذييل</div>
+      <div data-lang="en">Optional small grey line, up to 60 characters. <em>"Reply STOP to opt out"</em> is a good use of it.</div>
+      <div data-lang="ar">سطر رمادي صغير اختياري، حتى ٦٠ حرفًا. وجملة <em>«أرسل STOP لإلغاء الاشتراك»</em> استخدام جيد له.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Buttons</div><div data-lang="ar">الأزرار</div>
+      <div data-lang="en">Up to 3. See the table below.</div>
+      <div data-lang="ar">حتى ٣ أزرار. راجع الجدول أدناه.</div>
+    </div>
+  </div>
+
+  <h4><span data-lang="en">Button types</span><span data-lang="ar">أنواع الأزرار</span></h4>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th><span data-lang="en">Type</span><span data-lang="ar">النوع</span></th>
+          <th><span data-lang="en">What happens when tapped</span><span data-lang="ar">ما يحدث عند الضغط</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Quick reply</strong></td>
+          <td><span data-lang="en">Sends their tap back to you as a reply. It appears in your Inbox and opens the 24-hour window — the easiest way to start a real conversation.</span><span data-lang="ar">يُرسل ضغطتهم إليك كردّ. فتظهر في صندوق الوارد وتفتح نافذة الـ٢٤ ساعة — وهي أسهل طريقة لبدء محادثة حقيقية.</span></td>
+        </tr>
+        <tr>
+          <td><strong>URL</strong></td>
+          <td><span data-lang="en">Opens a web page you specify.</span><span data-lang="ar">يفتح صفحة ويب تحدّدها.</span></td>
+        </tr>
+        <tr>
+          <td><strong>Call (phone)</strong></td>
+          <td><span data-lang="en">Starts a phone call to the number you specify.</span><span data-lang="ar">يبدأ مكالمة هاتفية إلى الرقم الذي تحدّده.</span></td>
+        </tr>
+        <tr>
+          <td><strong>Copy code</strong></td>
+          <td><span data-lang="en">Copies a coupon code to their clipboard. You give a sample code here and the real one when you send.</span><span data-lang="ar">ينسخ رمز كوبون إلى حافظتهم. تقدّم رمزًا نموذجيًا هنا، والرمز الحقيقي عند الإرسال.</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4><span data-lang="en">Two special formats</span><span data-lang="ar">تنسيقان خاصّان</span></h4>
+  <div class="grid2">
+    <div class="card">
+      <h4 style="margin-top:0"><span data-lang="en">Carousel</span><span data-lang="ar">الشريط الدوّار</span></h4>
+      <p data-lang="en">Between 2 and 10 swipeable cards, each with its own picture or video, its own short line of text, and optionally its own link button. Good for a menu, a product range, or a set of courses.</p>
+      <p data-lang="ar">من ٢ إلى ١٠ بطاقات قابلة للتمرير، لكل منها صورتها أو فيديوها، وسطر نصّي قصير خاص بها، وزر رابط اختياري. مناسب لقائمة طعام، أو مجموعة منتجات، أو مجموعة دورات.</p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0"><span data-lang="en">Limited-time offer</span><span data-lang="ar">عرض محدود المدّة</span></h4>
+      <p data-lang="en">A coloured banner above the message, 16 characters maximum, optionally with a live countdown timer. It requires a URL button, allows no footer, and cannot be combined with a carousel.</p>
+      <p data-lang="ar">شريط ملوّن فوق الرسالة، بحد أقصى ١٦ حرفًا، مع مؤقّت تنازلي حيّ اختياري. ويتطلّب زر رابط، ولا يسمح بتذييل، ولا يمكن دمجه مع الشريط الدوّار.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">The live preview</span><span data-lang="ar">المعاينة الحيّة</span></h3>
+  <p data-lang="en">As you type, a WhatsApp-shaped preview builds itself beside the form. Use it. It is the fastest way to spot a missing space, an awkward line break, or a variable in the wrong place.</p>
+  <p data-lang="ar">أثناء الكتابة، تتكوّن معاينة على شكل واتساب بجوار النموذج. استخدمها. فهي أسرع طريقة لاكتشاف مسافة ناقصة، أو فاصل سطر غير موفّق، أو متغيّر في المكان الخطأ.</p>
+
+  <div class="bubble">
+    <div class="bubble__hdr">🖼 IMAGE</div>
+    <div>Hello <b>Ahmed</b>, the new term timetable is ready. Classes begin on <b>7 September</b>.</div>
+    <div class="bubble__ftr">Reply STOP to opt out</div>
+    <div class="bubble__btn">View timetable</div>
+    <div class="bubble__time">10:24 ✓✓</div>
+  </div>
+  <p class="mock__cap" data-lang="en">A preview of a template with an image header, two variables, a footer and a URL button.</p>
+  <p class="mock__cap" data-lang="ar">معاينة لقالب يحتوي على رأس بصورة، ومتغيّرين، وتذييل، وزر رابط.</p>
+
+  <h3><span data-lang="en">Submitting and the three statuses</span><span data-lang="ar">الإرسال والحالات الثلاث</span></h3>
+  <p data-lang="en">Press <strong>Create template</strong> and it goes to WhatsApp for review. Your templates table then shows one of these:</p>
+  <p data-lang="ar">اضغط <strong>إنشاء قالب</strong> فيُرسَل إلى واتساب للمراجعة. ويعرض جدول قوالبك بعدها إحدى هذه الحالات:</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th><span data-lang="en">Status</span><span data-lang="ar">الحالة</span></th>
+          <th><span data-lang="en">Meaning</span><span data-lang="ar">المعنى</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="chip chip--pending">PENDING</span></td>
+          <td><span data-lang="en">Waiting for WhatsApp. You cannot send with it yet. Wait, then press Sync.</span><span data-lang="ar">في انتظار واتساب. لا يمكنك الإرسال به بعد. انتظر، ثم اضغط «مزامنة».</span></td>
+        </tr>
+        <tr>
+          <td><span class="chip chip--approved">APPROVED</span></td>
+          <td><span data-lang="en">Ready. It now appears in the template dropdown when you create a broadcast.</span><span data-lang="ar">جاهز. ويظهر الآن في قائمة القوالب المنسدلة عند إنشاء بثّ.</span></td>
+        </tr>
+        <tr>
+          <td><span class="chip chip--failed">REJECTED</span></td>
+          <td><span data-lang="en">Refused. Fix the problem and create a new template — rejected ones cannot be edited and resubmitted.</span><span data-lang="ar">مرفوض. صحّح المشكلة وأنشئ قالبًا جديدًا — فالمرفوض لا يمكن تعديله وإعادة إرساله.</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout--tip">
+    <div class="callout__ico" aria-hidden="true">🔄</div>
+    <div>
+      <p data-lang="en"><strong>The Sync button.</strong> Statuses update on their own when WhatsApp notifies us, but <strong>Sync</strong> forces an immediate check. Press it if a template has been PENDING longer than you expected, or if a template you know is approved is missing from the send screen.</p>
+      <p data-lang="ar"><strong>زر المزامنة.</strong> تتحدّث الحالات تلقائيًا عندما يُعلمنا واتساب، لكن <strong>المزامنة</strong> تفرض فحصًا فوريًا. اضغطه إذا بقي قالب في حالة PENDING أطول ممّا توقّعت، أو إذا كان قالب تعرف أنه معتمد غير ظاهر في شاشة الإرسال.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Why templates get rejected</span><span data-lang="ar">لماذا تُرفض القوالب</span></h3>
+  <ul>
+    <li><span data-lang="en"><strong>Wrong category</strong> — a discount offer submitted as UTILITY is the single most common cause.</span><span data-lang="ar"><strong>فئة خاطئة</strong> — عرض خصم يُرسَل تحت فئة UTILITY هو السبب الأكثر شيوعًا على الإطلاق.</span></li>
+    <li><span data-lang="en"><strong>A variable at the very start or very end</strong> of the message, or two variables side by side. Always wrap them in real words.</span><span data-lang="ar"><strong>متغيّر في بداية الرسالة أو نهايتها تمامًا</strong>، أو متغيّران متجاوران. أحِطهما دائمًا بكلمات حقيقية.</span></li>
+    <li><span data-lang="en"><strong>Example values that are placeholders</strong> — write <em>Ahmed</em>, not <em>xxx</em> or <em>name</em>.</span><span data-lang="ar"><strong>قيم نموذجية شكلية</strong> — اكتب <em>أحمد</em>، لا <em>xxx</em> أو <em>الاسم</em>.</span></li>
+    <li><span data-lang="en"><strong>Spelling and grammar mistakes</strong>, ALL-CAPS SHOUTING, or too many emoji.</span><span data-lang="ar"><strong>أخطاء إملائية ونحوية</strong>، أو كتابة بأحرف كبيرة صارخة، أو إفراط في الرموز التعبيرية.</span></li>
+    <li><span data-lang="en"><strong>A broken or non-public link</strong> in a URL button.</span><span data-lang="ar"><strong>رابط معطّل أو غير عام</strong> في زر الرابط.</span></li>
+  </ul>
+
+  <div class="callout callout--warn">
+    <div class="callout__ico" aria-hidden="true">⚠</div>
+    <div>
+      <p data-lang="en">Creating and submitting templates is an <strong>Admin</strong> action. Members can see the templates table but not the create form.</p>
+      <p data-lang="ar">إنشاء القوالب وإرسالها إجراء خاص بـ<strong>المسؤول</strong>. ويستطيع الأعضاء رؤية جدول القوالب دون نموذج الإنشاء.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="chapter" id="sending"
+  data-toc-en="Sending a broadcast" data-toc-ar="إرسال بثّ">
+  <h2><span class="chapter__num">7</span>
+    <span data-lang="en">Sending a broadcast</span>
+    <span data-lang="ar">إرسال بثّ</span>
+  </h2>
+  <p class="sub" data-lang="en">The main event. One approved template, one list, and a moment in time.</p>
+  <p class="sub" data-lang="ar">الحدث الرئيسي. قالب معتمد واحد، وقائمة واحدة، ولحظة زمنية.</p>
+
+  <p data-lang="en">The <strong>New broadcast</strong> form is on the Dashboard. The form changes shape depending on which template you pick — if your template has no image and no variables, you will only see three fields.</p>
+  <p data-lang="ar">نموذج <strong>بثّ جديد</strong> موجود في لوحة التحكم. ويتغيّر شكل النموذج بحسب القالب الذي تختاره — فإذا كان قالبك بلا صورة وبلا متغيّرات، فلن ترى سوى ثلاثة حقول.</p>
+
+  <div class="mock">
+    <div class="mock__body">
+      <div class="mock__label">Template (approved only)</div>
+      <div class="mock__field">term_timetable (en) · 2 vars ▾</div>
+      <div class="mock__label">Recipient list</div>
+      <div class="mock__field">Parents — Grade 5 ▾</div>
+      <div class="mock__label">Template variables</div>
+      <div class="mock__field">field:name</div>
+      <div class="mock__field">7 September</div>
+      <div class="mock__label">Schedule (optional — blank = send now)</div>
+      <div class="mock__field">dd/mm/yyyy --:--</div>
+      <span class="mock__btn">Send now</span>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Step by step</span><span data-lang="ar">خطوة بخطوة</span></h3>
+  <ol class="steps">
+    <li>
+      <p data-lang="en"><strong>Template.</strong> Only approved templates appear here. If yours is missing, it is still PENDING or was REJECTED — go to Templates and press Sync.</p>
+      <p data-lang="ar"><strong>القالب.</strong> لا تظهر هنا سوى القوالب المعتمدة. وإذا لم يظهر قالبك، فهو ما زال قيد المراجعة أو مرفوض — اذهب إلى «القوالب» واضغط «مزامنة».</p>
+    </li>
+    <li>
+      <p data-lang="en"><strong>Recipient list.</strong> Everyone on it receives the message, except contacts who have opted out — they are removed automatically and silently.</p>
+      <p data-lang="ar"><strong>قائمة المستلمين.</strong> يستقبل الرسالة كل من فيها، عدا من ألغوا اشتراكهم — فيُستبعدون تلقائيًا ودون إشعار.</p>
+    </li>
+    <li>
+      <p data-lang="en"><strong>Fill any extra fields the template needs.</strong> These appear only when relevant — see the table below.</p>
+      <p data-lang="ar"><strong>املأ أي حقول إضافية يحتاجها القالب.</strong> ولا تظهر إلا عند الحاجة — راجع الجدول أدناه.</p>
+    </li>
+    <li>
+      <p data-lang="en"><strong>Fill the variables.</strong> This is the part worth understanding properly — see the next section.</p>
+      <p data-lang="ar"><strong>املأ المتغيّرات.</strong> وهذا الجزء يستحقّ الفهم الجيد — راجع القسم التالي.</p>
+    </li>
+    <li>
+      <p data-lang="en"><strong>Read the preview.</strong> It shows the finished message with your values substituted in. Read it once as if you were a parent receiving it.</p>
+      <p data-lang="ar"><strong>اقرأ المعاينة.</strong> فهي تعرض الرسالة النهائية بعد وضع قيمك فيها. اقرأها مرّة واحدة وكأنك ولي الأمر الذي سيستلمها.</p>
+    </li>
+    <li>
+      <p data-lang="en"><strong>Send or schedule.</strong> Leave the schedule field blank and the button reads <strong>Send now</strong>. Pick a future date and time and it reads <strong>Schedule broadcast</strong>.</p>
+      <p data-lang="ar"><strong>أرسِل أو جدوِل.</strong> اترك حقل الجدولة فارغًا فيصبح الزر <strong>إرسال الآن</strong>. واختر تاريخًا ووقتًا مستقبليًا فيصبح <strong>جدولة البثّ</strong>.</p>
+    </li>
+  </ol>
+
+  <h3><span data-lang="en">Template variables — literal text or per-person</span><span data-lang="ar">متغيّرات القالب — نصّ ثابت أو خاص بكل شخص</span></h3>
+  <p data-lang="en">Each <code>{{1}}</code>, <code>{{2}}</code> in your template gets one input box. You can fill it in two ways:</p>
+  <p data-lang="ar">يحصل كل <code>{{1}}</code> و<code>{{2}}</code> في قالبك على حقل إدخال. ويمكنك ملؤه بطريقتين:</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th><span data-lang="en">You type</span><span data-lang="ar">ما تكتبه</span></th>
+          <th><span data-lang="en">Everyone receives</span><span data-lang="ar">ما يستلمه الجميع</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>7 September</code></td>
+          <td><span data-lang="en">The same text, <strong>7 September</strong>, for every recipient.</span><span data-lang="ar">النصّ نفسه، <strong>٧ سبتمبر</strong>، لكل مستلم.</span></td>
+        </tr>
+        <tr>
+          <td><code>field:name</code></td>
+          <td><span data-lang="en">Their <strong>own name</strong> from the contact record.</span><span data-lang="ar"><strong>اسمه الخاص</strong> من سجلّ جهة الاتصال.</span></td>
+        </tr>
+        <tr>
+          <td><code>field:city</code></td>
+          <td><span data-lang="en">Their <strong>own city</strong>, taken from the <code>city</code> column of the CSV you imported.</span><span data-lang="ar"><strong>مدينته الخاصة</strong>، مأخوذة من عمود <code>city</code> في ملف CSV الذي استوردته.</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout--tip">
+    <div class="callout__ico" aria-hidden="true">💡</div>
+    <div>
+      <p data-lang="en">Any extra column you put in your CSV becomes available as <code>field:columnname</code>. A <code>grade</code> column gives you <code>field:grade</code>. This is how one broadcast becomes hundreds of personalised messages.</p>
+      <p data-lang="ar">أي عمود إضافي تضعه في ملف CSV يصبح متاحًا بصيغة <code>field:اسم_العمود</code>. فعمود <code>grade</code> يمنحك <code>field:grade</code>. وهكذا يتحوّل بثّ واحد إلى مئات الرسائل المخصّصة.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Extra fields you may see</span><span data-lang="ar">حقول إضافية قد تراها</span></h3>
+  <div class="kv">
+    <div class="kv__row">
+      <div data-lang="en">Header media URL</div><div data-lang="ar">رابط وسائط الرأس</div>
+      <div data-lang="en">Appears when the template has an image, PDF or video header. Paste a public web link to the file you want sent this time. It must be reachable by anyone, not a private Drive link.</div>
+      <div data-lang="ar">يظهر عندما يحتوي القالب على رأس بصورة أو PDF أو فيديو. الصق رابط ويب عامًا للملف الذي تريد إرساله هذه المرّة. ويجب أن يكون متاحًا للجميع، لا رابط Drive خاصًا.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Coupon code</div><div data-lang="ar">رمز الكوبون</div>
+      <div data-lang="en">Appears when the template has a copy-code button. Up to 15 characters, e.g. <code>SAVE20</code>.</div>
+      <div data-lang="ar">يظهر عندما يحتوي القالب على زر نسخ الرمز. حتى ١٥ حرفًا، مثل <code>SAVE20</code>.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Carousel card media</div><div data-lang="ar">وسائط بطاقات الشريط</div>
+      <div data-lang="en">One box per card. Leave a box blank to keep that card's default picture; fill it to swap in a different one just for this send.</div>
+      <div data-lang="ar">حقل لكل بطاقة. اترك الحقل فارغًا للإبقاء على صورة البطاقة الافتراضية؛ أو املأه لاستبدالها بأخرى لهذا الإرسال فقط.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Offer expires at</div><div data-lang="ar">ينتهي العرض في</div>
+      <div data-lang="en">Appears for limited-time offers with a countdown. Pick when the timer should hit zero. Must be in the future.</div>
+      <div data-lang="ar">يظهر للعروض محدودة المدّة ذات المؤقّت. حدّد متى يصل العدّاد إلى الصفر. ويجب أن يكون في المستقبل.</div>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">What happens after you press send</span><span data-lang="ar">ما يحدث بعد الضغط على إرسال</span></h3>
+  <p data-lang="en">Messages do not all leave at once. They are queued and released at a steady, controlled rate so WhatsApp does not flag your number for flooding. A few thousand contacts take several minutes — this is normal and deliberate. You are taken to the broadcast's detail page, where you can watch it happen.</p>
+  <p data-lang="ar">لا تغادر الرسائل كلها دفعة واحدة. بل تُوضع في طابور وتُطلَق بمعدّل ثابت ومنضبط حتى لا يضع واتساب علامة على رقمك بسبب الإغراق. وبضعة آلاف من جهات الاتصال تستغرق عدّة دقائق — وهذا طبيعي ومقصود. وستنتقل إلى صفحة تفاصيل البثّ حيث يمكنك متابعة ذلك.</p>
+
+  <div class="callout callout--warn">
+    <div class="callout__ico" aria-hidden="true">⚠</div>
+    <div>
+      <p data-lang="en"><strong>A broadcast cannot be recalled.</strong> There is no unsend. Read the preview before you press the button — that preview is the last checkpoint.</p>
+      <p data-lang="ar"><strong>لا يمكن استرجاع البثّ.</strong> فلا وجود لخاصية التراجع عن الإرسال. اقرأ المعاينة قبل الضغط على الزر — فهي نقطة المراجعة الأخيرة.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="chapter" id="watching"
+  data-toc-en="Watching a broadcast" data-toc-ar="متابعة البثّ">
+  <h2><span class="chapter__num">8</span>
+    <span data-lang="en">Watching a broadcast</span>
+    <span data-lang="ar">متابعة البثّ</span>
+  </h2>
+  <p class="sub" data-lang="en">Live progress, the delivery funnel, who clicked, and how to retry the ones that failed.</p>
+  <p class="sub" data-lang="ar">التقدّم الحيّ، وقمع التسليم، ومن ضغط الأزرار، وكيفية إعادة المحاولة للفاشلة.</p>
+
+  <p data-lang="en">Open a broadcast by clicking its row in <strong>Recent broadcasts</strong> on the Dashboard. The page updates itself while the send is running — you do not need to refresh.</p>
+  <p data-lang="ar">افتح البثّ بالضغط على صفّه في <strong>آخر عمليات البث</strong> في لوحة التحكم. وتتحدّث الصفحة تلقائيًا أثناء الإرسال — ولا حاجة لتحديثها.</p>
+
+  <div class="mock">
+    <div class="mock__body">
+      <div class="mock__stat" style="margin-bottom:18px">
+        <div><strong>430</strong><span>Recipients</span></div>
+        <div><strong>428</strong><span>Sent</span></div>
+        <div><strong style="color:var(--st-failed)">2</strong><span>Failed</span></div>
+      </div>
+      <div class="mock__label">Analytics</div>
+      <div class="mock__row"><span>Sent</span><strong>428</strong></div>
+      <div class="mock__row"><span>Delivered</span><strong>421</strong></div>
+      <div class="mock__row"><span>Read · opened</span><strong>309</strong></div>
+      <div class="mock__row"><span style="color:var(--teal)">Clicked</span><strong style="color:var(--teal)">64</strong></div>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">The delivery funnel</span><span data-lang="ar">قمع التسليم</span></h3>
+  <p data-lang="en">Read it top to bottom. Each step is a subset of the one above it.</p>
+  <p data-lang="ar">اقرأه من الأعلى إلى الأسفل. فكل خطوة جزء من الخطوة التي فوقها.</p>
+  <div class="kv">
+    <div class="kv__row">
+      <div>Sent</div>
+      <div data-lang="en">Handed over to WhatsApp successfully.</div>
+      <div data-lang="ar">سُلّمت إلى واتساب بنجاح.</div>
+    </div>
+    <div class="kv__row">
+      <div>Delivered</div>
+      <div data-lang="en">Arrived on the recipient's phone. If their phone is off, this happens later when they come back online.</div>
+      <div data-lang="ar">وصلت إلى هاتف المستلم. وإذا كان هاتفه مغلقًا، يحدث ذلك لاحقًا عند عودته للاتصال.</div>
+    </div>
+    <div class="kv__row">
+      <div>Read · opened</div>
+      <div data-lang="en">They opened the chat and saw it. Blank if the recipient has read receipts switched off in their own WhatsApp — so this number is a floor, not an exact count.</div>
+      <div data-lang="ar">فتح المحادثة ورآها. ويبقى فارغًا إذا عطّل المستلم إشعارات القراءة في واتساب لديه — لذا فهذا الرقم حدّ أدنى، وليس عددًا دقيقًا.</div>
+    </div>
+    <div class="kv__row">
+      <div>Clicked</div>
+      <div data-lang="en">They tapped a button on the message. The strongest signal you get.</div>
+      <div data-lang="ar">ضغط زرًا في الرسالة. وهو أقوى إشارة تحصل عليها.</div>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Button events</span><span data-lang="ar">أحداث الأزرار</span></h3>
+  <p data-lang="en">Below the funnel is a breakdown of which buttons were tapped and how many times. If a message has "Yes" and "No" quick replies, this is where you read the answer.</p>
+  <p data-lang="ar">أسفل القمع يوجد تفصيل بالأزرار التي ضُغطت وعدد مرّات الضغط. فإذا كانت الرسالة تحتوي على ردّين سريعين «نعم» و«لا»، فهنا تقرأ النتيجة.</p>
+
+  <h3><span data-lang="en">The recipient table</span><span data-lang="ar">جدول المستلمين</span></h3>
+  <p data-lang="en">Every recipient with their individual status and, for failures, the reason. This is where you find out <em>why</em> two messages did not go through.</p>
+  <p data-lang="ar">كل مستلم مع حالته الفردية، وسبب الفشل إن وُجد. وهنا تكتشف <em>لماذا</em> لم تصل رسالتان.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th><span data-lang="en">Status</span><span data-lang="ar">الحالة</span></th>
+          <th><span data-lang="en">Meaning</span><span data-lang="ar">المعنى</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="chip chip--pending">PENDING</span></td><td><span data-lang="en">Still queued, not sent yet.</span><span data-lang="ar">ما زالت في الطابور ولم تُرسل بعد.</span></td></tr>
+        <tr><td><span class="chip chip--sent">SENT</span></td><td><span data-lang="en">Accepted by WhatsApp.</span><span data-lang="ar">قبِلها واتساب.</span></td></tr>
+        <tr><td><span class="chip chip--delivered">DELIVERED</span></td><td><span data-lang="en">On their phone.</span><span data-lang="ar">وصلت إلى هاتفه.</span></td></tr>
+        <tr><td><span class="chip chip--read">READ</span></td><td><span data-lang="en">Opened.</span><span data-lang="ar">فُتحت.</span></td></tr>
+        <tr><td><span class="chip chip--failed">FAILED</span></td><td><span data-lang="en">Did not go through. The reason is in the Error column.</span><span data-lang="ar">لم تصل. والسبب مذكور في عمود الخطأ.</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span data-lang="en">Retrying failures</span><span data-lang="ar">إعادة المحاولة للفاشلة</span></h3>
+  <p data-lang="en">If any messages failed, a <strong>Retry N failed</strong> button appears. It re-queues only the failed recipients — nobody receives a duplicate. Retry is worth doing when the errors were temporary (a network hiccup, a rate limit). It will not help if the number simply does not have WhatsApp; fix the contact instead.</p>
+  <p data-lang="ar">إذا فشلت أي رسائل، يظهر زر <strong>إعادة المحاولة لـN فاشلة</strong>. وهو يعيد إلى الطابور المستلمين الفاشلين فقط — فلا يستلم أحد نسخة مكرّرة. وتستحق إعادة المحاولة العناء عندما تكون الأخطاء مؤقّتة (انقطاع شبكة، أو حدّ معدّل). ولن تفيد إذا كان الرقم لا يملك واتساب أصلًا؛ فصحّح جهة الاتصال بدلًا من ذلك.</p>
+
+  <h3><span data-lang="en">Broadcast statuses</span><span data-lang="ar">حالات البثّ</span></h3>
+  <div class="tablewrap">
+    <table>
+      <tbody>
+        <tr><td><span class="chip chip--scheduled">SCHEDULED</span></td><td><span data-lang="en">Waiting for its time to arrive.</span><span data-lang="ar">في انتظار موعده.</span></td></tr>
+        <tr><td><span class="chip chip--pending">QUEUED</span></td><td><span data-lang="en">Accepted and lined up to start.</span><span data-lang="ar">مقبول وفي الصف للبدء.</span></td></tr>
+        <tr><td><span class="chip chip--delivered">SENDING</span></td><td><span data-lang="en">Going out right now.</span><span data-lang="ar">قيد الإرسال الآن.</span></td></tr>
+        <tr><td><span class="chip chip--read">COMPLETED</span></td><td><span data-lang="en">Every recipient has been attempted. Some may still have failed — check the failed count.</span><span data-lang="ar">جُرّبت المحاولة مع كل مستلم. وقد يكون بعضها فشل — راجع عدد الفاشلة.</span></td></tr>
+        <tr><td><span class="chip chip--failed">FAILED</span></td><td><span data-lang="en">The whole send could not run. Usually a WhatsApp connection problem — check Settings.</span><span data-lang="ar">تعذّر تشغيل الإرسال بالكامل. وعادةً ما يكون بسبب مشكلة في اتصال واتساب — راجع الإعدادات.</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<section class="chapter" id="campaigns"
+  data-toc-en="Recurring campaigns" data-toc-ar="الحملات المتكرّرة">
+  <h2><span class="chapter__num">9</span>
+    <span data-lang="en">Recurring campaigns</span>
+    <span data-lang="ar">الحملات المتكرّرة</span>
+  </h2>
+  <p class="sub" data-lang="en">Set a message to send itself on a repeating schedule — every Monday morning, the first of the month, every day at noon.</p>
+  <p class="sub" data-lang="ar">اضبط رسالة لترسل نفسها وفق جدول متكرّر — كل صباح اثنين، أو أول الشهر، أو يوميًا عند الظهر.</p>
+
+  <p data-lang="en">A one-off broadcast sends once. A campaign keeps sending on a schedule until you pause it. Same template, same list, over and over — so if you add people to the list, they are included from the next run onwards.</p>
+  <p data-lang="ar">البثّ العادي يُرسل مرّة واحدة. أمّا الحملة فتواصل الإرسال وفق جدول حتى توقفها. القالب نفسه، والقائمة نفسها، مرارًا وتكرارًا — فإذا أضفت أشخاصًا إلى القائمة، أُدرجوا اعتبارًا من التشغيل التالي.</p>
+
+  <ol class="steps">
+    <li>
+      <p data-lang="en">Go to <strong>Campaigns</strong> and fill the <strong>New recurring campaign</strong> form.</p>
+      <p data-lang="ar">اذهب إلى <strong>الحملات</strong> واملأ نموذج <strong>حملة متكرّرة جديدة</strong>.</p>
+    </li>
+    <li>
+      <p data-lang="en">Give it a <strong>name</strong> you will recognise later, then pick an approved <strong>template</strong> and a <strong>list</strong>.</p>
+      <p data-lang="ar">امنحها <strong>اسمًا</strong> تتعرّف عليه لاحقًا، ثم اختر <strong>قالبًا</strong> معتمدًا و<strong>قائمة</strong>.</p>
+    </li>
+    <li>
+      <p data-lang="en">Set the <strong>schedule</strong>. Use one of the preset buttons if it fits — that is the easy path.</p>
+      <p data-lang="ar">اضبط <strong>الجدول</strong>. استخدم أحد أزرار الإعدادات الجاهزة إن ناسبك — فهذا هو الطريق السهل.</p>
+    </li>
+    <li>
+      <p data-lang="en">Press <strong>Create campaign</strong>. It starts running from its next scheduled moment.</p>
+      <p data-lang="ar">اضغط <strong>إنشاء حملة</strong>. وستبدأ العمل من موعدها المجدول التالي.</p>
+    </li>
+  </ol>
+
+  <div class="callout callout--warn">
+    <div class="callout__ico" aria-hidden="true">🕐</div>
+    <div>
+      <p data-lang="en"><strong>Schedules run in UTC, not your local time.</strong> This catches everyone out once. Riyadh and Kuwait are UTC+3, so a campaign set for <code>0 9 * * *</code> sends at <strong>12:00 noon</strong> in Riyadh, not 9am. To send at 9am Riyadh time, set the hour to <strong>6</strong>.</p>
+      <p data-lang="ar"><strong>تعمل الجداول بتوقيت UTC، لا بتوقيتك المحلي.</strong> وهذا يُربك الجميع مرّة واحدة على الأقل. فالرياض والكويت على توقيت UTC+3، لذا فالحملة المضبوطة على <code>0 9 * * *</code> تُرسل في <strong>الساعة ١٢ ظهرًا</strong> بتوقيت الرياض، لا التاسعة صباحًا. ولإرسالها التاسعة صباحًا بتوقيت الرياض، اضبط الساعة على <strong>٦</strong>.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Reading the schedule box</span><span data-lang="ar">قراءة حقل الجدول</span></h3>
+  <p data-lang="en">The schedule uses five values separated by spaces: <strong>minute · hour · day of month · month · day of week</strong>. A <code>*</code> means "every".</p>
+  <p data-lang="ar">يستخدم الجدول خمس قيم يفصل بينها مسافات: <strong>الدقيقة · الساعة · يوم الشهر · الشهر · يوم الأسبوع</strong>. وتعني <code>*</code> «كل».</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th><span data-lang="en">Schedule</span><span data-lang="ar">الجدول</span></th>
+          <th><span data-lang="en">Runs</span><span data-lang="ar">يعمل</span></th>
+          <th><span data-lang="en">Riyadh time</span><span data-lang="ar">بتوقيت الرياض</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>0 6 * * *</code></td><td><span data-lang="en">Every day</span><span data-lang="ar">كل يوم</span></td><td>09:00</td></tr>
+        <tr><td><code>0 6 * * 0</code></td><td><span data-lang="en">Every Sunday</span><span data-lang="ar">كل أحد</span></td><td>09:00</td></tr>
+        <tr><td><code>30 5 * * 1-5</code></td><td><span data-lang="en">Monday to Friday</span><span data-lang="ar">من الاثنين إلى الجمعة</span></td><td>08:30</td></tr>
+        <tr><td><code>0 7 1 * *</code></td><td><span data-lang="en">First day of each month</span><span data-lang="ar">أول يوم من كل شهر</span></td><td>10:00</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span data-lang="en">Pausing, resuming, deleting</span><span data-lang="ar">الإيقاف والاستئناف والحذف</span></h3>
+  <p data-lang="en">The <strong>Active &amp; paused</strong> table lists every campaign. <strong>Pause</strong> stops future runs without losing the setup — the safe choice if you are unsure. <strong>Resume</strong> starts it again. <strong>Delete</strong> removes it permanently. Broadcasts a campaign has already sent are unaffected and stay in your history.</p>
+  <p data-lang="ar">يعرض جدول <strong>النشطة والمتوقّفة</strong> كل الحملات. و<strong>إيقاف مؤقّت</strong> يوقف التشغيلات المستقبلية دون فقدان الإعدادات — وهو الخيار الآمن عند التردّد. و<strong>استئناف</strong> يعيد تشغيلها. و<strong>حذف</strong> يزيلها نهائيًا. أمّا عمليات البثّ التي أرسلتها الحملة سابقًا فلا تتأثّر وتبقى في سجلّك.</p>
+
+  <div class="callout callout--warn">
+    <div class="callout__ico" aria-hidden="true">⚠</div>
+    <div>
+      <p data-lang="en">Creating and managing campaigns is an <strong>Admin</strong> action. Members can view the table but not the form.</p>
+      <p data-lang="ar">إنشاء الحملات وإدارتها إجراء خاص بـ<strong>المسؤول</strong>. ويستطيع الأعضاء رؤية الجدول دون النموذج.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="chapter" id="inbox"
+  data-toc-en="Inbox" data-toc-ar="صندوق الوارد">
+  <h2><span class="chapter__num">10</span>
+    <span data-lang="en">Inbox</span>
+    <span data-lang="ar">صندوق الوارد</span>
+  </h2>
+  <p class="sub" data-lang="en">Where replies land. Two panels: conversations on one side, the open chat on the other.</p>
+  <p class="sub" data-lang="ar">حيث تصل الردود. لوحتان: المحادثات في جانب، والدردشة المفتوحة في الجانب الآخر.</p>
+
+  <p data-lang="en">When someone replies to one of your broadcasts — by typing, or by tapping a quick-reply button — the message appears here. Photos, documents, voice notes, videos and locations all come through and display properly.</p>
+  <p data-lang="ar">عندما يردّ أحدهم على أحد عمليات البثّ لديك — بالكتابة أو بالضغط على زر ردّ سريع — تظهر الرسالة هنا. وتصل الصور والمستندات والرسائل الصوتية ومقاطع الفيديو والمواقع كلها وتُعرض بشكل صحيح.</p>
+
+  <h3><span data-lang="en">The window badge — read this first</span><span data-lang="ar">شارة النافذة — اقرأها أولًا</span></h3>
+  <p data-lang="en">At the top of every conversation is a badge. It is the most important thing on the screen.</p>
+  <p data-lang="ar">في أعلى كل محادثة توجد شارة. وهي أهم عنصر في الشاشة.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <p><span class="chip chip--read">● Window open</span></p>
+      <p data-lang="en">They messaged you within the last 24 hours. Type anything you like, attach files, send as many messages as you need. Normal chat.</p>
+      <p data-lang="ar">راسلوك خلال آخر ٢٤ ساعة. اكتب ما تشاء، وأرفق ملفات، وأرسل ما تحتاجه من رسائل. دردشة عادية.</p>
+    </div>
+    <div class="card">
+      <p><span class="chip chip--failed">● Window closed</span></p>
+      <p data-lang="en">More than 24 hours have passed. Free text will most likely be rejected by WhatsApp. Send an approved template instead — see below.</p>
+      <p data-lang="ar">مضى أكثر من ٢٤ ساعة. وسيرفض واتساب على الأرجح النصّ الحر. أرسل قالبًا معتمدًا بدلًا من ذلك — راجع أدناه.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Replying</span><span data-lang="ar">الردّ</span></h3>
+  <ul>
+    <li><span data-lang="en"><strong>Text</strong> — type in the box at the bottom and press Enter.</span><span data-lang="ar"><strong>نص</strong> — اكتب في الحقل بالأسفل واضغط Enter.</span></li>
+    <li><span data-lang="en"><strong>Attachment</strong> — press the 📎 icon and choose a file.</span><span data-lang="ar"><strong>مرفق</strong> — اضغط أيقونة 📎 واختر ملفًا.</span></li>
+    <li><span data-lang="en"><strong>Template</strong> — press the 📋 icon. Covered next.</span><span data-lang="ar"><strong>قالب</strong> — اضغط أيقونة 📋. وسنشرحه تاليًا.</span></li>
+  </ul>
+
+  <h3><span data-lang="en">Reopening a closed conversation</span><span data-lang="ar">إعادة فتح محادثة مغلقة</span></h3>
+  <p data-lang="en">This is the trick worth knowing. When the window is closed, press <strong>📋</strong> in the composer, choose an approved template, fill in any variables with plain text, and send. The template is allowed through. If the person replies to it, the 24-hour window opens again and you can chat normally.</p>
+  <p data-lang="ar">هذه هي الحيلة الجديرة بالمعرفة. عندما تكون النافذة مغلقة، اضغط <strong>📋</strong> في شريط الكتابة، واختر قالبًا معتمدًا، واملأ أي متغيّرات بنصّ عادي، ثم أرسل. فالقالب مسموح بمروره. وإذا ردّ الشخص عليه، تُفتح نافذة الـ٢٤ ساعة من جديد ويمكنك الدردشة بشكل طبيعي.</p>
+
+  <div class="callout callout--tip">
+    <div class="callout__ico" aria-hidden="true">💡</div>
+    <div>
+      <p data-lang="en">Rich templates — ones with a carousel, a coupon code or a countdown — are greyed out in this picker. They are designed for broadcasts, not one-to-one chat. Use a simple text template here.</p>
+      <p data-lang="ar">القوالب الغنية — تلك التي تحتوي على شريط دوّار أو رمز كوبون أو عدّاد تنازلي — تظهر باهتة في هذا المُنتقي. فهي مصمّمة لعمليات البثّ لا للدردشة الفردية. استخدم قالبًا نصّيًا بسيطًا هنا.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Finding a conversation</span><span data-lang="ar">العثور على محادثة</span></h3>
+  <p data-lang="en">The search box above the conversation list matches names, phone numbers and the text of messages. Searching for a phone number works with or without the country code.</p>
+  <p data-lang="ar">يطابق حقل البحث فوق قائمة المحادثات الأسماء وأرقام الهواتف ونصوص الرسائل. ويعمل البحث برقم الهاتف مع رمز الدولة أو بدونه.</p>
+
+  <h3><span data-lang="en">Why some old media disappears</span><span data-lang="ar">لماذا تختفي بعض الوسائط القديمة</span></h3>
+  <p data-lang="en">WhatsApp stores images and files sent to you for about 30 days. After that they are gone from their servers and cannot be recovered. Old messages will show a quiet <em>"media no longer available"</em> placeholder instead of a broken image. If a document matters, download it while the conversation is fresh.</p>
+  <p data-lang="ar">يحتفظ واتساب بالصور والملفات المرسلة إليك لنحو ٣٠ يومًا. وبعدها تختفي من خوادمه ولا يمكن استرجاعها. وستعرض الرسائل القديمة عبارة هادئة <em>«الوسائط لم تعد متاحة»</em> بدلًا من صورة معطّلة. فإذا كان المستند مهمًا، نزّله والمحادثة ما زالت حديثة.</p>
+</section>
+
+
+<!-- ============================================================
+     PART 3 — ADMINISTRATION
+     ============================================================ -->
+
+<section class="chapter" id="connect"
+  data-part-en="Administration" data-part-ar="الإدارة"
+  data-toc-en="Connect WhatsApp" data-toc-ar="ربط واتساب">
+  <h2><span class="chapter__num">11</span>
+    <span data-lang="en">Settings → Connect WhatsApp</span>
+    <span data-lang="ar">الإعدادات ← ربط واتساب</span>
+  </h2>
+  <p class="sub" data-lang="en">Admin only. Set up once, then forget about it. If messages are not going out, this is where you look.</p>
+  <p class="sub" data-lang="ar">للمسؤول فقط. تُضبط مرّة واحدة ثم تُنسى. وإذا لم تكن الرسائل تخرج، فهنا موضع البحث.</p>
+
+  <div class="callout callout--warn">
+    <div class="callout__ico" aria-hidden="true">🔒</div>
+    <div>
+      <p data-lang="en">These values come from your Meta Business account and act like passwords for your WhatsApp number. Do not email them, do not put them in a chat group, and do not share them outside the people who administer this portal.</p>
+      <p data-lang="ar">تأتي هذه القيم من حساب ميتا للأعمال وتعمل كأنها كلمات مرور لرقم واتساب لديك. لا ترسلها بالبريد، ولا تضعها في مجموعة دردشة، ولا تشاركها خارج نطاق من يديرون هذه البوّابة.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">The fields</span><span data-lang="ar">الحقول</span></h3>
+  <div class="kv">
+    <div class="kv__row">
+      <div data-lang="en">Phone number ID</div><div data-lang="ar">معرّف رقم الهاتف</div>
+      <div data-lang="en">A long number from Meta's <em>WhatsApp → API Setup</em> page. It is <strong>not</strong> your actual phone number — it is the ID sitting next to it.</div>
+      <div data-lang="ar">رقم طويل من صفحة <em>WhatsApp ← API Setup</em> في ميتا. وهو <strong>ليس</strong> رقم هاتفك الفعلي — بل المعرّف المجاور له.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">WhatsApp Business Account ID</div><div data-lang="ar">معرّف حساب واتساب للأعمال</div>
+      <div data-lang="en">Also called the WABA ID, from the same API Setup page. Not your Business Portfolio ID — a common mix-up.</div>
+      <div data-lang="ar">ويسمّى أيضًا WABA ID، من صفحة API Setup نفسها. وليس معرّف محفظة الأعمال — وهذا خلط شائع.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">App ID</div><div data-lang="ar">معرّف التطبيق</div>
+      <div data-lang="en">Your Meta app's ID. Needed so the portal can upload sample images when you create templates.</div>
+      <div data-lang="ar">معرّف تطبيقك في ميتا. ولازم لتتمكّن البوّابة من رفع الصور النموذجية عند إنشاء القوالب.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Access token</div><div data-lang="ar">رمز الوصول</div>
+      <div data-lang="en">A long string starting with <code>EAA…</code>. Use a permanent system-user token, not a temporary one — temporary tokens expire in 24 hours and everything stops.</div>
+      <div data-lang="ar">سلسلة طويلة تبدأ بـ<code>EAA…</code>. استخدم رمز مستخدم نظام دائمًا، لا رمزًا مؤقتًا — فالمؤقّت ينتهي خلال ٢٤ ساعة ويتوقّف كل شيء.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">App secret</div><div data-lang="ar">السرّ الخاص بالتطبيق</div>
+      <div data-lang="en">Lets the portal prove that incoming delivery reports genuinely came from WhatsApp and not from someone pretending.</div>
+      <div data-lang="ar">يتيح للبوّابة إثبات أن تقارير التسليم الواردة جاءت فعلًا من واتساب لا من منتحل.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Webhook verify token</div><div data-lang="ar">رمز التحقّق من الـWebhook</div>
+      <div data-lang="en">Any long random string. Press <strong>Generate</strong> to have one made for you, then paste the same value into Meta.</div>
+      <div data-lang="ar">أي سلسلة عشوائية طويلة. اضغط <strong>توليد</strong> لإنشاء واحدة، ثم الصق القيمة نفسها في ميتا.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">API version</div><div data-lang="ar">إصدار الواجهة</div>
+      <div data-lang="en">Leave the default unless you have a reason to change it.</div>
+      <div data-lang="ar">اترك القيمة الافتراضية ما لم يكن لديك سبب لتغييرها.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Webhook callback URL</div><div data-lang="ar">رابط استدعاء الـWebhook</div>
+      <div data-lang="en">Read-only. Copy this and paste it into Meta so delivery reports and replies can reach you.</div>
+      <div data-lang="ar">للقراءة فقط. انسخه والصقه في ميتا حتى تصلك تقارير التسليم والردود.</div>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Connecting, in order</span><span data-lang="ar">خطوات الربط بالترتيب</span></h3>
+  <ol class="steps">
+    <li>
+      <p data-lang="en">Fill in every field above and press <strong>Save</strong>.</p>
+      <p data-lang="ar">املأ كل الحقول أعلاه واضغط <strong>حفظ</strong>.</p>
+    </li>
+    <li>
+      <p data-lang="en">Press <strong>Test connection</strong>. A green result means the portal can talk to WhatsApp. A red one means a credential is wrong — the message usually names which.</p>
+      <p data-lang="ar">اضغط <strong>اختبار الاتصال</strong>. والنتيجة الخضراء تعني أن البوّابة تستطيع التواصل مع واتساب. أمّا الحمراء فتعني وجود بيانات اعتماد خاطئة — وغالبًا تحدّد الرسالة أيّها.</p>
+    </li>
+    <li>
+      <p data-lang="en">In Meta, open your app's <strong>Webhooks</strong> settings. Paste the <strong>Webhook callback URL</strong> and the <strong>verify token</strong>, then press Verify and save.</p>
+      <p data-lang="ar">في ميتا، افتح إعدادات <strong>Webhooks</strong> لتطبيقك. الصق <strong>رابط استدعاء الـWebhook</strong> و<strong>رمز التحقّق</strong>، ثم اضغط Verify واحفظ.</p>
+    </li>
+    <li>
+      <p data-lang="en">Still in Meta, <strong>subscribe to the <code>messages</code> field</strong>. Skip this and delivery statuses will never update and replies will never arrive — the single most common setup mistake.</p>
+      <p data-lang="ar">وفي ميتا أيضًا، <strong>اشترك في حقل <code>messages</code></strong>. وإذا تخطّيت هذه الخطوة، فلن تتحدّث حالات التسليم أبدًا ولن تصل الردود — وهو أشهر خطأ في الإعداد على الإطلاق.</p>
+    </li>
+    <li>
+      <p data-lang="en">Send one broadcast to your own number as a test before using a real list.</p>
+      <p data-lang="ar">أرسل بثًّا واحدًا إلى رقمك الخاص كاختبار قبل استخدام قائمة حقيقية.</p>
+    </li>
+  </ol>
+</section>
+
+
+<section class="chapter" id="team"
+  data-toc-en="Team members" data-toc-ar="أعضاء الفريق">
+  <h2><span class="chapter__num">12</span>
+    <span data-lang="en">Settings → Team members</span>
+    <span data-lang="ar">الإعدادات ← أعضاء الفريق</span>
+  </h2>
+  <p class="sub" data-lang="en">Admin only. Give your colleagues their own logins instead of sharing one.</p>
+  <p class="sub" data-lang="ar">للمسؤول فقط. امنح زملاءك حسابات خاصة بهم بدل مشاركة حساب واحد.</p>
+
+  <h3><span data-lang="en">Inviting someone</span><span data-lang="ar">دعوة شخص</span></h3>
+  <ol class="steps">
+    <li>
+      <p data-lang="en">Enter their <strong>email</strong> and optionally their <strong>name</strong>.</p>
+      <p data-lang="ar">أدخِل <strong>بريدهم الإلكتروني</strong>، و<strong>اسمهم</strong> اختياريًا.</p>
+    </li>
+    <li>
+      <p data-lang="en">Press <strong>Generate</strong> next to the password box to create a strong temporary password, or type your own (at least 8 characters).</p>
+      <p data-lang="ar">اضغط <strong>توليد</strong> بجوار حقل كلمة المرور لإنشاء كلمة مرور مؤقّتة قوية، أو اكتب واحدة بنفسك (٨ أحرف على الأقل).</p>
+    </li>
+    <li>
+      <p data-lang="en">Choose <strong>Member</strong> or <strong>Admin</strong>. When in doubt choose Member — you can promote them later in one click.</p>
+      <p data-lang="ar">اختر <strong>عضو</strong> أو <strong>مسؤول</strong>. وعند التردّد اختر «عضو» — إذ يمكنك ترقيته لاحقًا بضغطة واحدة.</p>
+    </li>
+    <li>
+      <p data-lang="en">Press <strong>Invite</strong>, then pass the password to them privately and ask them to change it on first sign-in.</p>
+      <p data-lang="ar">اضغط <strong>دعوة</strong>، ثم سلّمهم كلمة المرور بشكل خاص واطلب منهم تغييرها عند أول تسجيل دخول.</p>
+    </li>
+  </ol>
+
+  <div class="callout callout--tip">
+    <div class="callout__ico" aria-hidden="true">💡</div>
+    <div>
+      <p data-lang="en">Give most people <strong>Member</strong>. They can do all the daily work — contacts, lists, broadcasts, the Inbox — without being able to change the WhatsApp connection or delete data. Reserve <strong>Admin</strong> for the one or two people who genuinely need it.</p>
+      <p data-lang="ar">امنح معظم الأشخاص دور <strong>عضو</strong>. فبإمكانهم القيام بكل الأعمال اليومية — جهات الاتصال والقوائم وعمليات البثّ وصندوق الوارد — دون القدرة على تغيير اتصال واتساب أو حذف البيانات. واحتفظ بدور <strong>مسؤول</strong> لشخص أو شخصين ممّن يحتاجونه فعلًا.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Managing the team</span><span data-lang="ar">إدارة الفريق</span></h3>
+  <div class="kv">
+    <div class="kv__row">
+      <div data-lang="en">Edit</div><div data-lang="ar">تعديل</div>
+      <div data-lang="en">Change someone's display name or switch their role between Member and Admin.</div>
+      <div data-lang="ar">تغيير الاسم الظاهر لشخص أو تبديل دوره بين عضو ومسؤول.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Reset password</div><div data-lang="ar">إعادة تعيين كلمة المرور</div>
+      <div data-lang="en">Set a new password for someone who is locked out. Use <strong>Generate</strong> and hand it over privately.</div>
+      <div data-lang="ar">تعيين كلمة مرور جديدة لمن تعذّر عليه الدخول. استخدم <strong>توليد</strong> وسلّمها بشكل خاص.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Remove</div><div data-lang="ar">إزالة</div>
+      <div data-lang="en">Revokes access immediately. Their entries in the activity log are kept, so the record of what they did stays intact.</div>
+      <div data-lang="ar">تُلغي الوصول فورًا. وتبقى مدخلاتهم في سجلّ النشاط، فيظلّ سجلّ ما قاموا به سليمًا.</div>
+    </div>
+  </div>
+
+  <p data-lang="en">Remove someone the same day they leave. It takes ten seconds and it is the single most effective security habit you can have.</p>
+  <p data-lang="ar">أزِل الشخص في اليوم نفسه الذي يغادر فيه. فالأمر يستغرق عشر ثوانٍ، وهو أكثر عادة أمنية فاعلية يمكنك اتّباعها.</p>
+</section>
+
+
+<section class="chapter" id="account"
+  data-toc-en="My account &amp; activity" data-toc-ar="حسابي وسجلّ النشاط">
+  <h2><span class="chapter__num">13</span>
+    <span data-lang="en">My account and the activity log</span>
+    <span data-lang="ar">حسابي وسجلّ النشاط</span>
+  </h2>
+  <p class="sub" data-lang="en">Your own password, and — for admins — a record of everything the team has done.</p>
+  <p class="sub" data-lang="ar">كلمة مرورك الخاصة، ولدى المسؤولين، سجلّ بكل ما قام به الفريق.</p>
+
+  <h3><span data-lang="en">Changing your password</span><span data-lang="ar">تغيير كلمة مرورك</span></h3>
+  <p data-lang="en">In <strong>Settings → My account</strong>, enter your current password, then the new one twice, and save. New passwords must be at least 8 characters. Every account can do this — you do not need to be an Admin.</p>
+  <p data-lang="ar">في <strong>الإعدادات ← حسابي</strong>، أدخِل كلمة المرور الحالية، ثم الجديدة مرّتين، واحفظ. ويجب ألّا تقلّ كلمة المرور الجديدة عن ٨ أحرف. وكل حساب يستطيع فعل ذلك — ولا يلزم أن تكون مسؤولًا.</p>
+
+  <div class="callout callout--tip">
+    <div class="callout__ico" aria-hidden="true">🔑</div>
+    <div>
+      <p data-lang="en">If you were given a temporary password by an administrator, change it the first time you sign in. Nobody else should know your password — not even the person who created your account.</p>
+      <p data-lang="ar">إذا منحك المسؤول كلمة مرور مؤقّتة، فغيّرها عند أول تسجيل دخول. فلا ينبغي لأحد آخر أن يعرف كلمة مرورك — ولا حتى من أنشأ حسابك.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">The activity log</span><span data-lang="ar">سجلّ النشاط</span></h3>
+  <p data-lang="en">Admins see an <strong>Activity</strong> section listing <em>when, who, what and the details</em> for every consequential change: contacts imported or deleted, templates submitted, broadcasts created, campaigns paused, team members added or removed, WhatsApp settings edited.</p>
+  <p data-lang="ar">يرى المسؤولون قسم <strong>النشاط</strong> الذي يسرد <em>متى ومن وماذا والتفاصيل</em> لكل تغيير مهم: استيراد جهات الاتصال أو حذفها، وإرسال القوالب، وإنشاء عمليات البثّ، وإيقاف الحملات، وإضافة أعضاء الفريق أو إزالتهم، وتعديل إعدادات واتساب.</p>
+
+  <p data-lang="en">Use it to answer "who changed this?" without having to ask anyone. Note that ordinary Inbox replies and automatic scheduled sends are not recorded here — the log covers deliberate changes, not routine traffic.</p>
+  <p data-lang="ar">استخدمه للإجابة عن سؤال «من غيّر هذا؟» دون الحاجة إلى سؤال أحد. ولاحظ أن ردود صندوق الوارد الاعتيادية وعمليات الإرسال المجدولة التلقائية لا تُسجَّل هنا — فالسجلّ يغطّي التغييرات المتعمّدة، لا الحركة الروتينية.</p>
+</section>
+
+
+<section class="chapter" id="links"
+  data-toc-en="Template link buttons" data-toc-ar="أزرار روابط القوالب">
+  <h2><span class="chapter__num">14</span>
+    <span data-lang="en">Settings → Template link buttons</span>
+    <span data-lang="ar">الإعدادات ← أزرار روابط القوالب</span>
+  </h2>
+  <p class="sub" data-lang="en">Admin only. The reason your template's link button should never point straight at Instagram.</p>
+  <p class="sub" data-lang="ar">للمسؤول فقط. والسبب في أن زر الرابط في قالبك يجب ألّا يشير مباشرةً إلى إنستغرام.</p>
+
+  <p data-lang="en">When a template has a URL button, WhatsApp visits that address and often draws a link-preview card above your message — which pushes your actual text down and looks unpolished. Pointing the button at a short address on your own domain avoids that.</p>
+  <p data-lang="ar">عندما يحتوي القالب على زر رابط، يزور واتساب ذلك العنوان وغالبًا ما يرسم بطاقة معاينة فوق رسالتك — ممّا يدفع نصّك الفعلي إلى الأسفل ويبدو غير مُتقَن. والإشارة بالزر إلى عنوان قصير على نطاقك يتجنّب ذلك.</p>
+
+  <p data-lang="en">The second, bigger reason is that <strong>you can change where the link goes without touching the approved template.</strong> Editing an approved template costs a Meta re-review and a 24-hour wait. Changing a destination here takes five seconds.</p>
+  <p data-lang="ar">أمّا السبب الثاني والأهم فهو أنه <strong>يمكنك تغيير وجهة الرابط دون المساس بالقالب المعتمد.</strong> فتعديل قالب معتمد يكلّف إعادة مراجعة من ميتا وانتظار ٢٤ ساعة. أمّا تغيير الوجهة هنا فيستغرق خمس ثوانٍ.</p>
+
+  <h3><span data-lang="en">Creating a link</span><span data-lang="ar">إنشاء رابط</span></h3>
+  <ol class="steps">
+    <li>
+      <p data-lang="en">Enter a <strong>slug</strong> — the short name that appears in the address, e.g. <code>bia-instagram</code>. Prefix it with the client name so two clients' links never collide.</p>
+      <p data-lang="ar">أدخِل <strong>المعرّف المختصر</strong> — الاسم القصير الذي يظهر في العنوان، مثل <code>bia-instagram</code>. وابدأه باسم العميل حتى لا تتصادم روابط عميلين.</p>
+    </li>
+    <li>
+      <p data-lang="en">Enter the <strong>destination</strong> — the full <code>https://</code> address you actually want people to land on.</p>
+      <p data-lang="ar">أدخِل <strong>الوجهة</strong> — العنوان الكامل الذي يبدأ بـ<code>https://</code> والذي تريد فعلًا أن يصل إليه الناس.</p>
+    </li>
+    <li>
+      <p data-lang="en">Press <strong>Add link</strong>. The table now shows an <strong>Address to paste into Meta</strong>. Press <strong>Copy</strong> and use that as the URL button in your template.</p>
+      <p data-lang="ar">اضغط <strong>إضافة رابط</strong>. ويعرض الجدول الآن <strong>العنوان الذي تلصقه في ميتا</strong>. اضغط <strong>نسخ</strong> واستخدمه كزر الرابط في قالبك.</p>
+    </li>
+  </ol>
+
+  <div class="callout callout--stop">
+    <div class="callout__ico" aria-hidden="true">🔒</div>
+    <div>
+      <p data-lang="en"><strong>The slug is permanent; only the destination can change.</strong> That is deliberate. Once a slug is printed inside an approved template it can never move, so the portal will not let you rename it — but <strong>Repoint</strong> lets you change where it sends people, as often as you like.</p>
+      <p data-lang="ar"><strong>المعرّف المختصر دائم؛ والوجهة وحدها هي القابلة للتغيير.</strong> وهذا مقصود. فبمجرّد طباعة المعرّف داخل قالب معتمد لا يمكن نقله أبدًا، لذا لا تسمح لك البوّابة بإعادة تسميته — لكن <strong>إعادة التوجيه</strong> تتيح لك تغيير وجهة الإرسال متى شئت.</p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">The three actions</span><span data-lang="ar">الإجراءات الثلاثة</span></h3>
+  <div class="kv">
+    <div class="kv__row">
+      <div data-lang="en">Copy</div><div data-lang="ar">نسخ</div>
+      <div data-lang="en">Copies the address to your clipboard, ready to paste into Meta's template editor.</div>
+      <div data-lang="ar">ينسخ العنوان إلى حافظتك، جاهزًا للصقه في محرّر القوالب لدى ميتا.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Repoint</div><div data-lang="ar">إعادة التوجيه</div>
+      <div data-lang="en">Changes the destination. Takes effect immediately, including for templates already sent and sitting in people's phones.</div>
+      <div data-lang="ar">يغيّر الوجهة. ويسري المفعول فورًا، بما في ذلك القوالب المُرسَلة سابقًا والموجودة في هواتف الناس.</div>
+    </div>
+    <div class="kv__row">
+      <div data-lang="en">Delete</div><div data-lang="ar">حذف</div>
+      <div data-lang="en">Removes the link. <strong>Any template button already pointing at it stops working</strong> — including messages already delivered. Rarely the right move.</div>
+      <div data-lang="ar">يزيل الرابط. و<strong>أي زر قالب يشير إليه يتوقّف عن العمل</strong> — بما في ذلك الرسائل المُسلَّمة سابقًا. ونادرًا ما يكون هذا التصرّف الصائب.</div>
+    </div>
+  </div>
+
+  <div class="callout callout--warn">
+    <div class="callout__ico" aria-hidden="true">⚠</div>
+    <div>
+      <p data-lang="en">Always print the <strong>main domain</strong> in a template button, never a client subdomain. A link baked into an approved template outlives the hostname you happened to be using the day you wrote it.</p>
+      <p data-lang="ar">اطبع دائمًا <strong>النطاق الرئيسي</strong> في زر القالب، لا نطاقًا فرعيًا لعميل. فالرابط المطبوع داخل قالب معتمد يبقى أطول من اسم المضيف الذي صادف استخدامك له يوم كتابته.</p>
+    </div>
+  </div>
+</section>
+
+
+<section class="chapter" id="clients"
+  data-toc-en="Clients (super-admin)" data-toc-ar="العملاء (المسؤول الأعلى)">
+  <h2><span class="chapter__num">15</span>
+    <span data-lang="en">Clients — super-admin only</span>
+    <span data-lang="ar">العملاء — للمسؤول الأعلى فقط</span>
+  </h2>
+  <p class="sub" data-lang="en">Skip this chapter unless you run the platform for more than one organisation.</p>
+  <p class="sub" data-lang="ar">تجاوز هذا الفصل ما لم تكن تدير المنصّة لأكثر من جهة واحدة.</p>
+
+  <p data-lang="en">The portal can hold several completely separate organisations — called <strong>clients</strong> — side by side. Each client has its own contacts, lists, templates, broadcasts, team and WhatsApp number. They cannot see each other in any way.</p>
+  <p data-lang="ar">يمكن للبوّابة أن تستضيف عدّة جهات منفصلة تمامًا — تُسمّى <strong>العملاء</strong> — جنبًا إلى جنب. ولكل عميل جهات اتصاله وقوائمه وقوالبه وعمليات بثّه وفريقه ورقم واتساب الخاص به. ولا يمكن لأي منهم رؤية الآخر بأي شكل.</p>
+
+  <h3><span data-lang="en">Creating a client</span><span data-lang="ar">إنشاء عميل</span></h3>
+  <ol class="steps">
+    <li>
+      <p data-lang="en">Enter the <strong>client name</strong>, and a <strong>slug</strong> if you want a specific short identifier.</p>
+      <p data-lang="ar">أدخِل <strong>اسم العميل</strong>، و<strong>المعرّف المختصر</strong> إن أردت معرّفًا قصيرًا محدّدًا.</p>
+    </li>
+    <li>
+      <p data-lang="en">Optionally add an <strong>admin login email</strong>. Leave the password blank and a strong one is generated and shown to you <strong>once</strong> — copy it before dismissing the panel.</p>
+      <p data-lang="ar">يمكنك إضافة <strong>بريد دخول المسؤول</strong>. واترك كلمة المرور فارغة فتُولَّد كلمة قوية وتُعرض لك <strong>مرّة واحدة</strong> — انسخها قبل إغلاق اللوحة.</p>
+    </li>
+    <li>
+      <p data-lang="en">Press <strong>Create client</strong>, then use <strong>Switch to</strong> and set up their WhatsApp connection under Settings.</p>
+      <p data-lang="ar">اضغط <strong>إنشاء عميل</strong>، ثم استخدم <strong>التبديل إليه</strong> واضبط اتصال واتساب الخاص به من الإعدادات.</p>
+    </li>
+  </ol>
+
+  <h3><span data-lang="en">Switching between clients</span><span data-lang="ar">التبديل بين العملاء</span></h3>
+  <p data-lang="en">A client selector appears in the menu for super-admins only. Whichever client is selected, every screen in the portal shows that client&rsquo;s data and nothing else.</p>
+  <div class="callout callout--warn">
+    <div class="callout__ico" aria-hidden="true">📍</div>
+    <div>
+      <p data-lang="en"><strong>On <code>bia.massegat.com</code> there is no selector, even for a super-admin.</strong> A client subdomain is bound to exactly one organisation, and the hostname wins. That is a safety feature: on a tenant address you cannot accidentally be acting as somebody else. Tenant switching lives on the console host, <code>app.massegat.com</code>.</p>
+      <p data-lang="ar"><strong>على <code>bia.massegat.com</code> لا يوجد مُنتقٍ للعملاء، ولا حتى للمسؤول الأعلى.</strong> فالنطاق الفرعي للعميل مرتبط بجهة واحدة بالضبط، واسم المضيف هو الفيصل. وهذه ميزة أمان: فعلى عنوان العميل لا يمكنك أن تعمل بالخطأ نيابةً عن جهة أخرى. أمّا التبديل بين العملاء فيتم على مضيف وحدة التحكم <code>app.massegat.com</code>.</p>
+    </div>
+  </div>
+  <p data-lang="ar">يظهر مُنتقي العملاء في القائمة للمسؤولين الأعلى فقط. وأيًّا كان العميل المحدَّد، تعرض كل شاشة في البوّابة بيانات ذلك العميل ولا شيء غيرها.</p>
+
+  <div class="callout callout--stop">
+    <div class="callout__ico" aria-hidden="true">⚠</div>
+    <div>
+      <p data-lang="en"><strong>Always check the client selector before sending.</strong> Sending the wrong organisation's message to the wrong organisation's list is the one mistake this feature makes possible, and it cannot be undone.</p>
+      <p data-lang="ar"><strong>تحقّق دائمًا من مُنتقي العملاء قبل الإرسال.</strong> فإرسال رسالة جهة إلى قائمة جهة أخرى هو الخطأ الوحيد الذي تتيحه هذه الخاصية، ولا يمكن التراجع عنه.</p>
+    </div>
+  </div>
+
+  <div class="callout callout--stop">
+    <div class="callout__ico" aria-hidden="true">🗑</div>
+    <div>
+      <p data-lang="en"><strong>Deleting a client deletes everything it owns</strong> — every contact, list, template, broadcast and user. There is no recovery. The confirmation prompt is the only safety net.</p>
+      <p data-lang="ar"><strong>حذف العميل يحذف كل ما يملكه</strong> — كل جهة اتصال وقائمة وقالب وبثّ ومستخدم. ولا يوجد استرجاع. ورسالة التأكيد هي شبكة الأمان الوحيدة.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PART 4 — REFERENCE
+     ============================================================ -->
+
+<section class="chapter" id="troubleshooting"
+  data-part-en="Reference" data-part-ar="مرجع"
+  data-toc-en="Troubleshooting" data-toc-ar="حلّ المشكلات">
+  <h2><span class="chapter__num">?</span>
+    <span data-lang="en">When something goes wrong</span>
+    <span data-lang="ar">عندما يحدث خلل</span>
+  </h2>
+  <p class="sub" data-lang="en">Find your symptom in the left column. Nearly every problem is one of these.</p>
+  <p class="sub" data-lang="ar">ابحث عن العَرَض في العمود الأول. فكل مشكلة تقريبًا هي إحدى هذه.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th><span data-lang="en">What you see</span><span data-lang="ar">ما تراه</span></th>
+          <th><span data-lang="en">Why</span><span data-lang="ar">السبب</span></th>
+          <th><span data-lang="en">What to do</span><span data-lang="ar">ما العمل</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span data-lang="en">My template is not in the send dropdown</span><span data-lang="ar">قالبي غير موجود في قائمة الإرسال</span></td>
+          <td><span data-lang="en">It is not APPROVED yet, or the status has not refreshed.</span><span data-lang="ar">لم يُعتمد بعد، أو لم تتحدّث حالته.</span></td>
+          <td><span data-lang="en">Templates → <strong>Sync</strong>. If it is still PENDING, wait. If REJECTED, create a corrected copy.</span><span data-lang="ar">القوالب ← <strong>مزامنة</strong>. وإن بقي PENDING فانتظر. وإن كان REJECTED فأنشئ نسخة مصحّحة.</span></td>
+        </tr>
+        <tr>
+          <td><span data-lang="en">Statuses stay on SENT and never reach DELIVERED</span><span data-lang="ar">تبقى الحالات عند SENT ولا تصل إلى DELIVERED</span></td>
+          <td><span data-lang="en">The webhook is not configured, or the <code>messages</code> field is not subscribed in Meta.</span><span data-lang="ar">الـwebhook غير مضبوط، أو لم يُشترك في حقل <code>messages</code> في ميتا.</span></td>
+          <td><span data-lang="en">Admin: re-check <a href="#connect">Chapter 11</a>, steps 3 and 4.</span><span data-lang="ar">المسؤول: راجع <a href="#connect">الفصل ١١</a>، الخطوتين ٣ و٤.</span></td>
+        </tr>
+        <tr>
+          <td><span data-lang="en">Replies never appear in the Inbox</span><span data-lang="ar">لا تظهر الردود في صندوق الوارد</span></td>
+          <td><span data-lang="en">Same cause as above — inbound messages travel through the same webhook.</span><span data-lang="ar">السبب نفسه أعلاه — فالرسائل الواردة تمرّ عبر الـwebhook نفسه.</span></td>
+          <td><span data-lang="en">Admin: verify the webhook and the <code>messages</code> subscription.</span><span data-lang="ar">المسؤول: تحقّق من الـwebhook والاشتراك في <code>messages</code>.</span></td>
+        </tr>
+        <tr>
+          <td><span data-lang="en">A whole broadcast is FAILED</span><span data-lang="ar">بثّ كامل بحالة FAILED</span></td>
+          <td><span data-lang="en">The WhatsApp connection is broken — usually an expired access token.</span><span data-lang="ar">اتصال واتساب معطّل — وعادةً بسبب انتهاء صلاحية رمز الوصول.</span></td>
+          <td><span data-lang="en">Admin: Settings → <strong>Test connection</strong>. Replace the token with a permanent one if needed.</span><span data-lang="ar">المسؤول: الإعدادات ← <strong>اختبار الاتصال</strong>. واستبدل الرمز بآخر دائم عند الحاجة.</span></td>
+        </tr>
+        <tr>
+          <td><span data-lang="en">A few individual recipients FAILED</span><span data-lang="ar">فشل عدد قليل من المستلمين</span></td>
+          <td><span data-lang="en">Those numbers are wrong, or have no WhatsApp account.</span><span data-lang="ar">تلك الأرقام خاطئة، أو ليس لديها حساب واتساب.</span></td>
+          <td><span data-lang="en">Read the Error column, correct the contacts, then <strong>Retry failed</strong>.</span><span data-lang="ar">اقرأ عمود الخطأ، وصحّح جهات الاتصال، ثم <strong>أعِد المحاولة للفاشلة</strong>.</span></td>
+        </tr>
+        <tr>
+          <td><span data-lang="en">My CSV rejected rows</span><span data-lang="ar">رُفضت صفوف من ملف CSV</span></td>
+          <td><span data-lang="en">Missing country code, or the number is under 8 / over 15 digits.</span><span data-lang="ar">رمز الدولة ناقص، أو الرقم أقل من ٨ أو أكثر من ١٥ خانة.</span></td>
+          <td><span data-lang="en">Fix them in the spreadsheet and re-upload. Existing contacts update rather than duplicate.</span><span data-lang="ar">صحّحها في الجدول وأعِد الرفع. فجهات الاتصال الموجودة تُحدَّث ولا تتكرّر.</span></td>
+        </tr>
+        <tr>
+          <td><span data-lang="en">Someone did not receive a broadcast</span><span data-lang="ar">شخص لم يستلم البثّ</span></td>
+          <td><span data-lang="en">They are opted out, or not on that list.</span><span data-lang="ar">ألغى اشتراكه، أو ليس ضمن تلك القائمة.</span></td>
+          <td><span data-lang="en">Search for them in Contacts and check the Status column.</span><span data-lang="ar">ابحث عنه في «جهات الاتصال» وتحقّق من عمود الحالة.</span></td>
+        </tr>
+        <tr>
+          <td><span data-lang="en">My reply in the Inbox was rejected</span><span data-lang="ar">رُفض ردّي في صندوق الوارد</span></td>
+          <td><span data-lang="en">The 24-hour window is closed.</span><span data-lang="ar">نافذة الـ٢٤ ساعة مغلقة.</span></td>
+          <td><span data-lang="en">Press <strong>📋</strong> and send an approved template instead.</span><span data-lang="ar">اضغط <strong>📋</strong> وأرسل قالبًا معتمدًا بدلًا من ذلك.</span></td>
+        </tr>
+        <tr>
+          <td><span data-lang="en">A campaign fired at the wrong hour</span><span data-lang="ar">انطلقت الحملة في ساعة خاطئة</span></td>
+          <td><span data-lang="en">Schedules run in UTC.</span><span data-lang="ar">الجداول تعمل بتوقيت UTC.</span></td>
+          <td><span data-lang="en">Subtract 3 hours from your Riyadh/Kuwait time when setting the hour.</span><span data-lang="ar">اطرح ٣ ساعات من توقيت الرياض/الكويت عند ضبط الساعة.</span></td>
+        </tr>
+        <tr>
+          <td><span data-lang="en">A button I read about is missing</span><span data-lang="ar">زرّ قرأت عنه غير موجود</span></td>
+          <td><span data-lang="en">Your role is Member, and it is an Admin action.</span><span data-lang="ar">دورك «عضو»، والإجراء خاص بالمسؤول.</span></td>
+          <td><span data-lang="en">Ask an Admin to do it, or to promote you.</span><span data-lang="ar">اطلب من مسؤول تنفيذه، أو ترقيتك.</span></td>
+        </tr>
+        <tr>
+          <td><span data-lang="en">A contact cannot be deleted</span><span data-lang="ar">تعذّر حذف جهة اتصال</span></td>
+          <td><span data-lang="en">They appear in a past broadcast's delivery history.</span><span data-lang="ar">تظهر في سجلّ تسليم بثّ سابق.</span></td>
+          <td><span data-lang="en">Use <strong>Opt out</strong> instead — it achieves what you actually want.</span><span data-lang="ar">استخدم <strong>إلغاء الاشتراك</strong> بدلًا من ذلك — فهو يحقّق ما تريده فعلًا.</span></td>
+        </tr>
+        <tr>
+          <td><span data-lang="en">An old image in the Inbox will not load</span><span data-lang="ar">صورة قديمة في صندوق الوارد لا تُحمّل</span></td>
+          <td><span data-lang="en">WhatsApp deletes media after about 30 days.</span><span data-lang="ar">يحذف واتساب الوسائط بعد نحو ٣٠ يومًا.</span></td>
+          <td><span data-lang="en">Nothing can be done. Download important files while the conversation is recent.</span><span data-lang="ar">لا يمكن فعل شيء. نزّل الملفات المهمة والمحادثة ما زالت حديثة.</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<section class="chapter" id="reference"
+  data-toc-en="Quick reference" data-toc-ar="مرجع سريع">
+  <h2><span class="chapter__num">★</span>
+    <span data-lang="en">Quick reference</span>
+    <span data-lang="ar">مرجع سريع</span>
+  </h2>
+  <p class="sub" data-lang="en">The bits worth keeping open in another tab.</p>
+  <p class="sub" data-lang="ar">الأجزاء الجديرة بإبقائها مفتوحة في علامة تبويب أخرى.</p>
+
+  <h3><span data-lang="en">Phone number rules</span><span data-lang="ar">قواعد أرقام الهواتف</span></h3>
+  <ul>
+    <li><span data-lang="en">Always include the country code.</span><span data-lang="ar">أدرِج رمز الدولة دائمًا.</span></li>
+    <li><span data-lang="en">Between 8 and 15 digits once <code>+</code>, spaces and dashes are removed.</span><span data-lang="ar">بين ٨ و١٥ خانة بعد إزالة <code>+</code> والمسافات والشرطات.</span></li>
+    <li><span data-lang="en">A leading zero on the local part is dropped automatically.</span><span data-lang="ar">يُحذف الصفر في بداية الجزء المحلي تلقائيًا.</span></li>
+    <li><span data-lang="en">Stored without the <code>+</code>. <code>+966 50 000 0001</code> becomes <code>966500000001</code>.</span><span data-lang="ar">يُخزَّن بدون <code>+</code>. فالرقم <code>+966 50 000 0001</code> يصبح <code>966500000001</code>.</span></li>
+  </ul>
+
+  <h3><span data-lang="en">Opt-out keywords</span><span data-lang="ar">كلمات إلغاء الاشتراك</span></h3>
+  <p data-lang="en">A contact who replies <code>STOP</code> or <code>UNSUBSCRIBE</code> is opted out automatically and excluded from every future broadcast. An Admin can reverse it from the Contacts page if the person asks to be added back.</p>
+  <p data-lang="ar">جهة الاتصال التي تردّ بـ<code>STOP</code> أو <code>UNSUBSCRIBE</code> يُلغى اشتراكها تلقائيًا وتُستبعد من كل بثّ مستقبلي. ويمكن للمسؤول التراجع عن ذلك من صفحة جهات الاتصال إذا طلب الشخص إعادة إضافته.</p>
+
+  <h3><span data-lang="en">All statuses at a glance</span><span data-lang="ar">كل الحالات في لمحة</span></h3>
+  <div class="grid2">
+    <div class="card">
+      <h4 style="margin-top:0"><span data-lang="en">Per recipient</span><span data-lang="ar">لكل مستلم</span></h4>
+      <p style="margin:0">
+        <span class="chip chip--pending">PENDING</span> <span class="chip chip--sent">SENT</span>
+        <span class="chip chip--delivered">DELIVERED</span> <span class="chip chip--read">READ</span>
+        <span class="chip chip--failed">FAILED</span>
+      </p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0"><span data-lang="en">Per broadcast</span><span data-lang="ar">لكل بثّ</span></h4>
+      <p style="margin:0">
+        <span class="chip chip--scheduled">SCHEDULED</span> <span class="chip chip--pending">QUEUED</span>
+        <span class="chip chip--delivered">SENDING</span> <span class="chip chip--read">COMPLETED</span>
+        <span class="chip chip--failed">FAILED</span>
+      </p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0"><span data-lang="en">Per template</span><span data-lang="ar">لكل قالب</span></h4>
+      <p style="margin:0">
+        <span class="chip chip--pending">PENDING</span> <span class="chip chip--approved">APPROVED</span>
+        <span class="chip chip--failed">REJECTED</span>
+      </p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0"><span data-lang="en">Per contact</span><span data-lang="ar">لكل جهة اتصال</span></h4>
+      <p style="margin:0">
+        <span class="chip chip--read">Active</span> <span class="chip chip--failed">Opted out</span>
+      </p>
+    </div>
+  </div>
+
+  <h3><span data-lang="en">Admin-only actions</span><span data-lang="ar">إجراءات المسؤول حصريًا</span></h3>
+  <ul>
+    <li><span data-lang="en">Creating and submitting templates</span><span data-lang="ar">إنشاء القوالب وإرسالها</span></li>
+    <li><span data-lang="en">Deleting contacts, singly or in bulk</span><span data-lang="ar">حذف جهات الاتصال، فرديًا أو جماعيًا</span></li>
+    <li><span data-lang="en">Restoring a list snapshot</span><span data-lang="ar">استعادة نسخة قائمة محفوظة</span></li>
+    <li><span data-lang="en">Creating, pausing and deleting recurring campaigns</span><span data-lang="ar">إنشاء الحملات المتكرّرة وإيقافها وحذفها</span></li>
+    <li><span data-lang="en">Everything under Settings — the WhatsApp connection, the team, the activity log</span><span data-lang="ar">كل ما في الإعدادات — اتصال واتساب، والفريق، وسجلّ النشاط</span></li>
+  </ul>
+
+  <h3><span data-lang="en">A sensible weekly routine</span><span data-lang="ar">روتين أسبوعي معقول</span></h3>
+  <ol class="steps">
+    <li><p data-lang="en">Open the <strong>Dashboard</strong> and glance at the three deliverability numbers.</p><p data-lang="ar">افتح <strong>لوحة التحكم</strong> وألقِ نظرة على أرقام التسليم الثلاثة.</p></li>
+    <li><p data-lang="en">Open the <strong>Inbox</strong> and clear anything unanswered — windows close after 24 hours.</p><p data-lang="ar">افتح <strong>صندوق الوارد</strong> وأجب عمّا لم يُجب عنه — فالنوافذ تُغلق بعد ٢٤ ساعة.</p></li>
+    <li><p data-lang="en">Check any broadcast with failures and retry or fix the numbers.</p><p data-lang="ar">راجع أي بثّ به حالات فشل وأعِد المحاولة أو صحّح الأرقام.</p></li>
+    <li><p data-lang="en">Take a <strong>snapshot</strong> of any list you are about to change.</p><p data-lang="ar">احفظ <strong>نسخة</strong> من أي قائمة توشك على تعديلها.</p></li>
+  </ol>
+
+  <div class="endnote">
+    <h2><span data-lang="en">That is the whole portal</span><span data-lang="ar">هذه هي البوّابة بأكملها</span></h2>
+    <p data-lang="en">Keep the three WhatsApp rules in mind, read the preview before you send, and everything else is just clicking. When in doubt, come back to the chapter for the screen you are on.</p>
+    <p data-lang="ar">تذكّر قواعد واتساب الثلاث، واقرأ المعاينة قبل الإرسال، وما تبقّى مجرّد ضغطات. وعند التردّد، عُد إلى فصل الشاشة التي أنت فيها.</p>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var LS_LANG = "bh-guide-lang";
+  var LS_THEME = "bh-guide-theme";
+  var root = document.documentElement;
+
+  /* ---------- table of contents ---------- */
+  function buildToc() {
+    var list = document.getElementById("tocList");
+    if (!list) return;
+    var chapters = document.querySelectorAll(".chapter");
+    var frag = document.createDocumentFragment();
+
+    chapters.forEach(function (ch) {
+      var partEn = ch.getAttribute("data-part-en");
+      if (partEn) {
+        var head = document.createElement("li");
+        head.className = "toc__part";
+        head.innerHTML =
+          '<span data-lang="en">' + partEn + "</span>" +
+          '<span data-lang="ar">' + ch.getAttribute("data-part-ar") + "</span>";
+        frag.appendChild(head);
+      }
+      var li = document.createElement("li");
+      li.innerHTML =
+        '<a href="#' + ch.id + '" data-target="' + ch.id + '">' +
+        '<span data-lang="en">' + ch.getAttribute("data-toc-en") + "</span>" +
+        '<span data-lang="ar">' + ch.getAttribute("data-toc-ar") + "</span>" +
+        "</a>";
+      frag.appendChild(li);
+    });
+    list.appendChild(frag);
+  }
+
+  /* ---------- scroll spy ---------- */
+  function initSpy() {
+    var links = {};
+    document.querySelectorAll("#tocList a").forEach(function (a) {
+      links[a.getAttribute("data-target")] = a;
+    });
+    if (!("IntersectionObserver" in window)) return;
+
+    var visible = new Set();
+    var obs = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) visible.add(e.target.id);
+          else visible.delete(e.target.id);
+        });
+        var order = Array.prototype.map.call(
+          document.querySelectorAll(".chapter"),
+          function (c) { return c.id; }
+        );
+        var first = order.filter(function (id) { return visible.has(id); })[0];
+        Object.keys(links).forEach(function (id) {
+          links[id].classList.toggle("is-active", id === first);
+        });
+      },
+      { rootMargin: "-10% 0px -70% 0px", threshold: 0 }
+    );
+    document.querySelectorAll(".chapter").forEach(function (c) { obs.observe(c); });
+  }
+
+  /* ---------- language ---------- */
+  function setLang(lang) {
+    var ar = lang === "ar";
+    root.setAttribute("lang", ar ? "ar" : "en");
+    root.setAttribute("dir", ar ? "rtl" : "ltr");
+    var btn = document.getElementById("langBtn");
+    if (btn) {
+      btn.textContent = ar ? "EN" : "العربية";
+      btn.setAttribute("aria-label", ar ? "Switch to English" : "التبديل إلى العربية");
+    }
+    document.title = ar
+      ? "مركز البث — الدليل الكامل للمستخدم"
+      : "Broadcast Hub — Complete User Guide";
+    try { localStorage.setItem(LS_LANG, ar ? "ar" : "en"); } catch (e) {}
+  }
+
+  /* ---------- theme ---------- */
+  function setTheme(theme) {
+    var dark = theme !== "light";
+    root.setAttribute("data-theme", dark ? "dark" : "light");
+    var btn = document.getElementById("themeBtn");
+    if (btn) btn.textContent = dark ? "🌞" : "🌙";
+    try { localStorage.setItem(LS_THEME, dark ? "dark" : "light"); } catch (e) {}
+  }
+
+  /* ---------- exposed for the PDF builder + buttons ---------- */
+  window.toggleLang = function () {
+    setLang(root.getAttribute("lang") === "ar" ? "en" : "ar");
+  };
+  window.toggleTheme = function () {
+    setTheme(root.getAttribute("data-theme") === "light" ? "dark" : "light");
+  };
+  window.setGuideLang = setLang;
+  window.setGuideTheme = setTheme;
+
+  /* ---------- boot ---------- */
+  buildToc();
+  initSpy();
+
+  var savedLang = null, savedTheme = null;
+  try {
+    savedLang = localStorage.getItem(LS_LANG);
+    savedTheme = localStorage.getItem(LS_THEME);
+  } catch (e) {}
+
+  var urlLang = new URLSearchParams(location.search).get("lang");
+  setLang(urlLang === "ar" || urlLang === "en" ? urlLang : savedLang || "en");
+  setTheme(savedTheme || "dark");
+})();
+</script>
+</body>
+</html>

@@ -15,7 +15,8 @@
     "cleanup:stuck": "tsx scripts/cleanup-stuck-broadcasts.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "guide:pdf": "node scripts/build-guide-pdf.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",
