@@ -9,3 +9,6 @@ test-results
 tsconfig.tsbuildinfo
 .claude/settings.local.json
 .DS_Store
+
+# Personal Claude Code overrides
+CLAUDE.local.md
