@@ -32,7 +32,8 @@ function statusBadge(s: string) {
 }
 
 export default function TemplatesManager() {
-  const { isAdmin } = useRole(); // submitting templates to Meta is admin-only
+  // Members may author templates too — the server enforces the same rule.
+  const { canManageTemplates: canAuthor } = useRole();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [name, setName] = useState("");
   const [language, setLanguage] = useState("ar");
@@ -179,8 +180,8 @@ export default function TemplatesManager() {
   }
 
   return (
-    <div className="grid-forms" style={{ gridTemplateColumns: isAdmin ? "minmax(320px,1.1fr) 1fr" : "1fr", alignItems: "start" }}>
-      {isAdmin && (
+    <div className="grid-forms" style={{ gridTemplateColumns: canAuthor ? "minmax(320px,1.1fr) 1fr" : "1fr", alignItems: "start" }}>
+      {canAuthor && (
       <form onSubmit={onSubmit} className="card">
         <h3>Create a template</h3>
         <div className="field">
