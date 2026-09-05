@@ -7,7 +7,7 @@ import { verifyToken, ACCESS_COOKIE, ACTING_CLIENT_COOKIE } from "./auth";
 import { DEFAULT_CLIENT_ID } from "./tenancy";
 import { hostTenantSlug, resolveHostAccess } from "./hostTenancy";
 import { clientIdBySlug, slugByClientId } from "./hostClient";
-import { isAdminRole } from "./rbac";
+import { isAdminRole, canManageTemplates } from "./rbac";
 
 // Node-only auth helpers (DB + bcrypt). The single env admin is used to
 // BOOTSTRAP when no users exist yet; afterwards everything is DB-backed.
@@ -156,6 +156,14 @@ export async function getClientIdFromCookies(): Promise<string> {
 export async function requireAdmin(req: NextRequest) {
   const claims = await verifyToken(req.cookies.get(ACCESS_COOKIE)?.value, "access");
   if (!claims || !isAdminRole(claims.role)) return null;
+  return claims;
+}
+
+/** Read the access token and require a role allowed to author templates.
+ *  Members qualify (see canManageTemplates). Returns claims or null. */
+export async function requireTemplateAuthor(req: NextRequest) {
+  const claims = await verifyToken(req.cookies.get(ACCESS_COOKIE)?.value, "access");
+  if (!claims || !canManageTemplates(claims.role)) return null;
   return claims;
 }
 

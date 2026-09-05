@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/users";
-import { isAdminRole } from "@/lib/rbac";
+import { isAdminRole, canManageTemplates } from "@/lib/rbac";
 
 export const runtime = "nodejs";
 
@@ -13,6 +13,8 @@ export async function GET(req: NextRequest) {
     role: ctx.role,
     clientId: ctx.clientId,
     isAdmin: isAdminRole(ctx.role),
+    // Members may author templates too, so this is not implied by isAdmin.
+    canManageTemplates: canManageTemplates(ctx.role),
     // Host-bound (or non-super) sessions must not be offered the switcher.
     pinned: ctx.pinned,
   });

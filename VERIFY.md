@@ -5,8 +5,11 @@ Meta WhatsApp account**. This checklist proves the whole pipeline works end to e
 You do the Meta-side steps (I can't enter your credentials); I watch the logs and fix
 anything that breaks.
 
-Live app: `https://wa-broadcast-production-0392.up.railway.app`
-Webhook callback URL: `https://wa-broadcast-production-0392.up.railway.app/api/webhooks/whatsapp`
+Live app: `https://bia.massegat.com`
+Webhook callback URL: `https://bia.massegat.com/api/webhooks/whatsapp`
+
+> Updated 2026-08-12 (was the Railway domain). Meta allows **one callback URL per
+> app**, so setting this takes the webhook off Railway in the same action.
 
 ---
 

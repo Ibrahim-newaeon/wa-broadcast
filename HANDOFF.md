@@ -10,7 +10,8 @@ A self-hosted, **multi-tenant** WhatsApp messaging platform on Meta's Cloud API 
 **The one thing not yet done:** nothing has been sent through a **real** Meta WhatsApp account. Everything is verified against Meta's *documented* payload shapes (unit tests + endpoint smoke tests) — not against a live WABA. **Next session's top priority is the live end-to-end verification in [VERIFY.md](./VERIFY.md).**
 
 ## Live deployment
-- **URL:** https://wa-broadcast-production-0392.up.railway.app
+- **URL:** https://bia.massegat.com (BIA School tenant) · https://massegat.com (apex landing). Self-hosted on Hetzner since 2026-08-11; `massegat.com` replaced `whatsapp-broadcast.com` on 2026-08-12. `bia.whatsapp-broadcast.com` is still served deliberately — Meta's webhook callback and the `welcome_note` template button still point there.
+- **Railway (legacy):** https://wa-broadcast-production-0392.up.railway.app — superseded; the Railway data for BIA was written off (4 test contacts).
 - **Stack on Railway:** Postgres · Redis · `web` (Next) · `worker` (BullMQ + scheduler), all from one image.
 - **Deploy:** `git push origin main` → Railway auto-builds & runs `prisma migrate deploy` on boot.
 - **Gotcha:** Railway runs the start command **without a shell** — chained commands must be wrapped: `sh -c "npx prisma migrate deploy && npm run start"`. App reads Railway's injected `$PORT`.
