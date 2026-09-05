@@ -15,7 +15,12 @@
     "ask": [
       "Bash(npx prisma migrate dev:*)",
       "Bash(railway:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npm run prisma:migrate:*)",
+      "Bash(npm run prisma:deploy:*)",
+      "Bash(npm run cleanup:stuck:*)",
+      "Bash(npm run worker:*)",
+      "Bash(npm run seed:*)"
     ],
     "deny": [
       "Read(**/.env)",
@@ -26,7 +31,11 @@
       "Bash(docker compose down -v:*)",
       "Bash(git push --force:*)",
       "Bash(git reset --hard:*)",
-      "Bash(rm -rf:*)"
+      "Bash(rm -rf:*)",
+      "Read(**/.env.*.local)",
+      "Read(**/.env.staging)",
+      "Read(**/.dev.vars)",
+      "Read(**/.dev.vars.*)"
     ]
   }
 }
